@@ -3,6 +3,26 @@ Features which haven't made it in yet:
   <zbrown@tumblerings.org> for the excellent feature idea and a prototype
   implementation.)
 
+New in version 5.30:
+- Updated t/recursive.t to work better when there are version control
+  directories in t/mailboxes/directory. (Thanks to Joey Hess
+  <joey@kitenet.net> for the feature suggestion and initial patch.)
+- Updated t/invalid_mailbox.t to be more robust. (Thanks to an anonymous bug
+  report on SourceForge.)
+- Fixed a bug in t/invalid_mailbox.t for Solaris. (Thanks to Jost Krieger
+  <Jost.Krieger+smokeback@sunu991.rz.ruhr-uni-bochum.de> for the bug report.)
+- -F now works again (Thanks to Graham Gough <graham@cs.man.ac.uk> for the bug
+  report.)
+- Changed incorrect "-h" to "--help" in two error messages. (Thanks to David
+  Sewell <dsew@users.sourceforge.net> for catching this.)
+- Now correctly handles DOS-style line endings in mailboxes. (Thanks to Martin
+  Hosken <martin_hosken@sil.org> for the initial patch.) Requires
+  Mail::Mbox::MessageParser 1.20 or better now.
+- Changed single dates so that they are treated as inferred spans, instead of
+  a single day. For example "2004" now means "between Jan 1 2004 and Jan 1
+  2005" instead of "between Jan 1 2004 and Jan 2 2004". (Thanks to Dan Pritts
+  <danno@internet2.edu> for the feature suggestion.)
+
 New in version 5.23:
 - Updated test cases to run under Windows.
 - Fixed a bug in speed tests which would cause the grep implementation to

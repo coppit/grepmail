@@ -35,7 +35,7 @@ Checklist for a release:
 - Release file:
   http://sourceforge.net/account/login.php
   ncftpput upload.sf.net incoming grepmail-X.XX.tar.gz
-  https://sourceforge.net/project/admin/qrs.php?package_id=&group_id=2207
+  http://sourceforge.net/project/admin/editpackages.php?group_id=2207
 - Announce any news on SourceForge:
   http://sourceforge.net/news/submit.php?group_id=2207
 - Update webpage:

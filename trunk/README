@@ -5,16 +5,18 @@ regular expression, and returns those emails that match it. Piped input is
 allowed, and date and size restrictions are supported, as are searches using
 logical operators.
 
-New in version 5.23:
-- Updated test cases to run under Windows.
-- Fixed a bug in speed tests which would cause the grep implementation to
-  fail.
-- Fixed incorrect output for emails without message bodies.
-- Fixed filename output for -n, -m and other situations when input comes from
-  standard input.
-- Added -w flag to match word boundaries.
-- A warning is now issued and caching is disabled if -C is not specified and
-  $HOME is not set (as might be the case when running grepmail in a cron job).
+New in version 5.30:
+- Updated t/recursive.t to work better when there are version control
+  directories in t/mailboxes/directory.
+- Updated t/invalid_mailbox.t to be more robust.
+- Fixed a bug in t/invalid_mailbox.t for Solaris.
+- -F now works again
+- Changed incorrect "-h" to "--help" in two error messages.
+- Now correctly handles DOS-style line endings in mailboxes.Requires
+  Mail::Mbox::MessageParser 1.20 or better now.
+- Changed single dates so that they are treated as inferred spans, instead of
+  a single day. For example "2004" now means "between Jan 1 2004 and Jan 1
+  2005" instead of "between Jan 1 2004 and Jan 2 2004".
 
 
 SOME NOTES

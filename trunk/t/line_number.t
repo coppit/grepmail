@@ -16,6 +16,8 @@ my %tests = (
   => ['number_2','none'],
 "grepmail -n -E $single_quote\$email =~ /Handy/$single_quote t/mailboxes/mailarc-1.txt t/mailboxes/mailarc-2.txt"
   => ['number_2','none'],
+'grepmail -n Handy t/mailboxes/mailarc-1-dos.txt'
+  => ['number_1_dos','none'],
 );
 
 my %expected_errors = (

@@ -14,6 +14,12 @@ my %tests = (
   => ['body_handy','none'],
 "grepmail -Y $single_quote.*$single_quote -b Handy t/mailboxes/mailarc-1.txt"
   => ['body_handy','none'],
+'grepmail -b mime t/mailboxes/mailarc-1-dos.txt'
+  => ['body_mime_dos','none'],
+'grepmail -b \'my$\' t/mailboxes/mailarc-1.txt'
+  => ['body_my','none'],
+'grepmail -b \'my$\' t/mailboxes/mailarc-1-dos.txt'
+  => ['body_my_dos','none'],
 );
 
 my %expected_errors = (

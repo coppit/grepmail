@@ -22,6 +22,8 @@ my %tests = (
   => ['date_2','none'],
 "grepmail -d \"after armageddon\" -E $single_quote\$email =~ /Handy/$single_quote t/mailboxes/mailarc-1.txt"
   => ['none','invalid_date_1'],
+'grepmail -d "Aug 1998" t/mailboxes/mailarc-1.txt'
+  => ['date_august','none'],
 );
 
 my %expected_errors = (

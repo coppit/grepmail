@@ -16,6 +16,8 @@ my %tests = (
   => ['header_body_handy','none'],
 'grepmail -h Handy t/mailboxes/mailarc-1.txt'
   => ['header_handy','none'],
+'grepmail -h Handy t/mailboxes/mailarc-1-dos.txt'
+  => ['header_handy_dos','none'],
 );
 
 my %expected_errors = (

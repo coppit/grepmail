@@ -18,6 +18,8 @@ my %tests = (
   => ['all_handy','none'],
 'grepmail -e Handy t/mailboxes/mailarc-1.txt'
   => ['all_handy','none'],
+'grepmail Handy t/mailboxes/mailarc-1-dos.txt'
+  => ['all_handy_dos','none'],
 );
 
 my %expected_errors = (

@@ -18,6 +18,8 @@ my %tests = (
   => ['header_handy','none'],
 "grepmail -Y $single_quote(^From:|^TO:)$single_quote Edsinger t/mailboxes/mailarc-1.txt"
   => ['header_edsinger','none'],
+"grepmail -Y $single_quote.*$single_quote Handy t/mailboxes/mailarc-1-dos.txt"
+  => ['header_handy_dos','none'],
 );
 
 my %expected_errors = (

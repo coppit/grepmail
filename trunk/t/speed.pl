@@ -13,14 +13,15 @@ use Benchmark::Timer;
 use FileHandle;
 use Test::ConfigureGrepmail;
 use File::Copy;
+use File::Spec;
 
 my $MAILBOX_SIZE = 10_000_000;
 my $TEMP_MAILBOX = 't/temp/bigmailbox.txt';
 
 my @IMPLEMENTATIONS_TO_TEST = (
-'Perl',
-'Grep',
-'Cache Init',
+#'Perl',
+#'Grep',
+#'Cache Init',
 'Cache Use',
 );
 
@@ -195,6 +196,8 @@ sub CollectData
       my $new_test = $test;
       $new_test =~ s/\bgrepmail\b/$^X $grepmail/g;
 
+      print "$impl ($old_or_new)\n";
+
       Test::ConfigureGrepmail::Set_Caching_And_Grep($grepmail,
         @{$settings{$impl}});
 
@@ -204,6 +207,8 @@ sub CollectData
       my $count = 0;
       while ($count - 1 < 10 || $t->need_more_samples($label))
       {
+        print ".";
+
         unlink 't/temp/cache' if $impl eq 'Cache Init';
 
         $t->start($label);
@@ -213,6 +218,8 @@ sub CollectData
 
         $count++;
       }
+
+      print "\n\n";
 
       $t->report($label);
 
