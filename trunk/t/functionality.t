@@ -79,7 +79,7 @@ my @tests = (
 # 29
 'grepmail -d "after armageddon" library t/mailarc-1.txt',
 # 30
-'grepmail library -s 2000 t/mailarc-1.txt',
+'grepmail library -s \'<=2000\' t/mailarc-1.txt',
 # 31
 'grepmail library -u t/mailarc-1.txt',
 # 32
@@ -187,7 +187,7 @@ my @tests = (
 # 82
 'grepmail -E \'$email =~ /library/\' t/mailarc-2.txt.gz t/mailarc-1.txt',
 # 83
-'cat t/mailarc-2.txt.tz | grepmail -E \'$email =~ library\'',
+'cat t/mailarc-2.txt.tz | grepmail -E \'$email =~ /library/\'',
 # 84
 'grepmail -E \'$email =~ /library/\' no_such_file',
 # 85
@@ -195,7 +195,7 @@ my @tests = (
 # 86
 'grepmail -d "after armageddon" -E \'$email =~ /library/\' t/mailarc-1.txt',
 # 87
-'grepmail -E \'$email =~ /library/\' -s 2000 t/mailarc-1.txt',
+'grepmail -E \'$email =~ /library/\' -s \'<=2000\' t/mailarc-1.txt',
 # 88
 'grepmail -E \'$email =~ /library/\' -u t/mailarc-1.txt',
 # 89 Unimplemented
@@ -246,6 +246,12 @@ my @tests = (
 'grepmail -E \'$email =~ /library/ || $email =~ /Poke/\' t/mailarc-1.txt',
 # 112
 'grepmail -f ro t/mailarc-1.txt',
+# 113
+'grepmail -s 1300-1500 t/mailarc-1.txt',
+# 114
+'grepmail -s \'>3000\' t/mailarc-1.txt',
+# 115
+'grepmail -s 1211 t/mailarc-1.txt',
 );
 
 # Tests for certain supported options. (0-based indices)
