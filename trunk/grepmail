@@ -2,7 +2,7 @@
 
 # grepmail
 
-$VERSION = '4.41';
+$VERSION = '4.42';
 
 # Grepmail searches a normal, gzip'd, tzip'd, or bzip2'd mailbox for a given
 # regular expression and returns those emails that match the query. It also
@@ -150,9 +150,10 @@ print usage() and exit if $ARGV[0] eq '--help';
 my @args = @ARGV;
 
 # So we don't have to test whether they are defined later.
-$opts{'D'} = $opts{'d'} = $opts{'e'} = $opts{'i'} = $opts{'q'} = 0;
-$opts{'h'} = $opts{'b'} = $opts{'v'} = $opts{'l'} = $opts{'r'} = 0;
+$opts{'D'} = $opts{'e'} = $opts{'i'} = $opts{'q'} = $opts{'h'} = 0;
+$opts{'b'} = $opts{'v'} = $opts{'l'} = $opts{'r'} = $opts{'a'} = 0;
 $opts{'M'} = $opts{'m'} = $opts{'s'} = $opts{'u'} = 0;
+$opts{'d'} = undef;
 
 # Initialize seen messages data structure to empty.
 %message_ids_seen = ();
@@ -502,12 +503,11 @@ sub HandleStandardInput
 
   cleanExit "No data on standard input" if $isEmpty;
 
-  use diagnostics;
   # Do -B on the data stream
   unless ($isEmpty)
   {
     my $data_length = length $testChars;
-    my $bin_length = $testChars =~ tr/[\0x00-\0x1F\0x80-\0xff]//;
+    my $bin_length = $testChars =~ tr/[\t\n\x20-\x7e]//c;
     my $non_bin_length = $data_length - $bin_length;
     $isBinary = ($non_bin_length / $data_length) > .70 ? 0 : 1;
   }
@@ -625,7 +625,7 @@ sub IsMailbox
   my $returnVal;
 
   # X-From-Line is used by Gnus, and From is used by normal Unix format
-  if ($buffer =~ /^(X-From-Line:|From) /im && $buffer =~ /^Subject: /im)
+  if ($buffer =~ /^(X-From-Line:|From)\s/im && $buffer =~ /^Subject:\s/im)
   {
     $returnVal = 1;
   }
@@ -891,11 +891,11 @@ sub GetFromLine
   # Remove the body if there is one. (Make it really a header)
   $header =~ s/\n\n.*/\n/s;
 
-  if ($header =~ /^(From:.*)$/im)
+  if ($header =~ /^(From:\s.*)$/im)
   {
     return $1;
   }
-  elsif ($header =~ /^(From.*)$/im)
+  elsif ($header =~ /^(From\s.*)$/im)
   {
     return $1;
   }
@@ -916,7 +916,7 @@ sub GetSubjectLine
   # Remove the body if there is one. (Make it really a header)
   $header =~ s/\n\n.*/\n/s;
 
-  if ($header =~ /^(Subject:.*)$/im)
+  if ($header =~ /^(Subject:\s.*)$/im)
   {
     return $1;
   }
@@ -1050,8 +1050,31 @@ sub SkipToNextEmail($\$$)
   do
   {
     $paragraph = <$fileHandle>;
+
+    # If this paragraph begins an included message, we need to be sure to drop
+    # the next paragraph, which is likely to contain the header for the
+    # included message.
+    if (defined $paragraph &&
+        $paragraph =~ /^\n*----- Begin Included Message -----/i)
+    { 
+      # Drop this paragraph if it looks like the header follows right after
+      # the ---- Begin Included Message ----
+      if ($paragraph =~ /- Begin Included Message -.*?\n./)
+      {
+        next;
+      }
+      # Otherwise drop the next paragraph
+      else
+      {
+        $paragraph = <$fileHandle>; 
+        next;
+      }
+    } 
   }
-  while (!eof($fileHandle) && ($paragraph !~ /^\n?From .*\d:\d+:\d.* \d{4}/i)) ;
+  while (!eof($fileHandle) &&
+    ($paragraph !~ /^\n?From\s.*\d:\d+:\d.* \d{4}/i));
+#  while (!eof($fileHandle) &&
+#    ($paragraph !~ /^(----- Begin Included Message -----)?\n?From .*\d:\d+:\d.* \d{4}/i)); 
 
   # Buffer if we went too far. Zap the starting newline while we're at it.
   ($$next_header) = $paragraph =~ /^\n?(.*)/s if (!eof($fileHandle));
@@ -1076,7 +1099,26 @@ sub GetRestOfBody($\$\$$)
 
     if (defined $paragraph)
     {
-      if ($paragraph =~ /^(\n?)(From .*\d:\d+:\d.* \d{4}.*)/is)
+      # If this paragraph begins an included message, we need to be sure to
+      # grab the next paragraph, which is likely to contain the header for the
+      # included message.
+      if ($paragraph =~ /^\n*----- Begin Included Message -----/i)
+      { 
+        # Grab this paragraph if it looks like the header follows right after
+        # the ---- Begin Included Message ----
+        if ($paragraph =~ /- Begin Included Message -.*?\n./)
+        {
+          $$body_buffer .= $paragraph;
+        }
+        # Otherwise grab the next paragraph
+        else
+        {
+          $$body_buffer .= $paragraph;
+          $paragraph = <$fileHandle>; 
+          $$body_buffer .= $paragraph;
+        }
+      } 
+      elsif ($paragraph =~ /^(\n?)(From\s.*\d:\d+:\d.* \d{4}.*)/is)
       {
         dprint "Found next email's header, buffering.";
         $$body_buffer .= $1;
@@ -1139,8 +1181,27 @@ sub CheckDate($)
 
   if (defined $opts{'d'})
   {
-    # The email might not have a date. In this case, print it out anyway.
-    if ($header =~ /^Date:\s*(.*)$/im)
+    if ($opts{'a'} && ($header =~ /^Received:\s.*\;\s*(.*)$/im))
+    {
+      dprint "Received date in email is: $1.";
+
+      $emailDate = str2time($1);
+
+      if (defined $emailDate)
+      {
+        $isInDate = IsInDate($emailDate,$dateRestriction,$date1,$date2);
+      }
+      else
+      {
+        warn "** Couldn't parse received date \"$1\". " .
+             "Assuming it doesn't match the date constraint **\n";
+        warn "  " . GetFromLine($header) . "\n";
+        warn "  " . GetSubjectLine($header) . "\n";
+
+        $isInDate = 0;
+      }
+    }
+    elsif ($header =~ /^Date:\s*(.*)$/im)
     {
       dprint "Date in email is: $1.";
 
@@ -1152,14 +1213,15 @@ sub CheckDate($)
       }
       else
       {
-        warn "** Couldn't parse date \"$1\". Assuming it doesn't match the " .
-             "date constraint:\n";
+        warn "** Couldn't parse sent date \"$1\". " .
+             "Assuming it doesn't match the date constraint:\n";
         warn "  " . GetFromLine($header) . "\n";
         warn "  " . GetSubjectLine($header) . "\n";
 
         $isInDate = 0;
       }
     }
+    # The email might not have a date. In this case, print out a warning.
     else
     {
       if ($dateRestriction eq 'nodate')
@@ -1366,7 +1428,7 @@ sub usage
 <<EOF;
 grepmail $VERSION
 
-usage: grepmail [-bDhilmrRuv] [-s size] [-d "datespec"] [[-e] <expr>] <files...>
+usage: grepmail [-abDhilmrRuv] [-s size] [-d "datespec"] [[-e] <expr>] <files...>
 
 At least one of -s, -d, -u, and -e must be specified, and can appear in any
 relative order following the other flags. The -e flag is optional if expr
@@ -1376,6 +1438,7 @@ compressed ASCII input is taken from STDIN.
 
 -b Search must match body
 -d Specify a date range (see below)
+-a Use received date instead of sent date for -d matching
 -D Debug mode
 -e Explicitely name expr (when searching for strings beginning with "-")
 -h Search must match header
@@ -1451,6 +1514,10 @@ gunzip, tzip, or bzip2 must be installed on the system.
 If no mailbox is specified, takes input from stdin, which can be compressed or
 not. grepmail's behavior is undefined when ASCII and binary data is piped
 together as input.
+
+=item B<-a>
+
+Use arrival date instead of sent date.
 
 =item B<-b>
 
