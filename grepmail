@@ -684,6 +684,11 @@ sub IsMailbox
 
 #-------------------------------------------------------------------------------
 
+# This algorithm is complicated by code to short-circuit some
+# computations. For example, if the user specified -h but not -b, when
+# we can analyze the header for a match and avoid needing to search
+# the body, which may be much larger.
+
 sub ProcessMailFile
 {
   my $fileHandle = shift @_;
@@ -697,20 +702,12 @@ sub ProcessMailFile
   # This is the main loop. It's executed once for each email
   while(1)
   {
+    dprint "Reading email";
+
     my ($status,$email,$line) = read_email($fileHandle);
     last unless $status == 1;
 
-#print STDERR length($email),"\n";
     my ($header_buffer,$body_buffer) = split /\n\n/,$email,2;
-#if (defined $body_buffer)
-#{
-#  print STDERR "#$email#\n";
-#}
-#else
-#{
-#  print STDERR "########$email#####\n";
-#  exit;
-#}
     $header_buffer .= "\n\n";
 
     PrintEmailStatistics($email) if $DEBUG;
@@ -718,6 +715,7 @@ sub ProcessMailFile
     #----------------------------------------------------------------
 
     dprint "Checking for early match or abort based on header information.";
+
     my ($result,$matchesHeader) =
       AnalyzeHeader($header_buffer,$fileHandle,$pattern);
 
@@ -904,6 +902,7 @@ sub NotADuplicate
 
 # Get the email author from the header or email. Return undef if it can't be
 # found
+
 sub GetFromLine
 {
   my $email = shift;
@@ -930,6 +929,7 @@ sub GetFromLine
 
 # Get the email author from the header or email. Return undef if it can't be
 # found
+
 sub GetSubjectLine
 {
   my $email = shift;
@@ -952,6 +952,7 @@ sub GetSubjectLine
 
 # Get the email author from the header or email. Return undef if it can't be
 # found
+
 sub GetDateLine
 {
   my $email = shift;
@@ -1090,16 +1091,6 @@ sub AnalyzeHeader($$)
 
 #-------------------------------------------------------------------------------
 
-sub RemoveTrailingFrom
-{
-  my $email_ref = shift;
-
-  local $/ = "From ";
-  chomp $$email_ref;
-}
-
-#-------------------------------------------------------------------------------
-
 my $LINE = undef;
 
 sub reset_line
@@ -1115,13 +1106,11 @@ sub read_email
 {
   my $fileHandle = shift;
 
-  dprint "Reading email";
-
   # Empty file means reset first email and return undef
   if (eof $fileHandle)
   {
     reset_line();
-    return (0);
+    return 0;
   }
 
   if ($LINE == 0)
@@ -1137,6 +1126,7 @@ sub read_email
   {
     my $next_line = <$fileHandle>;
 
+    # Return whatever we've read so far if we hit eof
     unless (defined $next_line)
     {
       reset_line();
@@ -1147,8 +1137,26 @@ sub read_email
 
     if (substr($next_line,0,5) eq 'From ')
     {
-      my $index = rindex $email,'----- Begin Included Message -----';
+      my $ends_with_include = 0;
+      my $index;
+
+      $index = rindex $email,'----- Begin Included Message -----';
+
       if ($index != -1 && substr($email,$index+34) =~ /^\n+$/)
+      {
+        $ends_with_include = 1;
+      }
+      else
+      {
+        $index = rindex $email,'-----Original Message-----';
+
+        if ($index != -1 && substr($email,$index+26) =~ /^\n+$/)
+        {
+          $ends_with_include = 1;
+        }
+      }
+
+      if ($ends_with_include)
       {
         $email .= $next_line;
       }

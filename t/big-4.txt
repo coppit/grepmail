@@ -34096,7 +34096,6 @@ Andre Philippi.
 #!/usr/local/bin/expect
 
 ################################################################################
-# $Id$                   #
 ################################################################################
 #                                                                              #
 #       ICD 1.0 - Interactive C Daemon                                         #
@@ -34208,17 +34207,6 @@ vwait events
 # - Java applet client.                                                        #
 #                                                                              #
 ################################################################################
-# $Log$
-# Revision 1.2  2000/11/03 07:42:54  coppit
-# This version of grepmail has a new, slightly faster file read mechanism. This
-# new design also simplified the code quite a bit. The big-4.txt mailbox was
-# updated to fix a bad date.
-#
-# Revision 1.1.1.1  2000/02/05 22:38:12  coppit
-# Initial creation of devel branch for grepmail project.
-#
-# David Coppit
-#
 #
 # Revision 1.1  1998/12/15 02:21:00  philippi
 # Initial revision...
