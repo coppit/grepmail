@@ -153,7 +153,7 @@ my @args = @ARGV;
 # So we don't have to test whether they are defined later.
 $opts{'D'} = $opts{'e'} = $opts{'i'} = $opts{'q'} = $opts{'h'} = 0;
 $opts{'b'} = $opts{'v'} = $opts{'l'} = $opts{'r'} = $opts{'a'} = 0;
-$opts{'M'} = $opts{'m'} = $opts{'s'} = $opts{'u'} = 0;
+$opts{'M'} = $opts{'m'} = $opts{'s'} = $opts{'u'} = $opts{'n'} = 0;
 $opts{'d'} = $opts{'V'} = undef;
 
 # Initialize seen messages data structure to empty.
@@ -487,7 +487,7 @@ sub HandleInputFiles
       next;
     }
 
-    ProcessMailFile($fileHandle,$file);
+    ProcessMailFile($fileHandle,$file,$#files+1);
 
     $fileHandle->close();
   }
@@ -585,7 +585,7 @@ sub HandleStandardInput
       return;
     }
 
-    ProcessMailFile($fileHandle,"Standard input");
+    ProcessMailFile($fileHandle,"Standard input",1);
   }
 }
 
@@ -659,20 +659,22 @@ sub IsMailbox
 
 #-------------------------------------------------------------------------------
 
-my $FIRST_EMAIL;
+my $LINE;
+my $OLD_LINE;
 
-sub ProcessMailFile ($$)
+sub ProcessMailFile
 {
   my $fileHandle = shift @_;
   my $fileName = shift @_;
+  my $number_files = shift @_;
 
   my $numberOfMatches = 0;
-  my $email;
 
-  $FIRST_EMAIL = 1;
+  $LINE = 1;
+  $OLD_LINE = 0;
 
   # This is the main loop. It's executed once for each email
-  while ($email = ReadEmail($fileHandle))
+  while (my $email = ReadEmail($fileHandle))
   {
     my ($header_buffer,$body_buffer) = split /\n\n/,$email,2;
     $header_buffer .= "\n\n";
@@ -707,7 +709,7 @@ sub ProcessMailFile ($$)
       }
       else
       {
-        PrintEmail($fileName,$header_buffer,$body_buffer)
+        PrintEmail($fileName,$header_buffer,$body_buffer,$number_files)
           if $opts{'u'} && NotADuplicate($header_buffer) || !$opts{'u'};
 
         next;
@@ -777,7 +779,7 @@ sub ProcessMailFile ($$)
       }
       else
       {
-        PrintEmail($fileName,$header_buffer,$body_buffer)
+        PrintEmail($fileName,$header_buffer,$body_buffer,$number_files)
           if $opts{'u'} && NotADuplicate($header_buffer) || !$opts{'u'};
 
         next;
@@ -820,7 +822,7 @@ sub ProcessMailFile ($$)
       }
       else
       {
-        PrintEmail($fileName,$header_buffer,$body_buffer)
+        PrintEmail($fileName,$header_buffer,$body_buffer,$number_files)
           if $opts{'u'} && NotADuplicate($header_buffer) || !$opts{'u'};
       }
     }
@@ -1075,7 +1077,7 @@ sub ReadEmail
   # Empty file means reset first email and return undef
   if (eof $fileHandle)
   {
-    $FIRST_EMAIL = 1;
+    $LINE = 1;
     return undef;
   }
 
@@ -1084,14 +1086,10 @@ sub ReadEmail
   RemoveTrailingFrom(\$email);
 
   # The first read email will have the "From " prefix, unlike the rest
-  if ($FIRST_EMAIL)
-  {
-    $FIRST_EMAIL = 0;
-  }
-  else
-  {
-    substr($email,0,0) = 'From ';
-  }
+  substr($email,0,0) = 'From ' unless $OLD_LINE == 0;
+
+  $LINE += $OLD_LINE;
+  $OLD_LINE = ($email =~ tr/\n//);
 
   # There is more to this email if the end is a Begin Included Message
   # This could be a loop if we wanted to support multiple included
@@ -1100,6 +1098,8 @@ sub ReadEmail
   if ($reversed =~ /^\n*[^\n]*?----- egasseM dedulcnI nigeB -----\n/i)
   {
     my $remainder = <$fileHandle>;
+
+    $OLD_LINE += ($remainder =~ tr/\n//);
 
     # Clean up anything we got and append it
     if (defined $remainder)
@@ -1113,7 +1113,7 @@ sub ReadEmail
     {
       warn "** Expected an included message, but the file ended. " .
            "Continuing **\n";
-      $FIRST_EMAIL = 1;
+      $LINE = 1;
       return $email;
     }
   }
@@ -1125,21 +1125,59 @@ sub ReadEmail
 
 #-------------------------------------------------------------------------------
 
-sub PrintEmail($$$)
+sub PrintEmail
 {
   my $fileName = shift;
   my $header = shift;
   my $body = shift;
+  my $number_files = shift;
 
   dprint "Printing email.";
 
-  # Add the mailfolder to the headers if -m was given
-  $header =~ s/\n+$/\nX-Mailfolder: $fileName\n\n/s if $opts{'m'};
+  if ($opts{'n'})
+  {
+    my $line_number = $LINE;
+    my $mailfolder_printed = 0;
 
-  print $header;
+    # Print line-by-line
+    while ($header =~ /([^\n]*\n)/g)
+    {
+      my $line = $1;
 
-  # Print whatever body we've read already.
-  print $body;
+      print "$fileName:" if $number_files > 1;
+      print "$line_number:";
+
+      # Add the mailfolder to the headers if -m was given. Careful
+      # about line numbers!
+      if ($opts{'m'} && $line eq "\n" && !$mailfolder_printed)
+      {
+        $mailfolder_printed = 1;
+
+        print "X-Mailfolder: $fileName\n";
+        redo;
+      }
+
+      print $line;
+
+      $line_number++;
+    }
+
+    while ($body =~ /([^\n]*\n)/g)
+    {
+      my $line = $1;
+
+      print "$fileName:" if $number_files > 1;
+      print "$line_number:$line";
+      $line_number++;
+    }
+  }
+  else
+  {
+    print $header;
+
+    # Print whatever body we've read already.
+    print $body;
+  }
 }
 
 #-------------------------------------------------------------------------------
