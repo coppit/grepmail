@@ -9,8 +9,7 @@ to compare the results. Eventually the test script should be updated to do
 comparison and error reporting if the results exceed a threshold.
 
 The speed.t script executes ~/bin/grepmail, which is assumed to be the old
-version, and then executes ./grepmail, which should be a symbolic link to
-either ../grepmail.DM or ../grepmail.DP. cd into the t/ directory before
-running the speed.t script.
+version, and then executes ./grepmail in the base devel directory, using a
+symbolic link. cd into the t/ directory before running the speed.t script.
 
 David Coppit
