@@ -1086,7 +1086,17 @@ sub CheckDate($)
       dprint "Date in email is: $1.";
 
       $emailDate = str2time($1);
-      $isInDate = IsInDate($emailDate,$dateRestriction,$date1,$date2);
+
+      if (defined $emailDate)
+      {
+        $isInDate = IsInDate($emailDate,$dateRestriction,$date1,$date2);
+      }
+      else
+      {
+        warn "** Couldn't parse date \"$1\". Assuming it doesn't match the " .
+             "date constraint **\n" if $opts{'d'};
+        $isInDate = 0;
+      }
     }
     else
     {
