@@ -2,7 +2,7 @@
 
 # grepmail
 
-$VERSION = '5.30';
+$VERSION = '5.30.1';
 
 # Grepmail searches a normal, gzip'd, tzip'd, or bzip2'd mailbox for a given
 # regular expression and returns those emails that match the query. It also
@@ -1821,7 +1821,10 @@ sub ParseDateSpan
   my $datestring = shift;
 
   # @parsed_time == ($ss,$mm,$hh,$day,$month,$year,$zone)
-  my @parsed_time = strptime($datestring);
+  my @parsed_time = Date_Parse_strptime($datestring);
+
+  @parsed_time = Date_Manip_strptime($datestring)
+    if !@parsed_time && defined $Date::Manip::VERSION;
 
   # For "jan 2004"
   if (defined $parsed_time[3] && $parsed_time[3] > 31 && !defined $parsed_time[5])
@@ -1910,6 +1913,101 @@ sub Number_Of_Days_In_Year
   my $year = @_;
 
   365 + (($year % 100 && !($year % 4))|| !($year % 400));
+}
+
+#-------------------------------------------------------------------------------
+
+sub Date_Parse_strptime
+{
+  my $datestring = shift;
+
+  my @parsed_time = strptime($datestring);
+
+  return () unless @parsed_time;
+
+  if (defined $parsed_time[3] && $parsed_time[3] > 31 && !defined $parsed_time[5])
+  {
+    $parsed_time[5] = $parsed_time[3] - 1900;
+    $parsed_time[3] = undef;
+  }
+
+  # @current_time == ($ss,$mm,$hh,$day,$month,$year,$zone)
+  my @current_time = ((localtime(time))[0..5],$parsed_time[-1]);
+  
+  # Starting from the largest time unit, set it to the current value as long
+  # as it's undefined.
+  for (my $i = -1; !defined($parsed_time[$i]); $i--)
+  { 
+    $parsed_time[$i] = $current_time[$i];
+  }
+
+  foreach my $item (@parsed_time)
+  {
+    next unless defined $item;
+    $item =~ s/^0+//;
+    $item = 0 if $item eq '';
+    $item += 0 if $item =~ /^\d+$/;
+  }
+
+  return @parsed_time;
+}
+
+#-------------------------------------------------------------------------------
+
+sub Date_Manip_strptime
+{
+  my $datestring = shift;
+
+  my @parsed_time = Date::Manip::UnixDate(Date::Manip::ParseDate($datestring),
+    '%S','%M','%H','%d','%m','%Y','%Z');
+
+  return () unless @parsed_time;
+
+  {
+    my $old_tz = $Date::Manip::Cnf{"TZ"};
+
+    my $parsed_time = Date::Manip::ParseDate($datestring);
+
+    $Date::Manip::Cnf{"TZ"} = 'CST';
+    my $tz_test_1 = Date::Manip::ParseDate($datestring);
+
+    $Date::Manip::Cnf{"TZ"} = 'EST';
+    my $tz_test_2 = Date::Manip::ParseDate($datestring);
+
+    $Date$old_tz;
+
+    if ($parsed_time eq $tz_test_1 && $parsed_time eq $tz_test_2)
+    {
+      $parsed_time[-1] = undef;
+    }
+  }
+
+  foreach my $item (@parsed_time)
+  {
+    next unless defined $item;
+    $item =~ s/^0+//;
+    $item = 0 if $item eq '';
+    $item += 0 if $item =~ /^\d+$/;
+  }
+
+  $parsed_time[4] -= 1 if defined $parsed_time[4];
+  $parsed_time[5] -= 1900 if defined $parsed_time[5];
+
+  # This is not quite correct, because we can't tell when Date::Manip sets the
+  # time to 0 and when the user specifies it explicitely at 0:00:00.
+  if ($parsed_time[0] == 0 && $parsed_time[1] == 0 && $parsed_time[2] == 0)
+  {
+    $parsed_time[0] = $parsed_time[1] = $parsed_time[2] = undef;
+  }
+
+  #Until 'Date::Manip::Date_Init("TodayIsMidnight=1");' is released
+  if ($datestring eq 'today' || $datestring eq 'now' ||
+     $datestring eq 'yesterday')
+  {
+    $parsed_time[0] = $parsed_time[1] = $parsed_time[2] = undef;
+  }
+
+  return @parsed_time;
 }
 
 #-------------------------------------------------------------------------------
@@ -2505,9 +2603,19 @@ problems with complex patterns specified with -E, but I'm not aware of any.
 According to RFC 822, mail messages need not have message bodies. I've found
 and removed one bug related to this. I'm not sure if there are others.
 
-=item Test case 1 fails on some platforms
+=item Complex single-point dates not parsed correctly
 
-Bug not squashed yet. Any info would be appreciated.
+If you specify a point date like "September 1, 2004", grepmail creates a date
+range that includes the entire day of September 1, 2004. If you specify a
+complex point date such as "today", "1st Monday in July", or "9/1/2004 at
+0:00" grepmail may parse the time incorrectly.
+
+The reason for this problem is that Date::Manip, as of version 5.42, forces
+default values for parsed dates and times. This means that grepmail has a hard
+time determining whether the user supplied certain time/date fields. (e.g. Did
+Date::Manip provide a default time of 0:00, or did the user specify it?)
+grepmail tries to work around this problem, but the workaround is inherently
+incomplete in some rare cases.
 
 =item File names that look like flags cause problems.
 

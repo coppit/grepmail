@@ -158,7 +158,7 @@ sub CustomCheckDiffs
       my ($diff,$result) = CustomDoDiff($filename_1,$filename_2,$output_filename);
 
       ok(0), return if $diff == 0;
-      ok(0), return if $result == 0;
+      ok(0), return if defined $result && $result == 0;
     }
     else
     {

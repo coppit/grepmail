@@ -3,6 +3,14 @@ Features which haven't made it in yet:
   <zbrown@tumblerings.org> for the excellent feature idea and a prototype
   implementation.)
 
+Version 5.30.1: Thu Sep 16 2004
+- Fixed Date::Manip parsing of single-point times such as "today". (Bug found
+  by Marten van Wezel <puntloos@users.sourceforge.net>)
+- Changed Makefile.PL to use Module::Install
+- Changed version numbering
+- Dropped Benchmark::Timer from the distribution, since the updated version
+  has been released
+
 New in version 5.30:
 - Updated t/recursive.t to work better when there are version control
   directories in t/mailboxes/directory. (Thanks to Joey Hess

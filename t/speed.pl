@@ -15,6 +15,12 @@ use Test::ConfigureGrepmail;
 use File::Copy;
 use File::Spec;
 
+BEGIN
+{
+  die "Need Benchmark::Timer 0.6 or higher"
+    unless $Benchmark::Timer::VERSION >= 0.6;
+}
+
 my $MAILBOX_SIZE = 10_000_000;
 my $TEMP_MAILBOX = 't/temp/bigmailbox.txt';
 
@@ -221,7 +227,7 @@ sub CollectData
 
       print "\n\n";
 
-      $t->report($label);
+      print $t->get_report($label);
 
       # Fake a benchmark object so we can compare later using Benchmark
       $data{$label} = new Benchmark;

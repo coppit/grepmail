@@ -1,114 +1,142 @@
-anonymize_mailbox                     A tool to anonymize mailboxes
-grepmail                              The main program
-grepmail.old                          The previous version, for speed testing
-README                                Read this first
-MANIFEST                              This file
-CHANGES                               A change history
-LICENSE                               A copy of the license
-Makefile.PL                           Makes the makefile
-lib/Benchmark/Timer.pm                A helper module used during testing
-lib/Test/Utils.pm                     A helper module used during testing
-lib/Test/ConfigureGrepmail.pm         A helper module used during testing
-t/append_header.t                     A test case
-t/auto_search.t                       A test case
-t/body.t                              A test case
-t/cache.t                             A test case
-t/complex_expression.t                A test case
-t/count.t                             A test case
-t/date_manip.t                        A test case
-t/date.t                              A test case
-t/header.t                            A test case
-t/help.t                              A test case
-t/ignore_signatures.t                 A test case
-t/invalid_mailbox.t                   A test case
-t/line_number.t                       A test case
-t/list.t                              A test case
-t/match_compressed.t                  A test case
-t/match_headers.t                     A test case
-t/match_words.t                       A test case
-t/nonexistent_mailbox.t               A test case
-t/not_match_compressed.t              A test case
-t/not_match_uncompressed.t            A test case
-t/pattern_file.t                      A test case
-t/pipe_compressed.t                   A test case
-t/pipe_uncompressed.t                 A test case
-t/received_date.t                     A test case
-t/recursive.t                         A test case
-t/size.t                              A test case
-t/status.t                            A test case
-t/unique.t                            A test case
-t/speed.pl                            A test of the script's speed
-t/no_patterns                         Some input patterns for testing
-t/patterns                            Some input patterns for testing
-t/mailboxes/gnus.txt                  Input file
-t/mailboxes/mailseparators.txt        Input file
-t/mailboxes/mailarc-1.txt             Input file
-t/mailboxes/mailarc-1-dos.txt         Input file
-t/mailboxes/mailarc-1.txt.bz2         Input file
-t/mailboxes/mailarc-1.txt.gz          Input file
-t/mailboxes/mailarc-1.txt.tz          Input file
-t/mailboxes/mailarc-2.txt             Input file
-t/mailboxes/mailarc-3.txt             Input file
-t/mailboxes/non-mailbox.txt.gz        Input file
-t/mailboxes/directory/mailarc-2.txt   Input file
-t/results/mailarc-2.txt               Output file
-t/results/all_driving                 Output file
-t/results/all_handy                   Output file
-t/results/all_handy_dos               Output file
-t/results/all_handy_blank             Output file
-t/results/all_handy_buffer            Output file
-t/results/all_handy_imagecraft        Output file
-t/results/all_luikeith                Output file
-t/results/all_test                    Output file
-t/results/append_header               Output file
-t/results/append_header_dos           Output file
-t/results/body_handy                  Output file
-t/results/body_mime                   Output file
-t/results/body_mime_dos               Output file
-t/results/body_my                     Output file
-t/results/body_my_dos                 Output file
-t/results/count_all                   Output file
-t/results/count_handy                 Output file
-t/results/count_handy_dos             Output file
-t/results/date_1                      Output file
-t/results/date_2                      Output file
-t/results/date_3                      Output file
-t/results/date_august                 Output file
-t/results/date_manip                  Output file
-t/results/header_aarone               Output file
-t/results/header_body_handy           Output file
-t/results/header_edsinger             Output file
-t/results/header_handy                Output file
-t/results/header_handy_dos            Output file
-t/results/header_mozilla              Output file
-t/results/help                        Output file
-t/results/ignore_signatures           Output file
-t/results/ignore_signatures_dos       Output file
-t/results/invalid_date_1              Output file
-t/results/list_handy                  Output file
-t/results/list_handy_dos              Output file
-t/results/match_word_let              Output file
-t/results/no_data                     Output file
-t/results/none                        Output file
-t/results/no_such_file                Output file
-t/results/not_a_mailbox_pipe          Output file
-t/results/not_body_handy              Output file
-t/results/not_handy                   Output file
-t/results/not_header_body_handy       Output file
-t/results/not_header_handy            Output file
-t/results/number_1                    Output file
-t/results/number_1_dos                Output file
-t/results/number_2                    Output file
-t/results/number_append_header        Output file
-t/results/recursive                   Output file
-t/results/ro_status                   Output file
-t/results/size_2                      Output file
-t/results/size_3                      Output file
-t/results/size_handy                  Output file
-t/results/two_handy                   Output file
-t/results/unique_all_1                Output file
-t/results/unique_all_2                Output file
-t/results/unique_body                 Output file
-t/results/unique_body_imagecraft      Output file
-t/results/unique_handy                Output file
-META.yml                                Module meta-data (added by MakeMaker)
+CHANGES
+LICENSE
+MANIFEST
+MANIFEST.SKIP
+Makefile.PL
+README
+
+# A utility program for bug reporting
+anonymize_mailbox
+
+# The program files
+grepmail
+grepmail.old
+
+# The module files
+lib/Test/Utils.pm
+lib/Test/ConfigureGrepmail.pm
+
+# Tests
+t/append_header.t
+t/auto_search.t
+t/body.t
+t/cache.t
+t/complex_expression.t
+t/count.t
+t/date_manip.t
+t/date.t
+t/header.t
+t/help.t
+t/ignore_signatures.t
+t/invalid_mailbox.t
+t/line_number.t
+t/list.t
+t/match_compressed.t
+t/match_headers.t
+t/match_words.t
+t/nonexistent_mailbox.t
+t/not_match_compressed.t
+t/not_match_uncompressed.t
+t/pattern_file.t
+t/pipe_compressed.t
+t/pipe_uncompressed.t
+t/received_date.t
+t/recursive.t
+t/size.t
+t/status.t
+t/unique.t
+t/speed.pl
+t/no_patterns
+t/patterns
+t/mailboxes/gnus.txt
+t/mailboxes/mailseparators.txt
+t/mailboxes/mailarc-1.txt
+t/mailboxes/mailarc-1-dos.txt
+t/mailboxes/mailarc-1.txt.bz2
+t/mailboxes/mailarc-1.txt.gz
+t/mailboxes/mailarc-1.txt.tz
+t/mailboxes/mailarc-2.txt
+t/mailboxes/mailarc-3.txt
+t/mailboxes/non-mailbox.txt.gz
+t/mailboxes/directory/mailarc-2.txt
+t/results/mailarc-2.txt
+t/results/all_driving
+t/results/all_handy
+t/results/all_handy_dos
+t/results/all_handy_blank
+t/results/all_handy_buffer
+t/results/all_handy_imagecraft
+t/results/all_luikeith
+t/results/all_test
+t/results/append_header
+t/results/append_header_dos
+t/results/body_handy
+t/results/body_mime
+t/results/body_mime_dos
+t/results/body_my
+t/results/body_my_dos
+t/results/count_all
+t/results/count_handy
+t/results/count_handy_dos
+t/results/date_1
+t/results/date_2
+t/results/date_3
+t/results/date_august
+t/results/date_manip
+t/results/header_aarone
+t/results/header_body_handy
+t/results/header_edsinger
+t/results/header_handy
+t/results/header_handy_dos
+t/results/header_mozilla
+t/results/help
+t/results/ignore_signatures
+t/results/ignore_signatures_dos
+t/results/invalid_date_1
+t/results/list_handy
+t/results/list_handy_dos
+t/results/match_word_let
+t/results/no_data
+t/results/none
+t/results/no_such_file
+t/results/not_a_mailbox_pipe
+t/results/not_body_handy
+t/results/not_handy
+t/results/not_header_body_handy
+t/results/not_header_handy
+t/results/number_1
+t/results/number_1_dos
+t/results/number_2
+t/results/number_append_header
+t/results/recursive
+t/results/ro_status
+t/results/sep_7_1998
+t/results/size_2
+t/results/size_3
+t/results/size_handy
+t/results/two_handy
+t/results/unique_all_1
+t/results/unique_all_2
+t/results/unique_body
+t/results/unique_body_imagecraft
+t/results/unique_handy
+
+# Module::Install extensions
+inc/ExtUtils/AutoInstall.pm
+inc/File/HomeDir.pm
+inc/Module/Install.pm
+inc/Module/Install/AutoInstall.pm
+inc/Module/Install/Base.pm
+inc/Module/Install/Can.pm
+inc/Module/Install/CustomInstallationPath.pm
+inc/Module/Install/Fetch.pm
+inc/Module/Install/Include.pm
+inc/Module/Install/Makefile.pm
+inc/Module/Install/Metadata.pm
+inc/Module/Install/PRIVATE/Update_Test_Version.pm
+inc/Module/Install/Skip.pm
+inc/Module/Install/Scripts.pm
+inc/Module/Install/Win32.pm
+inc/Module/Install/WriteAll.pm
+
+META.yml
