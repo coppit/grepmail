@@ -2,7 +2,7 @@
 
 # grepmail
 
-$VERSION = 4.24;
+$VERSION = '4.31';
 
 # Grepmail searches a normal, gzip'd, tzip'd, or bzip2'd mailbox for a given
 # regular expression and returns those emails that match the query. It also
@@ -17,7 +17,9 @@ $VERSION = 4.24;
 # Do a pod2text on this file to get full documentation, or pod2man to get
 # man pages.
 
-# Written by David Coppit (david@coppit.org, http://coppit.org/)
+# Written by David Coppit (david@coppit.org, http://coppit.org/) with lots of
+# debugging and patching by others -- see the CHANGES file for a complete
+# list.
 
 # This code is distributed under the GNU General Public License (GPL). See
 # http://www.opensource.org/gpl-license.html and http://www.opensource.org/.
@@ -92,7 +94,7 @@ $VERSION = 4.24;
 
 require 5.00396;
 
-use vars qw(%opts $pattern $commandLine $VERSION $DEBUG);
+use vars qw(%opts $pattern $commandLine $VERSION $DEBUG %message_ids_seen );
 
 use Getopt::Std;
 
@@ -138,7 +140,10 @@ sub cleanExit
 #-------------------------------------------------------------------------------
 
 # Print usage error if no arguments given
-print "No arguments given. grepmail -h for help.\n" and exit if (!@ARGV);
+print "No arguments given. grepmail --help for help.\n" and exit if (!@ARGV);
+
+# Check for --help, the standard usage command
+print usage() and exit if $ARGV[0] eq '--help';
 
 # Save the arguments because getopt changes them.
 my @args = @ARGV;
@@ -146,8 +151,10 @@ my @args = @ARGV;
 # So we don't have to test whether they are defined later.
 $opts{'D'} = $opts{'d'} = $opts{'e'} = $opts{'i'} = $opts{'q'} = 0;
 $opts{'h'} = $opts{'b'} = $opts{'v'} = $opts{'l'} = $opts{'r'} = 0;
-$opts{'M'} = $opts{'m'} = $opts{'s'} = 0;
+$opts{'M'} = $opts{'m'} = $opts{'s'} = $opts{'u'} = 0;
 
+# Initialize seen messages data structure to empty.
+%message_ids_seen = ();
 getopt("eds",\%opts);
 
 $DEBUG = $opts{'D'} || 0;
@@ -155,52 +162,61 @@ $DEBUG = $opts{'D'} || 0;
 # Need to quote arguments with spaces
 grep { $_ = "'$_'" if $_ =~ / /; $_ } @args;
 
+# Save the command line for later when we try to decompress standard input
+$commandLine = "$0 @args";
+
 dprint "Command line was (special characters not escaped):";
-dprint "  $0 @args";
+dprint "  $commandLine";
 
 # Here we have to deal with the possibility that the user specified the search
-# pattern without the -e flag. They have to use the -e flag if the pattern
-# lies after the -d and -s flags (if either are specified). This is to
-# disambiguate the pattern and the file list.
+# pattern without the -e flag.
 
-# If there was no -e, and it doesn't look like they specified the pattern in
-# the middle of the flags, we assume there was no pattern and set a default
-# pattern of "." to match everything.
-if (( $opts{'d'} &&  $opts{'s'} && !$opts{'e'}) ||
-    ( $opts{'d'} && !$opts{'s'} && !$opts{'e'} &&
-      $#ARGV > 0 && $ARGV[1] ne '-s') ||
-    (!$opts{'d'} &&  $opts{'s'} && !$opts{'e'} &&
-      $#ARGV > 0 && $ARGV[1] ne '-d'))
+# getopts stops as soon as it sees a non-flag, so $ARGV[0] may contain the
+# pattern with more flags after it.
+if (!$opts{'e'})
 {
-  $pattern = ".";
-}
-# But if we've only seen one of -s or -d so far, there could be a pattern
-# specified without a -e flag followed by the other -s or -d.
-elsif ($opts{'d'} && !$opts{'s'} && !$opts{'e'} &&
-       $#ARGV > 0 && $ARGV[1] eq "-s")
-{
-  $pattern = shift @ARGV;
-  getopt("s",\%opts);
-}
-elsif (!$opts{'d'} && $opts{'s'} && !$opts{'e'} &&
-       $#ARGV > 0 && $ARGV[1] eq "-d")
-{
-  $pattern = shift @ARGV;
-  getopt("d",\%opts);
-}
-# We could also have the pattern first without -e, then maybe the -s or -d
-# flags.
-elsif (!$opts{'s'} && !$opts{'d'} && !$opts{'e'} &&
-       $#ARGV > 0)
-{
-  $pattern = shift @ARGV;
-  getopt("ds",\%opts);
-}
-# If we still don't have a pattern or any -d or -s flag, and there is
-# something left on @ARGV, we assume that $ARGV[0] is the pattern
-elsif (!$opts{'e'} && !$opts{'d'} && !$opts{'s'})
-{
-  $pattern = shift @ARGV;
+  my $missing_flags = '';
+
+  foreach my $flag (keys %opts)
+  {
+    $missing_flags .= $flag unless $opts{$flag};
+  }
+
+  $missing_flags = "[$missing_flags]";
+
+  # If it looks like more flags are following, then grab the pattern and
+  # process them.
+  if ( $#ARGV > 0 && $ARGV[1] =~ /^-$missing_flags$/ )
+  {
+    $pattern = shift @ARGV;
+    getopt("ds",\%opts);
+  }
+  # If we've seen a -d, -s, or -u flag, and it doesn't look like there are
+  # flags following $ARGV[0], then look at the value in $ARGV[0]
+  elsif ( ( $opts{'d'} ||  $opts{'s'} ||  $opts{'u'} ) &&
+       ( $#ARGV <= 0 ||
+         ( $#ARGV > 0 && $ARGV[1] !~ /^-$missing_flags$/ )
+       )
+     )
+  {
+    # If $ARGV[0] looks like a file we assume there was no pattern and
+    # set a default pattern of "." to match everything.
+    if ($#ARGV != -1 && -f $ARGV[0])
+    {
+      $pattern = ".";
+    }
+    # Otherwise we take the pattern and move on
+    else
+    {
+      $pattern = shift @ARGV;
+    }
+  }
+  # If we still don't have a pattern or any -d, -s, or -u flag, we assume
+  # that $ARGV[0] is the pattern
+  elsif (!$opts{'d'} && !$opts{'s'} && !$opts{'u'})
+  {
+    $pattern = shift @ARGV;
+  }
 }
 
 if ($DEBUG)
@@ -225,9 +241,10 @@ if ($opts{'e'})
 }
 elsif (!defined $pattern)
 {
-  # The only time you can't specify the pattern is when -d is being used.
-  # This should catch people who do "grepmail -h" thinking it's help.
-  print usage() and exit unless $opts{'d'};
+  # The only times you don't have to specify the pattern is when -d, -s, or -u
+  # is being used. This should catch people who do "grepmail -h" thinking
+  # it's help.
+  print usage() and exit unless $opts{'d'} || $opts{'s'} || $opts{'u'};
 
   $pattern = ".";
 }
@@ -693,7 +710,10 @@ sub ProcessMailFile ($$)
       else
       {
         GetRestOfBody($fileHandle,\$body_buffer,\$next_header,$fileName);
-        PrintEmail($fileName,$header_buffer,$body_buffer);
+
+        PrintEmail($fileName,$header_buffer,$body_buffer)
+          if $opts{'u'} && NotADuplicate($header_buffer) || !$opts{'u'};
+
         next;
       }
     }
@@ -767,7 +787,10 @@ sub ProcessMailFile ($$)
       else
       {
         GetRestOfBody($fileHandle,\$body_buffer,\$next_header,$fileName);
-        PrintEmail($fileName,$header_buffer,$body_buffer);
+
+        PrintEmail($fileName,$header_buffer,$body_buffer)
+          if $opts{'u'} && NotADuplicate($header_buffer) || !$opts{'u'};
+
         next;
       }
     }
@@ -806,7 +829,8 @@ sub ProcessMailFile ($$)
       }
       else
       {
-        PrintEmail($fileName,$header_buffer,$body_buffer);
+        PrintEmail($fileName,$header_buffer,$body_buffer)
+          if $opts{'u'} && NotADuplicate($header_buffer) || !$opts{'u'};
       }
     }
     else
@@ -816,6 +840,37 @@ sub ProcessMailFile ($$)
   }
 
   print "$fileName: $numberOfMatches\n" if ($opts{'r'});
+}
+
+#-------------------------------------------------------------------------------
+
+# Checks that an email is not a duplicate of one already printed. This should
+# only be called when $opts{'u'} is true. Also, as a side-effect, it updates
+# the %message_ids_seen when it sees an email that hasn't been printed yet.
+
+sub NotADuplicate
+{
+  my $header_buffer = shift;
+
+  my $message_id = $header_buffer;
+  $message_id =~ m/^Message-Id:<.*>$/om;
+
+  my $result;
+
+  if ($message_ids_seen{$message_id})
+  {
+    $result = 0;
+    dprint "Found duplicate $message_id";
+  }
+  else
+  {
+    $result = 1;
+    dprint "Found non-duplicate $message_id";
+  }
+
+  $message_ids_seen{$message_id} = 1;
+
+  return $result;
 }
 
 #-------------------------------------------------------------------------------
@@ -1190,9 +1245,9 @@ sub usage
 <<EOF;
 grepmail $VERSION
 
-usage: grepmail [-bDhilmrRv] [-s size] [-d "datespec"] [[-e] <expr>] <files...>
+usage: grepmail [-bDhilmrRuv] [-s size] [-d "datespec"] [[-e] <expr>] <files...>
 
-At least one of -s, -d, and -e must be specified, and can appear in any
+At least one of -s, -d, -u, and -e must be specified, and can appear in any
 relative order following the other flags. The -e flag is optional if expr
 appears immediately before -s or -d. Files can be plain ASCII or ASCII files
 compressed with gzip, tzip, or bzip2. If no file is provided, normal or
@@ -1213,6 +1268,7 @@ compressed ASCII input is taken from STDIN.
    expression
 -R Recurse directories
 -s Restrict results to emails less than a certain size (in bytes)
+-u Ensure that no duplicate emails are output
 -v Output emails that don't match the expression
 
 Date specifications must be of the form of:
@@ -1231,7 +1287,7 @@ grepmail - search mailboxes for mail matching a regular expression
 
 =head1 SYNOPSIS
 
-  grepmail [-bDhilmrRv] [-s size] [-d "datespec"] [[-e] <expr>] <files...>
+  grepmail [-bDhilmrRuv] [-s size] [-d "datespec"] [[-e] <expr>] <files...>
 
 =head1 DESCRIPTION
 
@@ -1246,9 +1302,9 @@ When redirected to a file, the result is another mailbox, which can, in turn,
 be handled by standard User Agents, such as I<elm>, or even used as input for
 another instance of I<grepmail>.
 
-At least one of B<-e>, B<-d>, or B<-s> must be specified. The pattern is
-optional if B<-d> and/or B<-s> is used. The B<-e> flag is optional if the
-pattern appears immediately before B<-s> or B<-d>.
+At least one of B<-e>, B<-d>, B<-s>, or B<-u> must be specified. The pattern
+is optional if B<-d>, B<-s>, and/or B<-u> is used. The B<-e> flag is optional
+if there is no file whose name is the pattern.
 
 =back
 
@@ -1336,12 +1392,16 @@ Causes grepmail to recurse any directories encountered.
 
 Return emails smaller than the size (in bytes) specified with this flag.
 
+=item B<-u>
+
+Output only unique emails, by analogy to I<sort -u>. Grepmail determines email
+uniqueness by the Message-ID header.
+
 =item B<-v>
 
-Invert the sense of the search, (by analogy to I<grep -v>). Note that this
-affects only B<-h> and B<-b>, not B<-d>. This results in the set of emails
-printed being the complement of those that would be printed without the B<-v>
-switch.
+Invert the sense of the search, by analogy to I<grep -v>. This results in the
+set of emails printed being the complement of those that would be printed
+without the B<-v> switch.
 
 =back
 
@@ -1393,6 +1453,10 @@ mailboxes:
 
   grepmail -br grepmail saved-mail*
 
+Remove any duplicates from a mailbox:
+
+  grepmail -u saved-mail
+
 =head1 FILES
 
 grepmail will I<not> create temporary files while decompressing compressed
@@ -1407,11 +1471,11 @@ of the largest email message in the mailbox.
 
 =item Test case 1 fails on some platforms
 
-Bug not squashed yet.
+Bug not squashed yet. Any info would be appreciated.
 
-=item Some legal file names cause problems.
+=item File names with special characters cause problems.
 
-grepmail uses the shell to invoke the decompression filters. I the filename
+grepmail uses the shell to invoke the decompression filters. If the filename
 contains single quotes, ampersands, backslashes, etc, this can cause problems.
 This bug is not a high priority -- please send email if you really need it
 fixed.
@@ -1419,6 +1483,12 @@ fixed.
 The fix is to fork the process, opening up a pipe to the child, which starts
 the filter process using the multiple argument form of exec (which doesn't
 invoke the shell).
+
+=item File names that look like flags cause problems.
+
+In some special circumstances, grepmail will be confused by files whose names
+look like flags. In such cases, use the B<-e> flag to specify the search
+pattern.
 
 =back
 
