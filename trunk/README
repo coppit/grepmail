@@ -6,17 +6,8 @@ allowed, and date and size restrictions are supported, as are searches using
 logical operators.
 
 New in version 5.20:
-- Added speed testing to the distribution
-- Fixed Makefile.PL so that test modules would not be installed.
-- Changed testing to use PERLRUN instead of FULLPERLRUN, which is not
-  available with older versions of MakeMaker that ship with older versions of
-  Perl.
-- Fixed interactive installation problems.
-- Fixed broken searching of $HOME/mail, $HOME/Mail, and $HOME/Mailbox
-  directories when a mail folder can not be found. Changed $MAIL to $MAILDIR
-  since $MAIL usually points to the user's inbox. 
-- The user can now specify the cache file location with the -C flag.
-- Fixed compatibility problems with perl 5.005_01
+- Fixed line ending bugs under MS-DOS/Windows. (Should now work well under
+  cygwin.)
 
 
 SOME NOTES
