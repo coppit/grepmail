@@ -5,18 +5,15 @@ regular expression, and returns those emails that match it. Piped input is
 allowed, and date and size restrictions are supported, as are searches using
 logical operators.
 
-New in version 5.30:
-- Updated t/recursive.t to work better when there are version control
-  directories in t/mailboxes/directory.
-- Updated t/invalid_mailbox.t to be more robust.
-- Fixed a bug in t/invalid_mailbox.t for Solaris.
-- -F now works again
-- Changed incorrect "-h" to "--help" in two error messages.
-- Now correctly handles DOS-style line endings in mailboxes.Requires
-  Mail::Mbox::MessageParser 1.20 or better now.
-- Changed single dates so that they are treated as inferred spans, instead of
-  a single day. For example "2004" now means "between Jan 1 2004 and Jan 1
-  2005" instead of "between Jan 1 2004 and Jan 2 2004".
+
+NEW IN THIS VERSION
+
+Version 5.30.1: Thu Sep 16 2004
+- Fixed Date::Manip parsing of single-point times such as "today".
+- Changed Makefile.PL to use Module::Install
+- Changed version numbering
+- Dropped Benchmark::Timer from the distribution, since the updated version
+  has been released
 
 
 SOME NOTES
@@ -67,44 +64,39 @@ over time. Let me know if this is a problem.
 
 MODULE DEPENDENCIES
 
+To use this program, you will need to install:
+
 - Mail::Mbox::MessageParser: required
-- Date::Parse: required if you want to search based on date (-d)
+- Date::Parse: required
 - Date::Manip: required if you want to search using complex date
   specifications (-d)
 - Digest::MD5: not required, but can help grepmail use less memory if
   you are checking for unique emails (-u) and your emails don't have a
   Message-Id header
 
-The modules can be found here:
-
-Mail::Mbox::MessageParser: http://search.cpan.org/search?dist=MailMboxMessageParser
-Date::Parse (in TimeDate): http://search.cpan.org/search?dist=TimeDate
-Date::Manip:               http://search.cpan.org/search?dist=DateManip
-Digest::MD5:               http://search.cpan.org/search?dist=Digest-MD5
-
-Installation can also be done automatically using the CPAN module:
-
-  perl -MCPAN -e 'install Mail::Mbox::MessageParser'
-  perl -MCPAN -e 'install Date::Parse'
-  perl -MCPAN -e 'install Date::Manip'
-  perl -MCPAN -e 'install Digest::MD5'
+You should be prompted to install modules automatically when you run "perl
+Makefile.PL".
 
 
 INSTALLATION
 
 => On Non-Windows (Unix/Cygwin/etc.) systems:
 
-  % perl Makefile.PL
-  % make
-  % make test
-  % make install
+To install this package, change to the directory where you unarchived this
+distribution and type the following:
 
-The "perl Makefile.PL" command will prompt you for an installation location if
-you run it interactively, and will use the default values if it is run
-non-iteractively. You can force it to run non-interactively by specifying
-either "PREFIX=/installation/path" (for installation into a custom location),
-"INSTALLDIRS=site" (for installation into site-specific Perl directories), or
-"INSTALLDIRS=perl" (for installation into standard Perl directories).
+  perl Makefile.PL
+  make
+  make test
+  make install
+
+You will be prompted for installation locations and program locations. You can
+suppress these prompts by specifying:
+
+- either "PREFIX=/installation/path" (for installation into a custom
+  location), "INSTALLDIRS=site" (for installation into site-specific Perl
+  directories), or "INSTALLDIRS=perl" (for installation into standard Perl
+  directories).
 
 If make test fails, please see the INSTALLATION PROBLEMS section below.
 
@@ -133,16 +125,16 @@ documentation for your shell for details on how to do this.
 
 INSTALLATION PROBLEMS
 
-If "make test" fails, run the particular test with:
+If "make test" fails, run
 
-  perl t/test_name.t
+  make test TEST_VERBOSE=1
 
-and see which subtest are failing. Please email, to the address below, the
+and see which test(s) are failing. Please email, to the address below, the
 output files for the test, which are located in t/temp and noted in the test
 output when the test fails. Also email the output of running the particular
 subtest with the -D flag. e.g.:
 
-  ./blib/script/grepmail --help > test_name.debug
+  ./blib/script/grepmail -D --help > test_name.debug
 
 If the first date_manip test case fails, you are in a timezone that
 Date::Manip does not yet support.  You will need to contact the author of
@@ -181,14 +173,18 @@ smallest set of emails that still exhibit the problem.  Then use the
 information, and attach the mailbox to the bug report.
 
 
-PRIMARY AUTHOR
+COPYRIGHT
 
-Written by David Coppit (david@coppit.org, http://coppit.org/), with the
-generous help of many kind people. See the file CHANGES for detailed
-information.
+Copyright (c) 1998-Sep 1 2000 Broc Seib. Copyright (c) Sep 1 2000-2004 David
+Coppit. All rights reserved, save those granted by the license.
 
 
 LICENSE
 
-This code is distributed under the GNU General Public License (GPL). See
-http://www.opensource.org/gpl-license.html and http://www.opensource.org/.
+This code is distributed under the GNU General Public License (GPL).  See
+the file LICENSE included in the distribution.
+
+
+AUTHOR
+
+David Coppit <david@coppit.org>

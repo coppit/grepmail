@@ -1,151 +1,71 @@
 #!/usr/bin/perl
-# use perl                                  -*- mode: Perl; -*-
 
 use strict;
-use ExtUtils::MakeMaker;
+# For PRIVATE Module::Install extensions
 use lib 'lib';
-use Test::ConfigureGrepmail;
+use inc::Module::Install;
 
-require 5.004;
+Check_Custom_Installation();
 
-unless ((grep {/^PREFIX=/} @ARGV) || (grep {/^INSTALLDIRS=/} @ARGV))
-{
-  @ARGV = Set_Install_Options(@ARGV);
-}
+print "\n", '-'x78, "\n\n";
 
-print "\n","-"x78,"\n\n";
+name            ('grepmail');
+author          ('David Coppit <david@coppit.org>');
+abstract_from   ('grepmail');
+version_from    ('grepmail');
+license         ('gpl');
 
-my %makefile_attributes = Compute_Makefile_Attributes();
+install_script  ('grepmail');
 
-WriteMakefile( %makefile_attributes );
+requires        (
+                  'perl' => '5.004',
+                  'Date::Parse' => 0,
+                  # 1.20.0 => 1.020000. This is to prevent a spurious warning
+                  # in ExtUtils::MakeMaker
+                  'Mail::Mbox::MessageParser' => '1.020000',
+                );
 
-print "\n","-"x78,"\n\n";
+skip            ( 'Test' );
+
+postamble       (
+' 
+testspeed :: pure_all
+        PERL_DL_NONLAZY=1 $(PERLRUN) "-I$(INST_LIB)" \
+          "-I$(INST_ARCHLIB)" t/speed.pl
+'
+);
+
+# Optional features and their modules
+features        (
+                  'Reduced Memory Consumption for -u' => [
+                    -default => 0,
+                    # 0.60.0 => 0.060000. This is to prevent a spurious warning
+                    # in ExtUtils::MakeMaker
+                    recommends( 'Digest::MD5' => 0 ),
+                  ],
+                  'Complex Date Patterns' => [
+                    -default => 1,
+                    # 0.60.0 => 0.060000. This is to prevent a spurious warning
+                    # in ExtUtils::MakeMaker
+                    recommends( 'Date::Manip' => 0 ),
+                  ],
+                  'Speed Tests' => [
+                    -default => 0,
+                    # 0.60.0 => 0.060000. This is to prevent a spurious warning
+                    # in ExtUtils::MakeMaker
+                    recommends( 'Benchmark::Timer' => '0.006000' ),
+                  ],
+                );
+
+include         ('ExtUtils/AutoInstall.pm');
+
+clean_files     ('t/temp');
+
+auto_install    ( );
+WriteAll();
+
+print "\n", '-'x78, "\n\n";
 
 Update_Test_Version('grepmail','t/results/help');
 
 exit;
-
-# --------------------------------------------------------------------------
-
-sub Set_Install_Options
-{
-  my @args = @_;
-
-  my $install_location = ExtUtils::MakeMaker::prompt(
-    "Choose your installation type:\n[1] normal Perl locations\n" .
-    "[2] custom locations\n=>" => '1');
-
-  if ($install_location eq '2')
-  {
-    my $home = Get_Home_Directory();
-
-    print "\n","-"x78,"\n\n";
-
-    my $prefix = ExtUtils::MakeMaker::prompt(
-      "What PREFIX should I use?\n=>" => $home);
-
-    push @args,"PREFIX=$prefix";
-  }
-
-  return @args;
-}
-
-# --------------------------------------------------------------------------
-
-sub Compute_Makefile_Attributes
-{
-  my %makefile_attributes = (
-    'NAME'  => 'grepmail',
-    'VERSION_FROM' => 'grepmail',
-
-    'dist'  => { COMPRESS => 'gzip -9', SUFFIX => 'gz' },
-    'clean' => { FILES => 't/temp' },
-    'EXE_FILES' => [ 'grepmail' ],
-    'PM' => {},
-    'PREREQ_PM' => {
-      'Date::Parse' => 0,
-      'Mail::Mbox::MessageParser' => 1.20,
-    },
-    'DIR' => [],
-  );
-
-  return %makefile_attributes;
-}
-
-# --------------------------------------------------------------------------
-
-sub Update_Test_Version
-{
-  my $file_with_version = shift;
-  my $test_case_file = shift;
-
-  open SOURCE, $file_with_version
-    or die "Couldn't open grepmail file: $!";
-
-  while (my $line = <SOURCE>)
-  {
-    if ($line =~ /\$VERSION = '(.*?)';/)
-    {
-      my $version = $1;
-
-      open TEST_CASE, $test_case_file
-        or die "Couldn't open test case: $!";
-
-      local $/ = undef;
-      my $test_case_code = <TEST_CASE>;
-
-      $test_case_code =~ s/^grepmail .*$/grepmail $version/m;
-
-      close TEST_CASE;
-
-      unlink $test_case_file;
-
-      open TEST_CASE, ">$test_case_file"
-        or die "Couldn't open test case for updating: $!";
-
-      binmode TEST_CASE;
-
-      print TEST_CASE $test_case_code;
-
-      close TEST_CASE;
-
-      last;
-    }
-  }
-
-  close SOURCE;
-}
-
-# ---------------------------------------------------------------------------
-
-# Figures out the user's home directory in Unix
-
-sub Get_Home_Directory()
-{
-  # Get the user's home directory. First try the password info, then the
-  # registry (if it's a Windows machine), then any HOME environment variable.
-  my $home = eval { (getpwuid($>))[7] } || $ENV{HOME};
-
-  die <<"  EOF"
-Your home directory could not be determined. I tried to get your
-home directory using both getpwuid and your HOME environment variable.
-  EOF
-    unless defined $home;
-
-  return $home;
-}
-
-# --------------------------------------------------------------------------
-
-# So that "SUPER" works right
-package MY;
-
-sub postamble
-{
-'
-testspeed :: pure_all
-	PERL_DL_NONLAZY=1 $(PERLRUN) "-I$(INST_LIB)" \
-	  "-I$(INST_ARCHLIB)" t/speed.pl
-';
-}
-
