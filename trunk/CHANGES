@@ -3,6 +3,17 @@ Features which haven't made it in yet:
   <zbrown@tumblerings.org> for the excellent feature idea and a prototype
   implementation.)
 
+New in version 5.22:
+- X-Mailfolder header no longer has a line number when -n is used. (bugfix by
+  Kevin Pfeiffer <pfeiffer@iu-bremen.de>)
+- New -B flag prints abbreviated headers (initial patch by Kevin Pfeiffer
+  <pfeiffer@iu-bremen.de>)
+- Headers spanning multiple lines are now printed correctly in warnings and
+  such.
+- Fixed a spurious warning which would be printed if caching was not enabled.
+- grepmail will now disable caching if the caching version of
+  Mail::Mbox::MessageParser can not be loaded, instead of exiting.
+
 New in version 5.21:
 - Fixed line ending bugs under MS-DOS/Windows.
 

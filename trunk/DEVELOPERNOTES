@@ -54,3 +54,5 @@ Checklist for a release:
   comp.lang.perl.announce.
 - Copy current code to old in devel
   $ cp grepmail grepmail.old
+- Tag the release for easy retrieval later
+  $ cvs tag "v5_21"

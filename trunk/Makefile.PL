@@ -21,7 +21,7 @@ WriteMakefile( %makefile_attributes );
 
 print "\n","-"x78,"\n\n";
 
-UpdateTestVersion('grepmail','t/results/help');
+Update_Test_Version('grepmail','t/results/help');
 
 exit;
 
@@ -74,7 +74,7 @@ sub Compute_Makefile_Attributes
 
 # --------------------------------------------------------------------------
 
-sub UpdateTestVersion
+sub Update_Test_Version
 {
   my $file_with_version = shift;
   my $test_case_file = shift;
@@ -102,6 +102,8 @@ sub UpdateTestVersion
 
       open TEST_CASE, ">$test_case_file"
         or die "Couldn't open test case for updating: $!";
+
+      binmode TEST_CASE;
 
       print TEST_CASE $test_case_code;
 
