@@ -5,17 +5,18 @@ use strict;
 use Test;
 use lib 'lib';
 use Test::Utils;
+use File::Spec::Functions qw( :ALL );
 
 my %tests = (
-'grepmail -Y \'(^From:|^TO:)\' Edsinger t/mailboxes/mailarc-1.txt'
+"grepmail -Y $single_quote(^From:|^TO:)$single_quote Edsinger t/mailboxes/mailarc-1.txt"
   => ['header_edsinger','none'],
-'grepmail -Y \'(?i)^x-mailer:\' -i mozilla.4 t/mailboxes/mailarc-1.txt'
+"grepmail -Y $single_quote(?i)^x-mailer:$single_quote -i mozilla.4 t/mailboxes/mailarc-1.txt"
   => ['header_mozilla','none'],
-'grepmail -Y \'.*\' "^From.*aarone" t/mailboxes/mailarc-1.txt'
+"grepmail -Y $single_quote.*$single_quote \"^From.*aarone\" t/mailboxes/mailarc-1.txt"
   => ['header_aarone','none'],
-'grepmail -Y \'.*\' Handy t/mailboxes/mailarc-1.txt'
+"grepmail -Y $single_quote.*$single_quote Handy t/mailboxes/mailarc-1.txt"
   => ['header_handy','none'],
-'grepmail -Y \'(^From:|^TO:)\' Edsinger t/mailboxes/mailarc-1.txt'
+"grepmail -Y $single_quote(^From:|^TO:)$single_quote Edsinger t/mailboxes/mailarc-1.txt"
   => ['header_edsinger','none'],
 );
 
@@ -45,16 +46,16 @@ sub TestIt
   my ($stdout_file,$stderr_file) = @{ shift @_ };
   my $error_expected = shift;
 
-  my $testname = $0;
-  $testname =~ s/.*\///;
-  $testname =~ s/\.t//;
+  my $testname = [splitdir($0)]->[-1];
+  $testname =~ s#\.t##;
 
   {
     my @standard_inc = split /###/, `perl -e '\$" = "###";print "\@INC"'`;
     my @extra_inc;
     foreach my $inc (@INC)
     {
-      push @extra_inc, $inc unless grep { /^$inc$/ } @standard_inc;
+      push @extra_inc, "$single_quote$inc$single_quote"
+        unless grep { /^$inc$/ } @standard_inc;
     }
 
     local $" = ' -I';
@@ -68,8 +69,8 @@ sub TestIt
     }
   }
 
-  my $test_stdout = "t/temp/${testname}_$stdout_file.stdout";
-  my $test_stderr = "t/temp/${testname}_$stderr_file.stderr";
+  my $test_stdout = catfile('t','temp',"${testname}_$stdout_file.stdout");
+  my $test_stderr = catfile('t','temp',"${testname}_$stderr_file.stderr");
 
   system "$test 1>$test_stdout 2>$test_stderr";
 
@@ -89,8 +90,8 @@ sub TestIt
   }
 
 
-  my $real_stdout = "t/results/$stdout_file";
-  my $real_stderr = "t/results/$stderr_file";
+  my $real_stdout = catfile('t','results',$stdout_file);
+  my $real_stderr = catfile('t','results',$stderr_file);
 
   CheckDiffs([$real_stdout,$test_stdout],[$real_stderr,$test_stderr]);
 }

@@ -5,16 +5,17 @@ regular expression, and returns those emails that match it. Piped input is
 allowed, and date and size restrictions are supported, as are searches using
 logical operators.
 
-New in version 5.22:
-- X-Mailfolder header no longer has a line number when -n is used. (bugfix by
-  Kevin Pfeiffer <pfeiffer@iu-bremen.de>)
-- New -B flag prints abbreviated headers (initial patch by Kevin Pfeiffer
-  <pfeiffer@iu-bremen.de>)
-- Headers spanning multiple lines are now printed correctly in warnings and
-  such.
-- Fixed a spurious warning which would be printed if caching was not enabled.
-- grepmail will now disable caching if the caching version of
-  Mail::Mbox::MessageParser can not be loaded, instead of exiting.
+New in version 5.23:
+- Updated test cases to run under Windows.
+- Fixed a bug in speed tests which would cause the grep implementation to
+  fail.
+- Fixed incorrect output for emails without message bodies.
+- Fixed filename output for -n, -m and other situations when input comes from
+  standard input.
+- Added -w flag to match word boundaries.
+- A warning is now issued and caching is disabled if -C is not specified and
+  $HOME is not set (as might be the case when running grepmail in a cron job).
+
 
 SOME NOTES
 
@@ -89,7 +90,7 @@ Installation can also be done automatically using the CPAN module:
 
 INSTALLATION
 
-=> On Non-Windows systems:
+=> On Non-Windows (Unix/Cygwin/etc.) systems:
 
   % perl Makefile.PL
   % make

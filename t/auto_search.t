@@ -5,11 +5,12 @@ use strict;
 use Test;
 use lib 'lib';
 use Test::Utils;
+use File::Spec::Functions qw( :ALL );
 
 my %tests = (
-'MAILDIR=t/mailboxes grepmail Handy mailarc-1.txt'
+"$set_env MAILDIR=t/mailboxes$command_separator grepmail Handy mailarc-1.txt"
   => ['all_handy','none'],
-'MAILDIR=t/mailboxes grepmail -d "before July 15 1998" mailarc-1.txt'
+"$set_env MAILDIR=t/mailboxes$command_separator grepmail -d \"before July 15 1998\" mailarc-1.txt"
   => ['date_1','none'],
 );
 
@@ -39,16 +40,16 @@ sub TestIt
   my ($stdout_file,$stderr_file) = @{ shift @_ };
   my $error_expected = shift;
 
-  my $testname = $0;
-  $testname =~ s/.*\///;
-  $testname =~ s/\.t//;
+  my $testname = [splitdir($0)]->[-1];
+  $testname =~ s#\.t##;
 
   {
     my @standard_inc = split /###/, `perl -e '\$" = "###";print "\@INC"'`;
     my @extra_inc;
     foreach my $inc (@INC)
     {
-      push @extra_inc, $inc unless grep { /^$inc$/ } @standard_inc;
+      push @extra_inc, "$single_quote$inc$single_quote"
+        unless grep { /^$inc$/ } @standard_inc;
     }
 
     local $" = ' -I';
@@ -62,8 +63,8 @@ sub TestIt
     }
   }
 
-  my $test_stdout = "t/temp/${testname}_$stdout_file.stdout";
-  my $test_stderr = "t/temp/${testname}_$stderr_file.stderr";
+  my $test_stdout = catfile('t','temp',"${testname}_$stdout_file.stdout");
+  my $test_stderr = catfile('t','temp',"${testname}_$stderr_file.stderr");
 
   system "$test 1>$test_stdout 2>$test_stderr";
 
@@ -83,8 +84,8 @@ sub TestIt
   }
 
 
-  my $real_stdout = "t/results/$stdout_file";
-  my $real_stderr = "t/results/$stderr_file";
+  my $real_stdout = catfile('t','results',$stdout_file);
+  my $real_stderr = catfile('t','results',$stderr_file);
 
   CheckDiffs([$real_stdout,$test_stdout],[$real_stderr,$test_stderr]);
 }

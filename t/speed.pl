@@ -93,6 +93,7 @@ sub CreateInputFiles
     close FILE;
 
     open FILE, ">$filename";
+    binmode FILE;
 
     my $number = 0;
 

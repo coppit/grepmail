@@ -25,6 +25,7 @@ t/line_number.t                       A test case
 t/list.t                              A test case
 t/match_compressed.t                  A test case
 t/match_headers.t                     A test case
+t/match_words.t                       A test case
 t/nonexistent_mailbox.t               A test case
 t/not_match_compressed.t              A test case
 t/not_match_uncompressed.t            A test case
@@ -75,6 +76,7 @@ t/results/help                        Output file
 t/results/ignore_signatures           Output file
 t/results/invalid_date_1              Output file
 t/results/list_handy                  Output file
+t/results/match_word_let              Output file
 t/results/no_data                     Output file
 t/results/none                        Output file
 t/results/no_such_file                Output file

@@ -5,19 +5,20 @@ use strict;
 use Test;
 use lib 'lib';
 use Test::Utils;
+use File::Spec::Functions qw( :ALL );
 
 my %tests = (
-'cat t/mailboxes/mailarc-1.txt.gz | grepmail Handy'
+'cat t/mailboxes/mailarc-1.txt.gz' . ' | grepmail Handy'
   => ['all_handy','none'],
-'cat t/mailboxes/mailarc-1.txt.bz2 | grepmail Handy'
+'cat t/mailboxes/mailarc-1.txt.bz2' . ' | grepmail Handy'
   => ['all_handy','none'],
-'cat t/mailboxes/mailarc-1.txt.tz | grepmail Handy'
+'cat t/mailboxes/mailarc-1.txt.tz' . ' | grepmail Handy'
   => ['all_handy','none'],
-'cat t/mailboxes/mailarc-1.txt.gz | grepmail -v -E \'$email =~ /Handy/\''
+'cat t/mailboxes/mailarc-1.txt.gz' . " | grepmail -v -E $single_quote\$email =~ /Handy/$single_quote"
   => ['not_handy','none'],
-'cat t/mailboxes/mailarc-1.txt.bz2 | grepmail -v -E \'$email =~ /Handy/\''
+'cat t/mailboxes/mailarc-1.txt.bz2' . " | grepmail -v -E $single_quote\$email =~ /Handy/$single_quote"
   => ['not_handy','none'],
-'cat t/mailboxes/mailarc-1.txt.tz | grepmail -v -E \'$email =~ /Handy/\''
+'cat t/mailboxes/mailarc-1.txt.tz' . " | grepmail -v -E $single_quote\$email =~ /Handy/$single_quote"
   => ['not_handy','none'],
 );
 
@@ -47,16 +48,16 @@ sub TestIt
   my ($stdout_file,$stderr_file) = @{ shift @_ };
   my $error_expected = shift;
 
-  my $testname = $0;
-  $testname =~ s/.*\///;
-  $testname =~ s/\.t//;
+  my $testname = [splitdir($0)]->[-1];
+  $testname =~ s#\.t##;
 
   {
     my @standard_inc = split /###/, `perl -e '\$" = "###";print "\@INC"'`;
     my @extra_inc;
     foreach my $inc (@INC)
     {
-      push @extra_inc, $inc unless grep { /^$inc$/ } @standard_inc;
+      push @extra_inc, "$single_quote$inc$single_quote"
+        unless grep { /^$inc$/ } @standard_inc;
     }
 
     local $" = ' -I';
@@ -70,8 +71,8 @@ sub TestIt
     }
   }
 
-  my $test_stdout = "t/temp/${testname}_$stdout_file.stdout";
-  my $test_stderr = "t/temp/${testname}_$stderr_file.stderr";
+  my $test_stdout = catfile('t','temp',"${testname}_$stdout_file.stdout");
+  my $test_stderr = catfile('t','temp',"${testname}_$stderr_file.stderr");
 
   system "$test 1>$test_stdout 2>$test_stderr";
 
@@ -91,8 +92,8 @@ sub TestIt
   }
 
 
-  my $real_stdout = "t/results/$stdout_file";
-  my $real_stderr = "t/results/$stderr_file";
+  my $real_stdout = catfile('t','results',$stdout_file);
+  my $real_stderr = catfile('t','results',$stderr_file);
 
   CheckDiffs([$real_stdout,$test_stdout],[$real_stderr,$test_stderr]);
 }
@@ -107,25 +108,25 @@ sub SetSkip
 
   unless (defined $Mail::Mbox::MessageParser::PROGRAMS{'gzip'})
   {
-    $skip{'cat t/mailboxes/mailarc-1.txt.gz | grepmail Handy'}
+    $skip{'cat t/mailboxes/mailarc-1.txt.gz' . ' | grepmail Handy'}
       = 'gzip support not enabled in Mail::Mbox::MessageParser';
-    $skip{'cat t/mailboxes/mailarc-1.txt.gz | grepmail -v -E \'$email =~ /Handy/\''}
+    $skip{'cat t/mailboxes/mailarc-1.txt.gz' . " | grepmail -v -E $single_quote\$email =~ /Handy/$single_quote"}
       = 'gzip support not enabled in Mail::Mbox::MessageParser';
   }
 
   unless (defined $Mail::Mbox::MessageParser::PROGRAMS{'bzip2'})
   {
-    $skip{'cat t/mailboxes/mailarc-1.txt.bz2 | grepmail Handy'}
+    $skip{'cat t/mailboxes/mailarc-1.txt.bz2' . ' | grepmail Handy'}
       = 'bzip2 support not enabled in Mail::Mbox::MessageParser';
-    $skip{'cat t/mailboxes/mailarc-1.txt.bz2 | grepmail -v -E \'$email =~ /Handy/\''}
+    $skip{'cat t/mailboxes/mailarc-1.txt.bz2' . " | grepmail -v -E $single_quote\$email =~ /Handy/$single_quote"}
       = 'bzip2 support not enabled in Mail::Mbox::MessageParser';
   }
 
   unless (defined $Mail::Mbox::MessageParser::PROGRAMS{'tzip'})
   {
-    $skip{'cat t/mailboxes/mailarc-1.txt.tz | grepmail Handy'}
+    $skip{'cat t/mailboxes/mailarc-1.txt.tz' . ' | grepmail Handy'}
       = 'tzip support not enabled in Mail::Mbox::MessageParser';
-    $skip{'cat t/mailboxes/mailarc-1.txt.tz | grepmail -v -E \'$email =~ /Handy/\''}
+    $skip{'cat t/mailboxes/mailarc-1.txt.tz' . " | grepmail -v -E $single_quote\$email =~ /Handy/$single_quote"}
       = 'tzip support not enabled in Mail::Mbox::MessageParser';
   }
 

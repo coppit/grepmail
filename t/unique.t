@@ -5,13 +5,14 @@ use strict;
 use Test;
 use lib 'lib';
 use Test::Utils;
+use File::Spec::Functions qw( :ALL );
 
 my %tests = (
 'grepmail Handy -u t/mailboxes/mailarc-1.txt'
   => ['unique_handy','none'],
-'grepmail -E \'$email =~ /Handy/\' -u t/mailboxes/mailarc-1.txt'
+"grepmail -E $single_quote\$email =~ /Handy/$single_quote -u t/mailboxes/mailarc-1.txt"
   => ['unique_handy','none'],
-'grepmail -i \'$email_body =~ /imagecraft/\' -u t/mailboxes/mailarc-1.txt'
+"grepmail -i $single_quote\$email_body =~ /imagecraft/$single_quote -u t/mailboxes/mailarc-1.txt"
   => ['unique_body_imagecraft','none'],
 'grepmail -u t/mailboxes/mailarc-1.txt'
   => ['unique_all_1','none'],
@@ -47,16 +48,16 @@ sub TestIt
   my ($stdout_file,$stderr_file) = @{ shift @_ };
   my $error_expected = shift;
 
-  my $testname = $0;
-  $testname =~ s/.*\///;
-  $testname =~ s/\.t//;
+  my $testname = [splitdir($0)]->[-1];
+  $testname =~ s#\.t##;
 
   {
     my @standard_inc = split /###/, `perl -e '\$" = "###";print "\@INC"'`;
     my @extra_inc;
     foreach my $inc (@INC)
     {
-      push @extra_inc, $inc unless grep { /^$inc$/ } @standard_inc;
+      push @extra_inc, "$single_quote$inc$single_quote"
+        unless grep { /^$inc$/ } @standard_inc;
     }
 
     local $" = ' -I';
@@ -70,8 +71,8 @@ sub TestIt
     }
   }
 
-  my $test_stdout = "t/temp/${testname}_$stdout_file.stdout";
-  my $test_stderr = "t/temp/${testname}_$stderr_file.stderr";
+  my $test_stdout = catfile('t','temp',"${testname}_$stdout_file.stdout");
+  my $test_stderr = catfile('t','temp',"${testname}_$stderr_file.stderr");
 
   system "$test 1>$test_stdout 2>$test_stderr";
 
@@ -91,8 +92,8 @@ sub TestIt
   }
 
 
-  my $real_stdout = "t/results/$stdout_file";
-  my $real_stderr = "t/results/$stderr_file";
+  my $real_stdout = catfile('t','results',$stdout_file);
+  my $real_stderr = catfile('t','results',$stderr_file);
 
   CheckDiffs([$real_stdout,$test_stdout],[$real_stderr,$test_stderr]);
 }
@@ -105,7 +106,7 @@ sub SetSkip
 
   my %skip;
 
-  $skip{'grepmail -i \'$email_body =~ /imagecraft/\' -u t/mailboxes/mailarc-1.txt'} =
+  $skip{"grepmail -i $single_quote\$email_body =~ /imagecraft/$single_quote -u t/mailboxes/mailarc-1.txt"} =
     'unimplemented';
 
   return %skip;

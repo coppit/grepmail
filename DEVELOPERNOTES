@@ -24,10 +24,6 @@ Checklist for a release:
   $ perl Makefile.PL
   $ make
   $ make test
-- Check in code:
-  $ export CVS_RSH=ssh
-  $ cvs -z3 -d:ext:coppit@cvs.grepmail.sourceforge.net:/cvsroot/grepmail ci
-  (use your userid instead of coppit)
 - Update CHANGES file, and copy to server:
   $ scp CHANGES coppit@grepmail.sourceforge.net:/home/groups/g/gr/grepmail/htdocs
   (Use your username instead of coppit)
@@ -54,5 +50,9 @@ Checklist for a release:
   comp.lang.perl.announce.
 - Copy current code to old in devel
   $ cp grepmail grepmail.old
+- Check in code:
+  $ export CVS_RSH=ssh
+  $ cvs -z3 -d:ext:coppit@cvs.grepmail.sourceforge.net:/cvsroot/grepmail ci
+  (use your userid instead of coppit)
 - Tag the release for easy retrieval later
   $ cvs tag "v5_21"
