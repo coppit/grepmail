@@ -26,6 +26,7 @@ compressed ASCII input is taken from STDIN.
 
 -a Use received date instead of sent date for -d matching
 -b Search must match body
+-B Print message bodies but with only limited headers
 -C Specify the location of the cache file
 -d Specify a required date range (see below)
 -D Debug mode

@@ -20,7 +20,7 @@ t/mailboxes/mailarc-1.txt:19:Subject: Re: Serial Interface
 t/mailboxes/mailarc-1.txt:20:References: <199807010601.XAA26862@mail3.sirius.com>
 t/mailboxes/mailarc-1.txt:21:Content-Type: text/plain; charset=us-ascii
 t/mailboxes/mailarc-1.txt:22:Content-Transfer-Encoding: 7bit
-t/mailboxes/mailarc-1.txt:23:X-Mailfolder: t/mailboxes/mailarc-1.txt
+t/mailboxes/mailarc-1.txt:  :X-Mailfolder: t/mailboxes/mailarc-1.txt
 t/mailboxes/mailarc-1.txt:23:
 t/mailboxes/mailarc-1.txt:24:Aaron Edsinger wrote:
 t/mailboxes/mailarc-1.txt:25: 
@@ -531,7 +531,7 @@ t/mailboxes/mailarc-1.txt:807:X-Mailer: Microsoft Internet Mail 4.70.1162
 t/mailboxes/mailarc-1.txt:808:Mime-Version: 1.0
 t/mailboxes/mailarc-1.txt:809:Content-Type: text/plain; charset=ISO-8859-1
 t/mailboxes/mailarc-1.txt:810:Content-Transfer-Encoding: 7bit
-t/mailboxes/mailarc-1.txt:811:X-Mailfolder: t/mailboxes/mailarc-1.txt
+t/mailboxes/mailarc-1.txt:   :X-Mailfolder: t/mailboxes/mailarc-1.txt
 t/mailboxes/mailarc-1.txt:811:
 t/mailboxes/mailarc-1.txt:812:Hello,	
 t/mailboxes/mailarc-1.txt:813:	I've been having some problems using my HandyBoard to talk directly to my
@@ -568,7 +568,7 @@ t/mailboxes/mailarc-1.txt:843:Subject: Re: Handyboard/RWP without p-code
 t/mailboxes/mailarc-1.txt:844:References: <3.0.32.19980716151646.00809d20@nemo.mech.eng.usyd.edu.au>
 t/mailboxes/mailarc-1.txt:845:Content-Type: text/plain; charset=us-ascii
 t/mailboxes/mailarc-1.txt:846:Content-Transfer-Encoding: 7bit
-t/mailboxes/mailarc-1.txt:847:X-Mailfolder: t/mailboxes/mailarc-1.txt
+t/mailboxes/mailarc-1.txt:   :X-Mailfolder: t/mailboxes/mailarc-1.txt
 t/mailboxes/mailarc-1.txt:847:
 t/mailboxes/mailarc-1.txt:848:Get a copy of icc11 v5.0 or later (from www.imagecraft.com) and use the
 t/mailboxes/mailarc-1.txt:849:handyboard library from their site. 
@@ -595,7 +595,7 @@ t/mailboxes/mailarc-1.txt:869:To: handyboard@media.mit.edu, rye@mech.eng.usyd.ed
 t/mailboxes/mailarc-1.txt:870:Mime-Version: 1.0
 t/mailboxes/mailarc-1.txt:871:Content-Type: MULTIPART/mixed; BOUNDARY=Troop_of_Baboons_752_000
 t/mailboxes/mailarc-1.txt:872:X-Mailer: dtmail 1.2.0 CDE Version 1.2 SunOS 5.6 sun4u sparc 
-t/mailboxes/mailarc-1.txt:873:X-Mailfolder: t/mailboxes/mailarc-1.txt
+t/mailboxes/mailarc-1.txt:   :X-Mailfolder: t/mailboxes/mailarc-1.txt
 t/mailboxes/mailarc-1.txt:873:
 t/mailboxes/mailarc-1.txt:874:--Troop_of_Baboons_752_000
 t/mailboxes/mailarc-1.txt:875:Content-Type: TEXT/plain; charset=us-ascii
@@ -640,7 +640,7 @@ t/mailboxes/mailarc-1.txt:1112:Subject: sonar.c for the handyboard
 t/mailboxes/mailarc-1.txt:1113:Message-Id: <Pine.SOL.3.92.980727164935.159A-100000@theory.phys.vt.edu>
 t/mailboxes/mailarc-1.txt:1114:Mime-Version: 1.0
 t/mailboxes/mailarc-1.txt:1115:Content-Type: TEXT/PLAIN; charset=US-ASCII
-t/mailboxes/mailarc-1.txt:1116:X-Mailfolder: t/mailboxes/mailarc-1.txt
+t/mailboxes/mailarc-1.txt:    :X-Mailfolder: t/mailboxes/mailarc-1.txt
 t/mailboxes/mailarc-1.txt:1116:
 t/mailboxes/mailarc-1.txt:1117:Hello,
 t/mailboxes/mailarc-1.txt:1118:	I have a handyboard and 6500 series poloroid ultrasonic ranging
@@ -705,7 +705,7 @@ t/mailboxes/mailarc-1.txt:1249:From: Mark Wallace <mawalla3@vt.edu>
 t/mailboxes/mailarc-1.txt:1250:Subject: serial library for C++ 
 t/mailboxes/mailarc-1.txt:1251:Mime-Version: 1.0
 t/mailboxes/mailarc-1.txt:1252:Content-Type: text/plain; charset="us-ascii"
-t/mailboxes/mailarc-1.txt:1253:X-Mailfolder: t/mailboxes/mailarc-1.txt
+t/mailboxes/mailarc-1.txt:    :X-Mailfolder: t/mailboxes/mailarc-1.txt
 t/mailboxes/mailarc-1.txt:1253:
 t/mailboxes/mailarc-1.txt:1254:Hello,
 t/mailboxes/mailarc-1.txt:1255:	I have a handy board with poloroid transducers and I am trying use the
@@ -750,7 +750,7 @@ t/mailboxes/mailarc-1.txt:1338:X-Priority: 3
 t/mailboxes/mailarc-1.txt:1339:X-Msmail-Priority: Normal
 t/mailboxes/mailarc-1.txt:1340:X-Mailer: Microsoft Outlook Express 4.72.2106.4
 t/mailboxes/mailarc-1.txt:1341:X-Mimeole: Produced By Microsoft MimeOLE V4.72.2106.4
-t/mailboxes/mailarc-1.txt:1342:X-Mailfolder: t/mailboxes/mailarc-1.txt
+t/mailboxes/mailarc-1.txt:    :X-Mailfolder: t/mailboxes/mailarc-1.txt
 t/mailboxes/mailarc-1.txt:1342:
 t/mailboxes/mailarc-1.txt:1343:
 t/mailboxes/mailarc-1.txt:1344:  Check out this site.  It works well.  The only problem I had was timing
@@ -806,7 +806,7 @@ t/mailboxes/mailarc-1.txt:1393:To: handyboard@media.mit.edu, rye@mech.eng.usyd.e
 t/mailboxes/mailarc-1.txt:1394:Mime-Version: 1.0
 t/mailboxes/mailarc-1.txt:1395:Content-Type: MULTIPART/mixed; BOUNDARY=Troop_of_Baboons_752_000
 t/mailboxes/mailarc-1.txt:1396:X-Mailer: dtmail 1.2.0 CDE Version 1.2 SunOS 5.6 sun4u sparc 
-t/mailboxes/mailarc-1.txt:1397:X-Mailfolder: t/mailboxes/mailarc-1.txt
+t/mailboxes/mailarc-1.txt:    :X-Mailfolder: t/mailboxes/mailarc-1.txt
 t/mailboxes/mailarc-1.txt:1397:
 t/mailboxes/mailarc-1.txt:1398:--Troop_of_Baboons_752_000
 t/mailboxes/mailarc-1.txt:1399:Content-Type: TEXT/plain; charset=us-ascii
@@ -861,7 +861,7 @@ t/mailboxes/mailarc-1.txt:1447:content-length: 399
 t/mailboxes/mailarc-1.txt:1448:Status: RO
 t/mailboxes/mailarc-1.txt:1449:X-Status: $$$$
 t/mailboxes/mailarc-1.txt:1450:X-UID: 0000000001
-t/mailboxes/mailarc-1.txt:1451:X-Mailfolder: t/mailboxes/mailarc-1.txt
+t/mailboxes/mailarc-1.txt:    :X-Mailfolder: t/mailboxes/mailarc-1.txt
 t/mailboxes/mailarc-1.txt:1451:
 t/mailboxes/mailarc-1.txt:1452:At long last, I dusted off Chuck McManis Handyboard library and ported it
 t/mailboxes/mailarc-1.txt:1453:to V5. No reason why it can't work with V4.5 either ;-) Anyway, to try it
@@ -896,7 +896,7 @@ t/mailboxes/mailarc-2.txt:170:In-Reply-To: <199712312227.QAA03595@augusta.netper
 t/mailboxes/mailarc-2.txt:171:Message-Id: <Pine.BSF.3.96.980101041900.956D-100000@kott.my.domain>
 t/mailboxes/mailarc-2.txt:172:Mime-Version: 1.0
 t/mailboxes/mailarc-2.txt:173:Content-Type: TEXT/PLAIN; charset=US-ASCII
-t/mailboxes/mailarc-2.txt:174:X-Mailfolder: t/mailboxes/mailarc-2.txt
+t/mailboxes/mailarc-2.txt:   :X-Mailfolder: t/mailboxes/mailarc-2.txt
 t/mailboxes/mailarc-2.txt:174:
 t/mailboxes/mailarc-2.txt:175:On Wed, 31 Dec 1997, Tom Brusehaver wrote:
 t/mailboxes/mailarc-2.txt:176:
