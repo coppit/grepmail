@@ -32,7 +32,6 @@ use vars qw( %opts $pattern $commandLine $VERSION %message_ids_seen
 use Getopt::Std;
 
 use strict;
-use warnings 'all';
 use Mail::Mbox::MessageParser;
 use FileHandle;
 use Carp;
@@ -222,14 +221,14 @@ sub Get_Options
   my @argv = @ARGV;
 
   # Print usage error if no arguments given
-  reportAndExit("No arguments given.\n\n" . usage()) unless @ARGV;
+  reportAndExit("No arguments given.\n\n" . help()) unless @ARGV;
 
   # Check for --help, the standard usage command, or --version.
   print help() and exit(0) if grep { /^--help$/ } @ARGV;
   print "$VERSION\n" and exit(0) if grep { /^--version$/ } @ARGV;
 
   my @valid_options =
-    qw( D e E f F i j q h b v l r R a M m s t T u n Z H S d V X Y );
+    qw( a b C d D e E f F i j h H l M m n q r R s S t T u v V X Y Z );
 
   my %opts;
 
@@ -239,9 +238,10 @@ sub Get_Options
   # And some to non-zero.
   $opts{'d'} = $opts{'V'} = undef;
   $opts{'X'} = '^-- $';
+  $opts{'C'} = "$ENV{'HOME'}/.grepmail-cache";
 
   # Ensure valid options. ALSO UPDATE 2ND GETOPT CALL BELOW
-  getopt("deEfjsXY",\%opts);
+  getopt("CdeEfjsXY",\%opts);
 
   # Here we have to deal with the possibility that the user specified the
   # search pattern without the -e flag.
@@ -266,7 +266,7 @@ sub Get_Options
       if ( $#ARGV > 0 && $ARGV[1] =~ /^-$missing_flags$/)
       {
         $pattern = shift @ARGV;
-        getopt("fdjsXY",\%opts);
+        getopt("CdfjsXY",\%opts);
       }
 
       # If we've seen a -d, -j, -s, or -u flag, and it doesn't look like there
@@ -352,7 +352,7 @@ sub Get_Options
     # The only times you don't have to specify the pattern is when -d, -j, -s, or -u
     # is being used. This should catch people who do "grepmail -h" thinking
     # it's help.
-    reportAndExit("Invalid arguments.\n\n" . usage())
+    reportAndExit("Invalid arguments.\n\n" . help())
       unless defined $opts{'d'} || $opts{'j'} || $opts{'s'} || $opts{'u'};
 
     $pattern = '.';
@@ -378,7 +378,7 @@ sub Get_Options
   {
     unless (grep {/^$option$/} @valid_options)
     {
-      reportAndExit("Invalid argument: \"$option\".\n\n" . usage());
+      reportAndExit("Invalid argument: \"$option\".\n\n" . help());
     }
   }
 
@@ -1025,9 +1025,11 @@ sub ProcessMailFile
   my $fileName = shift @_;
   my $number_files = shift @_;
 
-  Mail::Mbox::MessageParser::SETUP_CACHE( {
-      'file_name' => "$ENV{'HOME'}/.grepmail-cache" } )
+  my $setup_result = Mail::Mbox::MessageParser::SETUP_CACHE(
+    { 'file_name' => $opts{'C'} } )
     if $USE_CACHING;
+
+  die $setup_result unless $setup_result eq 'ok';
 
   my $folder_reader =
     new Mail::Mbox::MessageParser( {
@@ -1050,8 +1052,17 @@ sub ProcessMailFile
     }
     elsif ($error eq 'Not a mailbox')
     {
-      warn "grepmail: Standard input is not a mailbox, skipping\n"
-        unless $opts{'q'};
+      unless($opts{'q'})
+      {
+        if (defined $fileName)
+        {
+          warn "grepmail: \"$fileName\" is not a mailbox, skipping\n"
+        }
+        else
+        {
+          warn "grepmail: Standard input is not a mailbox, skipping\n"
+        }
+      }
       return;
     }
     else
@@ -1588,6 +1599,8 @@ sub ParseDate
 
         my ($version_number) = $Date::Manip::VERSION =~ /^(\d+\.\d+)/;
         Date::Manip::Date_Init("TodayIsMidnight=1") if $version_number >= 5.43;
+        # To prevent warning about variable being used only once
+        my $dummy = $Date::Manip::VERSION;
       }
       else
       {
@@ -1789,15 +1802,6 @@ sub IsInSize
 
 #-------------------------------------------------------------------------------
 
-sub usage
-{
-<<EOF;
-usage: grepmail [--help] [-abBDFhHilmrRuv] [-s <sizespec>] [-d <datespec>] [[-eE] <expr>|-f <pattern-file>] <files...>
-EOF
-}
-
-#-------------------------------------------------------------------------------
-
 sub help
 {
 <<EOF;
@@ -1805,16 +1809,19 @@ grepmail $VERSION
 
 usage:
 
-  grepmail [--help|--version] [-abBDFhHilmrRuvV] [-j <status>] [-s <sizespec>]
-    [-d <date-specification>] [-X <signature-pattern>] [-Y <header-pattern>]
+  grepmail [--help|--version] [-abBDFhHilmrRuvV] [-C <cache-file>]
+    [-j <status>] [-s <sizespec>] [-d <date-specification>]
+    [-X <signature-pattern>] [-Y <header-pattern>]
     [-e] <pattern> <files...>
 
-  grepmail [--help|--version] [-abBDFhHilmrRuvV] [-j <status>] [-s <sizespec>]
-    [-d <date-specification>] [-X <signature-pattern>] [-Y <header-pattern>]
+  grepmail [--help|--version] [-abBDFhHilmrRuvV] [-C <cache-file>]
+    [-j <status>] [-s <sizespec>] [-d <date-specification>]
+    [-X <signature-pattern>] [-Y <header-pattern>]
     -E <expr> <files...>
 
-  grepmail [--help|--version] [-abBDFhHilmrRuvV] [-j <status>] [-s <sizespec>]
-    [-d <date-specification>] [-X <signature-pattern>] [-Y <header-pattern>]
+  grepmail [--help|--version] [-abBDFhHilmrRuvV] [-C <cache-file>]
+    [-j <status>] [-s <sizespec>] [-d <date-specification>]
+    [-X <signature-pattern>] [-Y <header-pattern>]
     -f <pattern-file> <files...>
 
 At least one of -s, -d, -u, -e, and -E must be specified, and can appear in
@@ -1826,6 +1833,7 @@ compressed ASCII input is taken from STDIN.
 
 -a Use received date instead of sent date for -d matching
 -b Search must match body
+-C Specify the location of the cache file
 -d Specify a required date range (see below)
 -D Debug mode
 -e Explicitly name pattern (when searching for strings beginning with "-")
@@ -1877,16 +1885,19 @@ grepmail - search mailboxes for mail matching a regular expression
 
 =head1 SYNOPSIS
 
-  grepmail [--help|--version] [-abBDFhHilmrRuvV] [-j <status>] [-s <sizespec>]
-    [-d <date-specification>] [-X <signature-pattern>] [-Y <header-pattern>]
+  grepmail [--help|--version] [-abBDFhHilmrRuvV] [-C <cache-file>]
+    [-j <status>] [-s <sizespec>] [-d <date-specification>]
+    [-X <signature-pattern>] [-Y <header-pattern>]
     [-e] <pattern> <files...>
 
-  grepmail [--help|--version] [-abBDFhHilmrRuvV] [-j <status>] [-s <sizespec>]
-    [-d <date-specification>] [-X <signature-pattern>] [-Y <header-pattern>]
+  grepmail [--help|--version] [-abBDFhHilmrRuvV] [-C <cache-file>]
+    [-j <status>] [-s <sizespec>] [-d <date-specification>]
+    [-X <signature-pattern>] [-Y <header-pattern>]
     -E <expr> <files...>
 
-  grepmail [--help|--version] [-abBDFhHilmrRuvV] [-j <status>] [-s <sizespec>]
-    [-d <date-specification>] [-X <signature-pattern>] [-Y <header-pattern>]
+  grepmail [--help|--version] [-abBDFhHilmrRuvV] [-C <cache-file>]
+    [-j <status>] [-s <sizespec>] [-d <date-specification>]
+    [-X <signature-pattern>] [-Y <header-pattern>]
     -f <pattern-file> <files...>
 
 =head1 DESCRIPTION
@@ -1949,6 +1960,11 @@ Use arrival date instead of sent date.
 =item B<-b>
 
 Asserts that the pattern must match in the body of the email. 
+
+=item B<-C>
+
+Specifies the location of the cache file. The default is
+$HOME/.grepmail-cache.
 
 =item B<-D>
 
@@ -2117,16 +2133,24 @@ follows:
 =over 2
 
 If the regular expression contains "^TO:" it will be  substituted by
-"^((Original-)?(Resent-)?(To|Cc|Bcc)|(X-Envelope|Apparently(-Resent)?)-To):",
+
+  ^((Original-)?(Resent-)?(To|Cc|Bcc)|(X-Envelope|Apparently(-Resent)?)-To):
+
 which should match all headers with destination addresses.
 
 If the regular expression contains "^FROM_DAEMON:" it  will
-be substituted by "(^(Mailing-List:|Precedence:.*(junk|bulk|list)|To: Multiple recipients of |(((Resent-)?(From|Sender)|X-Envelope-From):|>?From )([^>]*[^(.%@a-z0-9])?(Post(ma?(st(e?r)?|n)|office)|(send)?Mail(er)?|daemon|m(mdf|ajordomo)|n?uucp|LIST(SERV|proc)|NETSERV|o(wner|ps)|r(e(quest|sponse)|oot)|b(ounce|bs\.smtp)|echo|mirror|s(erv(ices?|er)|mtp(error)?|ystem)|A(dmin(istrator)?|MMGR|utoanswer))(([^).!:a-z0-9][-_a-z0-9]*)?[%@>\t ][^<)]*(\(.*\).*)?)?",
+be substituted by
+
+  (^(Mailing-List:|Precedence:.*(junk|bulk|list)|To: Multiple recipients of |(((Resent-)?(From|Sender)|X-Envelope-From):|>?From )([^>]*[^(.%@a-z0-9])?(Post(ma?(st(e?r)?|n)|office)|(send)?Mail(er)?|daemon|m(mdf|ajordomo)|n?uucp|LIST(SERV|proc)|NETSERV|o(wner|ps)|r(e(quest|sponse)|oot)|b(ounce|bs\.smtp)|echo|mirror|s(erv(ices?|er)|mtp(error)?|ystem)|A(dmin(istrator)?|MMGR|utoanswer))(([^).!:a-z0-9][-_a-z0-9]*)?[%@>\t ][^<)]*(\(.*\).*)?)?
+
 which should catch mails coming from most daemons.
 
 If  the regular expression contains "^FROM_MAILER:" it will be substituted by
-"(^(((Resent-)?(From|Sender)|X-Envelope-From):|>?From)([^>]*[^(.%@a-z0-9])?(Post(ma(st(er)?|n)|office)|(send)?Mail(er)?|daemon|mmdf|n?uucp|ops|r(esponse|oot)|(bbs\.)?smtp(error)?|s(erv(ices?|er)|ystem)|A(dmin(istrator)?|MMGR))(([^).!:a-z0-9][-_a-z0-9]*)?[%@>\t][^<)]*(\(.*\).*)?)?$([^>]|$))" (a stripped down version of
-"^FROM_DAEMON:"), which should catch mails coming from most mailer-daemons.
+
+  (^(((Resent-)?(From|Sender)|X-Envelope-From):|>?From)([^>]*[^(.%@a-z0-9])?(Post(ma(st(er)?|n)|office)|(send)?Mail(er)?|daemon|mmdf|n?uucp|ops|r(esponse|oot)|(bbs\.)?smtp(error)?|s(erv(ices?|er)|ystem)|A(dmin(istrator)?|MMGR))(([^).!:a-z0-9][-_a-z0-9]*)?[%@>\t][^<)]*(\(.*\).*)?)?$([^>]|$))
+ 
+(a stripped down version of "^FROM_DAEMON:"), which should catch mails coming
+from most mailer-daemons.
 
 =back
 
