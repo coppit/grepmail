@@ -320,43 +320,66 @@ sub need_more_samples {
 #    printf STDERR "Average: %.5f +/- %.5f, Samples: %d\n",
 #      $self->[STAT]->{$event}->mean(), $self->[STAT]->{$event}->delta(),
 #      $self->[STAT]->{$event}->count;
+#    printf STDERR "Percent Error: %.5f > %.5f\n",
+#      $self->[STAT]->{$event}->delta() / $self->[STAT]->{$event}->mean() * 100,
+#      $self->[ERROR];
 
     return (($self->[STAT]->{$event}->delta() / $self->[STAT]->{$event}->mean() * 100) >
       $self->[ERROR]);
 }
 
 
-=item $t->report;
+=item $t->report($tag);
 
-Print a simple report on the collected timings to STDERR. This report
-prints the number of trials run, the total time taken, and, if more than
-one trial was run, the average time needed to run one trial. It prints
-the events out in the order they were C<start()>ed.
+Print a simple report on the collected timings to STDERR, either for a single
+specified tag or all tags if none is specified. This report prints the number
+of trials run, the total time taken, and, if more than one trial was run, the
+average time needed to run one trial and error information. It prints the
+events out in the order they were C<start()>ed.
 
 =cut
 
 sub report {
     my $self = shift;
-    foreach my $event (@{$self->[EVENTS]}) {
-        unless(exists $self->[ELAPSED]->{$event}) {
-            carp join ' ', 'event', $event, 'still running, skipping';
-            last;
-        }
-        my @times = @{$self->[ELAPSED]->{$event}};
-        my $n = scalar @times;
-        my $total = 0; $total += $_ foreach @times;
+    my $event = shift || $self->[LASTEVENT] || undef;
 
-        printf STDERR '%d trial%s of %s (%s total)',
-            $n, $n == 1 ? '' : 's', $event, timestr($total);
-        printf STDERR ', %s/trial', timestr($total / $n) if $n > 1;
-        print STDERR "\n";
-
-        if (defined $self->[STAT]->{$event})
-        {
-          printf STDERR "Error: +/- %.5f with %s confidence\n",
-            $self->[STAT]->{$event}->delta(), $self->[CONFIDENCE];
-        }
+    if (defined $event)
+    {
+      $self->_report($event);
     }
+    else
+    {
+      foreach my $event (@{$self->[EVENTS]}) {
+          $self->_report($event);
+      }
+    }
+    return;
+}
+
+
+sub _report {
+    my $self = shift;
+    my $event = shift;
+
+    unless(exists $self->[ELAPSED]->{$event}) {
+        carp join ' ', 'event', $event, 'still running, skipping';
+        return;
+    }
+    my @times = @{$self->[ELAPSED]->{$event}};
+    my $n = scalar @times;
+    my $total = 0; $total += $_ foreach @times;
+
+    printf STDERR '%d trial%s of %s (%s total)',
+        $n, $n == 1 ? '' : 's', $event, timestr($total);
+    printf STDERR ', %s/trial', timestr($total / $n) if $n > 1;
+    print STDERR "\n";
+
+    if (defined $self->[STAT]->{$event})
+    {
+      printf STDERR "Error: +/- %.5f with %s confidence\n",
+        $self->[STAT]->{$event}->delta(), $self->[CONFIDENCE];
+    }
+
     return;
 }
 
