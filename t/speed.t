@@ -23,6 +23,7 @@ $oldGrepmailLocation = "$ENV{HOME}/bin";
 'cat big-1.txt big-2.txt big-3.txt big-4.txt | grepmail -b hello -d "before oct 15 1998"',
 );
 
+use Benchmark;
 DoTimeTests();
 
 ################################################################################
@@ -33,18 +34,26 @@ print "Now doing timed tests...\n";
 
 unlink "times";
 
+my $firstTest = 1;
 foreach $test (@timedtests)
 {
-  $test =~ s/grepmail/time $oldGrepmailLocation\/grepmail/;
+  if ($firstTest)
+  {
+    $firstTest = 0;
+  }
+  else
+  {
+    print "--------------------------------------\n";
+  }
+
   print "$test\n";
-  system "$test > /dev/null";
+  $test =~ s!grepmail!$oldGrepmailLocation/grepmail!;
+
+  timethis(4,sub {system "$test > /dev/null"},'OLD');
   exit if $?;
 
-  $test =~ s/time.*grepmail/time .\/grepmail/;
-  print "\n$test\n";
-  system "$test > /dev/null";
+  $test =~ s!\Q$oldGrepmailLocation/grepmail\E!./grepmail!;
+  timethis(4,sub {system "$test > /dev/null"},'NEW');
   exit if $?;
-
-  print "\n";
 }
 }

@@ -2,7 +2,7 @@
 
 # grepmail
 
-$VERSION = 4.20;
+$VERSION = 4.30;
 
 # Grepmail searches a normal, gzip'd, tzip'd, or bzip2'd mailbox for a given
 # regular expression and returns those emails that match the query. It also
@@ -265,12 +265,13 @@ dprint "FILES: @ARGV\n";
 dprint "DATE RESTRICTION: $dateRestriction\n";
 dprint "SIZE RESTRICTION: $opts{'s'}\n";
 
-# Catch everything I can...
-$SIG{PIPE} = \&cleanExit;
-$SIG{HUP} = \&cleanExit;
-$SIG{INT} = \&cleanExit;
-$SIG{QUIT} = \&cleanExit;
-$SIG{TERM} = \&cleanExit;
+# Catch everything I can... We have to localize these to prevent odd bugs from
+# cropping up (see changelog).
+local $SIG{PIPE} = \&cleanExit;
+local $SIG{HUP} = \&cleanExit;
+local $SIG{INT} = \&cleanExit;
+local $SIG{QUIT} = \&cleanExit;
+local $SIG{TERM} = \&cleanExit;
 
 my @files = GetFiles(@ARGV);
 
@@ -341,6 +342,8 @@ sub HandleInputFiles
   {
     dprint '#'x70;
     dprint "Processing file $file";
+    dprint "Initial inode times are A:".(stat $file)[8]." M:".(stat $file)[9].
+      " C:".(stat $file)[10];
 
     # First of all, silently ignore empty files...
     next if -z $file;
@@ -357,7 +360,11 @@ sub HandleInputFiles
     # If it's not a compressed file
     if ($file !~ /\.(gz|Z|bz2|tz)$/)
     {
-      if (-B $file)
+      SaveFileTimes($file);
+      my $isBinary = -B $file;
+      RestoreFileTimes($file);
+
+      if ($isBinary)
       {
         warn "** Skipping binary file: '$file' **\n" unless $opts{'q'};
         next;
@@ -387,15 +394,86 @@ sub HandleInputFiles
         or cleanExit "Can't execute bzip2 for file $file";
     }
 
+    SaveFileTimes($file);
     if (!IsMailbox($fileHandle))
     {
       warn "** Skipping non-mailbox ASCII file: '$file' **\n" unless $opts{'q'};
+      RestoreFileTimes($file);
       next;
     }
+    RestoreFileTimes($file);
 
     ProcessMailFile($fileHandle,$file);
+
+    SaveFileTimes($file);
     $fileHandle->close();
+    RestoreFileTimes($file);
+
+    dprint "Final inode times are A:".(stat $file)[8]." M:".(stat $file)[9].
+      " C:".(stat $file)[10];
   }
+}
+
+#-------------------------------------------------------------------------------
+
+{
+# Access time is a variable used by only SaveFileTimes and RestoreFileTimes
+my %access_time;
+
+# This function stores the access time for the given filename or filehandle.
+# It should be called immediately before an operation that can change the
+# file's access time, and it should be accompanied by a corresponding
+# RestoreFileTimes function call immediately after the "dangerous" operation.
+# Informal experiments show that -B, eof, reading from a file, and closing a
+# file change the access time. (Closing may not change the access time,
+# depending on whether the file was read.)
+
+sub SaveFileTimes
+{
+  my $file = shift;
+
+  return if $file eq 'Standard input';
+
+# Adds about 2.5% to running time
+#  die "File \"$file\" is not a plain file.\n" unless -f $file;
+
+  $access_time{$file} = (stat $file)[8];
+
+#  dprint "SaveFileTimes $file: A: ".(stat $file)[8]." M: ".(stat $file)[9].
+#    " C: ".(stat $file)[10];
+
+  return 1;
+}
+
+#-------------------------------------------------------------------------------
+
+# This function restores the access time for the given filename or filehandle.
+# It should be called immediately after an operation that can change the
+# file's access time, and it should be accompanied by a corresponding
+# SaveFileTimes function call immediately before the "dangerous" operation. 
+
+sub RestoreFileTimes
+{
+  my $file = shift;
+
+  return if $file eq 'Standard input';
+
+# Adds about 2.5% to running time
+#  die "File \"$file\" is not a plain file.\n" unless -f $file;
+
+  die "SaveFileTimes(\"$file\") was not called.\n"
+    unless defined $access_time{$file};
+
+  utime $access_time{$file}, (stat $file)[9], $file;
+
+  delete $access_time{$file};
+
+#  dprint "RestoreFileTimes $file: A: ".(stat $file)[8]." M: ".(stat $file)[9].
+#    " C: ".(stat $file)[10];
+
+  return 1;
+}
+
 }
 
 #-------------------------------------------------------------------------------
@@ -457,11 +535,13 @@ sub HandleStandardInput
     my $newGrepmail = new FileHandle;
     $newGrepmail->open("|$filter|$commandLine")
       or cleanExit "Can't execute '$filter' on stdin";
+
     while (!eof $fileHandle)
     {
       my $temp = <$fileHandle>;
       print $newGrepmail $temp;
     }
+
     close $newGrepmail;
   }
   # Otherwise process it directly
@@ -549,15 +629,26 @@ sub ProcessMailFile ($$)
   local $/ = "\n\n";
 
   # This is the main loop. It's executed once for each email
-  while (!eof($fileHandle))
+  while (1)
   {
+    SaveFileTimes($fileName);
+    if (eof($fileHandle))
+    {
+      RestoreFileTimes($fileName);
+      last;
+    }
+    RestoreFileTimes($fileName);
+
     $header_buffer = '';
     $body_buffer = '';
 
     if (!defined $next_header)
     {
       dprint "Getting header for first email.";
+
+      SaveFileTimes($fileName);
       $header_buffer = <$fileHandle>;
+      RestoreFileTimes($fileName);
     }
     else
     {
@@ -578,7 +669,7 @@ sub ProcessMailFile ($$)
     if ($result eq 'skip')
     {
       dprint "Doing an early abort based on header.";
-      SkipToNextEmail($fileHandle,\$next_header);
+      SkipToNextEmail($fileHandle,\$next_header,$fileName);
       next;
     }
     elsif ($result eq 'print')
@@ -595,11 +686,11 @@ sub ProcessMailFile ($$)
       elsif ($opts{'r'})
       {
         $numberOfMatches++;
-        SkipToNextEmail($fileHandle,\$next_header);
+        SkipToNextEmail($fileHandle,\$next_header,$fileName);
       }
       else
       {
-        GetRestOfBody($fileHandle,\$body_buffer,\$next_header);
+        GetRestOfBody($fileHandle,\$body_buffer,\$next_header,$fileName);
         PrintEmail($fileName,$header_buffer,$body_buffer);
         next;
       }
@@ -611,7 +702,7 @@ sub ProcessMailFile ($$)
 
     dprint "Reading body.";
 
-    GetRestOfBody($fileHandle,\$body_buffer,\$next_header);
+    GetRestOfBody($fileHandle,\$body_buffer,\$next_header,$fileName);
 
     my $matchesBody;
 
@@ -651,7 +742,7 @@ sub ProcessMailFile ($$)
     if ($isMatch == 0 && !$opts{'v'})
     {
       dprint "Doing an early abort based on header+body.";
-      SkipToNextEmail($fileHandle,\$next_header);
+      SkipToNextEmail($fileHandle,\$next_header,$fileName);
       next;
     }
     elsif ($isMatch == 0 && $opts{'v'})
@@ -668,11 +759,11 @@ sub ProcessMailFile ($$)
       elsif ($opts{'r'})
       {
         $numberOfMatches++;
-        SkipToNextEmail($fileHandle,\$next_header);
+        SkipToNextEmail($fileHandle,\$next_header,$fileName);
       }
       else
       {
-        GetRestOfBody($fileHandle,\$body_buffer,\$next_header);
+        GetRestOfBody($fileHandle,\$body_buffer,\$next_header,$fileName);
         PrintEmail($fileName,$header_buffer,$body_buffer);
         next;
       }
@@ -683,7 +774,7 @@ sub ProcessMailFile ($$)
     $isMatch = 1;
     
     my $matchesDate = CheckDate(\$header_buffer);
-    $isMatch = 0 if  $opts{'d'} && !$matchesDate;
+    $isMatch = 0 if $opts{'d'} && !$matchesDate;
 
     $isMatch = !$isMatch if $opts{'v'};
 
@@ -825,10 +916,11 @@ sub AnalyzeHeader(\$$\$$)
 
 #-------------------------------------------------------------------------------
 
-sub SkipToNextEmail($\$)
+sub SkipToNextEmail($\$$)
 {
   my $fileHandle = shift;
   my $next_header = shift;
+  my $fileName = shift;
   my $paragraph;
 
   dprint "Skipping to next email.";
@@ -837,28 +929,34 @@ sub SkipToNextEmail($\$)
   # address, so we don't need to do anything. Joy.
   return if defined $$next_header;
 
+  SaveFileTimes($fileName);
   do
   {
     $paragraph = <$fileHandle>;
   }
   while (!eof($fileHandle) && ($paragraph !~ /^\n?From .*\d:\d+:\d.* \d{4}/i)) ;
+  RestoreFileTimes($fileName);
 
   # Buffer if we went too far. Zap the starting newline while we're at it.
+  SaveFileTimes($fileName);
   ($$next_header) = $paragraph =~ /^\n?(.*)/s if (!eof($fileHandle));
+  RestoreFileTimes($fileName);
 }
 
 #-------------------------------------------------------------------------------
 
-sub GetRestOfBody($\$\$)
+sub GetRestOfBody($\$\$$)
 {
   my $fileHandle = shift;
   my $body_buffer = shift;
   my $next_header = shift;
+  my $fileName = shift;
 
   return if defined $$next_header;
 
   # Read the entire email body into the buffer
   my $doneLooking = 0;
+  SaveFileTimes($fileName);
   do
   {
     my $paragraph = <$fileHandle>;
@@ -885,6 +983,7 @@ sub GetRestOfBody($\$\$)
     }
   }
   while (!$doneLooking);
+  RestoreFileTimes($fileName);
 }
 
 #-------------------------------------------------------------------------------
