@@ -27,7 +27,7 @@ my %expected_errors = (
 
 mkdir 't/temp', 0700;
 
-plan (tests => scalar (keys %tests) + 1);
+plan tests => scalar (keys %tests) * 2 + 1;
 
 my %skip = SetSkip(\%tests);
 
@@ -35,7 +35,7 @@ SKIP:
 {
   print "Checking Date::Manip::Date_TimeZone()\n";
 
-  skip("Date::Manip not installed",1) unless ModuleInstalled('Date::Manip');
+  skip("Date::Manip not installed",1) unless Module_Installed('Date::Manip');
 
   # Date::Manip prior to 5.39 nukes the PATH. Save and restore it to avoid
   # problems.
@@ -66,7 +66,7 @@ foreach my $test (sort keys %tests)
 
   SKIP:
   {
-    skip("$skip{$test}",1) if exists $skip{$test};
+    skip("$skip{$test}",2) if exists $skip{$test};
 
     TestIt($test, $tests{$test}, $expected_errors{$test});
   }
@@ -125,7 +125,8 @@ sub TestIt
   my $real_stdout = catfile('t','results',$stdout_file);
   my $real_stderr = catfile('t','results',$stderr_file);
 
-  CheckDiffs([$real_stdout,$test_stdout],[$real_stderr,$test_stderr]);
+  Do_Diff($real_stdout,$test_stdout);
+  Do_Diff($real_stderr,$test_stderr);
 }
 
 # ---------------------------------------------------------------------------
@@ -139,7 +140,7 @@ sub SetSkip
   foreach my $test (keys %tests)
   {
     $skip{$test} = 'Date::Manip not installed'
-      unless ModuleInstalled('Date::Manip');
+      unless Module_Installed('Date::Manip');
   }
 
   return %skip;

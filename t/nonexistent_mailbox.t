@@ -43,7 +43,7 @@ my %localization = (
 
 mkdir 't/temp', 0700;
 
-plan (tests => scalar (keys %tests));
+plan tests => scalar (keys %tests) * 2;
 
 my %skip = SetSkip(\%tests);
 
@@ -53,7 +53,7 @@ foreach my $test (sort keys %tests)
 
   SKIP:
   {
-    skip("$skip{$test}",1) if exists $skip{$test};
+    skip("$skip{$test}",2) if exists $skip{$test};
 
     TestIt($test, $tests{$test}, $expected_errors{$test}, $localization{$test});
   }
@@ -134,7 +134,8 @@ sub TestIt
     copy($real_stderr, $modified_stderr);
   }
 
-  CheckDiffs([$modified_stdout,$test_stdout],[$modified_stderr,$test_stderr]);
+  Do_Diff($modified_stdout,$test_stdout);
+  Do_Diff($modified_stderr,$test_stderr);
 
   unlink $modified_stdout;
   unlink $modified_stderr;

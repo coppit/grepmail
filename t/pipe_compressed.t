@@ -27,7 +27,7 @@ my %expected_errors = (
 
 mkdir 't/temp', 0700;
 
-plan (tests => scalar (keys %tests));
+plan tests => scalar (keys %tests) * 2;
 
 my %skip = SetSkip(\%tests);
 
@@ -37,7 +37,7 @@ foreach my $test (sort keys %tests)
 
   SKIP:
   {
-    skip("$skip{$test}",1) if exists $skip{$test};
+    skip("$skip{$test}",2) if exists $skip{$test};
 
     TestIt($test, $tests{$test}, $expected_errors{$test});
   }
@@ -96,7 +96,8 @@ sub TestIt
   my $real_stdout = catfile('t','results',$stdout_file);
   my $real_stderr = catfile('t','results',$stderr_file);
 
-  CheckDiffs([$real_stdout,$test_stdout],[$real_stderr,$test_stderr]);
+  Do_Diff($real_stdout,$test_stdout);
+  Do_Diff($real_stderr,$test_stderr);
 }
 
 # ---------------------------------------------------------------------------
