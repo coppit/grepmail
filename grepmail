@@ -1,8 +1,8 @@
-#!/usr/bin/perl -w
+#!/users/dwc3q/bin/perl -w
 
 # grepmail
 
-$VERSION = '4.31';
+$VERSION = '4.40';
 
 # Grepmail searches a normal, gzip'd, tzip'd, or bzip2'd mailbox for a given
 # regular expression and returns those emails that match the query. It also
@@ -97,6 +97,7 @@ require 5.00396;
 use vars qw(%opts $pattern $commandLine $VERSION $DEBUG %message_ids_seen );
 
 use Getopt::Std;
+use Date::Parse;
 
 use strict;
 use FileHandle;
@@ -155,6 +156,7 @@ $opts{'M'} = $opts{'m'} = $opts{'s'} = $opts{'u'} = 0;
 
 # Initialize seen messages data structure to empty.
 %message_ids_seen = ();
+
 getopt("eds",\%opts);
 
 $DEBUG = $opts{'D'} || 0;
@@ -167,6 +169,12 @@ $commandLine = "$0 @args";
 
 dprint "Command line was (special characters not escaped):";
 dprint "  $commandLine";
+
+{
+  dprint "Date::Parse VERSION: $Date::Parse::VERSION";
+  # To prevent warning about variable being used only once;
+  my $dummy = $Date::Parse::VERSION;
+}
 
 # Here we have to deal with the possibility that the user specified the search
 # pattern without the -e flag.
@@ -247,21 +255,6 @@ elsif (!defined $pattern)
   print usage() and exit unless $opts{'d'} || $opts{'s'} || $opts{'u'};
 
   $pattern = ".";
-}
-
-if ($opts{'d'})
-{
-  unless (eval "require Date::Manip")
-  {
-    print "You specified -d, but do not have Date::Manip. Get it from CPAN.\n";
-    exit;
-  }
-
-  import Date::Manip;
-
-  dprint "Date::Manip VERSION: $Date::Manip::VERSION";
-  # To prevent warning about variable being used only once;
-  my $dummy = $Date::Manip::VERSION;
 }
 
 ################################ MAIN PROGRAM #################################
@@ -463,7 +456,7 @@ sub HandleInputFiles
     {
       unless ($fileHandle->close())
       {
-        warn "** Can't execute \"$filter\" for file \"$file\": $!, ".
+        warn "** Can't execute \"$filter\" for file \"$file\": ".
              "skipping **\n" unless $opts{'q'};
       }
       next;
@@ -581,6 +574,9 @@ sub DataOnFileHandle
   my $fileHandle = shift;
 
   my $buffer = <$fileHandle>;
+
+  return 0 unless defined $buffer;
+
   PutBackString($fileHandle,$buffer);
 
   return $buffer ? 1 : 0;
@@ -595,7 +591,7 @@ sub PutBackString
   my $fileHandle = shift;
   my $string = shift;
 
-  while ($string ne '')
+  while (defined $string && $string ne '')
   {
     my $char = chop $string;
     $fileHandle->ungetc(ord($char));
@@ -1087,15 +1083,7 @@ sub CheckDate($)
     {
       dprint "Date in email is: $1.";
 
-      my $fixedDate = $1;
-
-      # We have to remove "(GMT+500)" from the end for Date::Manip
-      $fixedDate =~ s/\(GMT[^\)]*\)$//;
-
-      # We have to change +500 to +0500 for Date::Manip
-      $fixedDate =~ s/([\+\-])(\d\d\d)$/$1.'0'.$2/e;
-
-      $emailDate = ParseDate($fixedDate);
+      $emailDate = str2time($1);
       $isInDate = IsInDate($emailDate,$dateRestriction,$date1,$date2);
     }
     else
@@ -1111,6 +1099,48 @@ sub CheckDate($)
   }
 
   return $isInDate;
+}
+
+#-------------------------------------------------------------------------------
+
+# This function tries to parse a date first with Date::Parse. If Date::Parse
+# can't parse the date, then the function tries to use Date::Manip to parse
+# it. Returns '' if the date can't be parsed.
+
+{
+my $loaded_date_manip = undef;
+
+sub ParseDate
+{
+  my $date = shift;
+
+  my $parsedDate;
+
+  # First try to parse the date with Date::Parse;
+  $parsedDate = str2time($date);
+  return $parsedDate if defined $parsedDate;
+
+  # Try to load Date::Manip if we haven't already
+  unless (defined $loaded_date_manip)
+  {
+    if (eval "require Date::Manip")
+    {
+      $loaded_date_manip = 1;
+
+      dprint "Date::Manip VERSION: $Date::Manip::VERSION";
+      # To prevent warning about variable being used only once
+      my $dummy = $Date::Manip::VERSION;
+    }
+    else
+    {
+      $loaded_date_manip = 0;
+    }
+  }
+
+  return '' unless $loaded_date_manip;
+
+  return Date::Manip::UnixDate(Date::Manip::ParseDate($date),'%s');
+}
 }
 
 #-------------------------------------------------------------------------------
@@ -1152,7 +1182,7 @@ sub ProcessDate($)
     cleanExit "\"$2\" is not a valid date" if (!$date2);
 
     # Swap the dates if the user gave them backwards.
-    if ($date1 gt $date2)
+    if ($date1 > $date2)
     {
       my $temp;
       $temp = $date1;
@@ -1193,7 +1223,7 @@ sub IsInDate($$$$)
   {
     if ($dateRestriction eq "before")
     {
-      if ($emailDate lt $date1)
+      if ($emailDate < $date1)
       {
         return 1;
       }
@@ -1204,7 +1234,7 @@ sub IsInDate($$$$)
     }
     elsif ($dateRestriction eq "after")
     {
-      if ($emailDate gt $date1)
+      if ($emailDate > $date1)
       {
         return 1;
       }
@@ -1215,7 +1245,9 @@ sub IsInDate($$$$)
     }
     elsif ($dateRestriction eq "on")
     {
-      if (&UnixDate($emailDate,"%m %d %Y") eq &UnixDate($date1,"%m %d %Y"))
+      # Since these values are in seconds, we have to make sure that $emailDate
+      # is within 24 hours after $date1
+      if (($emailDate > $date1) && ($emailDate-$date1 < 24*60*60))
       {
         return 1;
       }
@@ -1226,7 +1258,7 @@ sub IsInDate($$$$)
     }
     elsif ($dateRestriction eq "between")
     {
-      if (($emailDate gt $date1) && ($emailDate lt $date2))
+      if (($emailDate > $date1) && ($emailDate < $date2))
       {
         return 1;
       }
@@ -1272,8 +1304,8 @@ compressed ASCII input is taken from STDIN.
 -v Output emails that don't match the expression
 
 Date specifications must be of the form of:
-a date like "today", "1st thursday in June 1992", "05/18/93",
-  "12:30 Dec 12th 1880", "8:00pm december tenth",
+a date like "today", "1st thursday in June 1992" (requires Date::Manip),
+  "05/18/93", "12:30 Dec 12th 1880", "8:00pm december tenth",
 OR "before", "after", or "since", followed by a date as defined above,
 OR "between <date> and <date>", where <date> is defined as above.
 EOF
@@ -1345,6 +1377,10 @@ Date specifications must be of the form of:
   - a date like "today", "yesterday", "5/18/93", "5 days ago", "5 weeks ago",
   - OR "before", "after", or "since", followed by a date as defined above,
   - OR "between <date> and <date>", where <date> is defined as above.
+
+Simple date expressions will first be parsed by Date::Parse. If this fails,
+grepmail will attempt to parse the date with Date::Manip, if the module is
+installed on the system.
 
 =item B<-e>
 
@@ -1420,7 +1456,7 @@ Get all email that you mailed yesterday
   grepmail -d yesterday sent-mail
 
 Get all email that you mailed before the first thursday in June 1998 that
-pertains to research:
+pertains to research (requires Date::Manip):
 
   grepmail research -d "before 1st thursday in June 1992" sent-mail
 
