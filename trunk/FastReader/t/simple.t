@@ -19,6 +19,9 @@ END {print "not ok 1\n" unless $loaded;}
 
 print "ok 1\n";
 
+print "Using Mail::Folder::FastReader in: " .
+  $INC{'Mail/Folder/FastReader.pm'} . "\n";
+
 # ----------------------------------------------------------------------------
 
 my $number_emails;
