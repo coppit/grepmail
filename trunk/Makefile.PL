@@ -50,8 +50,9 @@ sub Set_FastReader_Interactively
 
   print <<EOF;
 Do you want to install the Mail::Folder::FastReader module? This
-module was written to help speed up grepmail's mailbox processing. It
-can speed things up by 10-20%
+module was written to help speed up grepmail's mailbox processing. 
+However, the Perl version has now "caught up" and is only about
+5% slower.
 EOF
   print "=> [y] ";
   my $response = <STDIN>;
