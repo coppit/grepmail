@@ -2,7 +2,7 @@
 
 # grepmail
 
-$VERSION = 4.22;
+$VERSION = 4.23;
 
 # Grepmail searches a normal, gzip'd, tzip'd, or bzip2'd mailbox for a given
 # regular expression and returns those emails that match the query. It also
@@ -707,7 +707,8 @@ sub ProcessMailFile ($$)
       my $tempBody = $body_buffer;
 
       # Strip out any attachments that aren't textual
-      $tempBody =~ s/\Q$boundary\E\nContent-Type: (?!text).*?(?=$boundary)//igs;
+      $tempBody =~
+        s/\Q$boundary\E\nContent-Type: (?!text).*?(?=\Q$boundary\E)//igs;
 
       $matchesBody = ($tempBody =~ /$pattern/om) || 0;
     }
