@@ -423,10 +423,6 @@ sub Get_Options
     }
   }
 
-  # Check for -t and -T flag incompatibilities.
-  reportAndExit "-t can not be used with -T"
-    if $opts{'t'} and $opts{'T'};
-
   return (\%opts, @ARGV);
 }
 
@@ -656,7 +652,7 @@ sub HandleInputFiles
       next;
     }
 
-    ProcessMailFile($fileHandle,$file,$#files+1);
+    ProcessMailFile($fileHandle,$file,$#files+1,$filter);
 
     $fileHandle->close();
   }
@@ -791,7 +787,7 @@ sub HandleStandardInput
       return;
     }
 
-    ProcessMailFile($decompressedFileHandle,"Standard input",1);
+    ProcessMailFile($decompressedFileHandle,"Standard input",1,$filter);
 
     $decompressedFileHandle->close()
       or warn "grepmail: Can't execute \"$filter\" on STDIN: $!\n"
@@ -806,7 +802,7 @@ sub HandleStandardInput
       return;
     }
 
-    ProcessMailFile($fileHandle,"Standard input",1);
+    ProcessMailFile($fileHandle,"Standard input",1,undef);
 
     $fileHandle->close()
       or warn "grepmail: Can't process STDIN: $!\n"
@@ -1294,6 +1290,7 @@ sub ProcessMailFile
   my $fileHandle = shift @_;
   my $fileName = shift @_;
   my $number_files = shift @_;
+  my $compression_filter = shift @_;
 
   $fileName = undef if $fileName eq 'Standard input';
 
@@ -1302,6 +1299,8 @@ sub ProcessMailFile
   my $folder_reader;
 
   $USE_CACHING = 0, $USE_GREP = 0 unless defined $fileName;
+  # Add compression support to Mail::Mbox::MessageParser::Grep
+  $USE_CACHING = 0, $USE_GREP = 0 if defined $compression_filter;
 
   Mail::Mbox::MessageParser::SETUP_CACHE( {
       'file_name' => "$ENV{'HOME'}/.grepmail-cache" } )
@@ -2090,8 +2089,8 @@ compressed ASCII input is taken from STDIN.
 -j Search must match status (A=answered, R=read, D=deleted, O=old, F=flagged)
 -l Output the names of files having an email matching the expression
 -M Do not search non-text mime attachments
--m Add to the header "X-Mailfolder: <folder>" and "X-Thread-Number: <number>"
-   (if -t or -T specified) to indicate the folder/thread of the match
+-m Append "X-Mailfolder: <folder>" to all headers to indicate in which folder
+   the match occurred
 -n Print the line number info (and filename if necessary) for the emails
 -q Quiet mode -- don't output warnings
 -r Output the names of the files and the number of emails matching the
@@ -2099,8 +2098,6 @@ compressed ASCII input is taken from STDIN.
 -R Recurse directories
 -s Specify a size range in bytes (see below)
 -S Ignore signatures
--t Print matching threads instead of messages, with smart thread detection
--T Print matching threads instead of messages, without smart thread detection
 -u Ensure that no duplicate emails are output
 -v Output emails that don't match the expression
 -V Display the version number
@@ -2131,15 +2128,15 @@ grepmail - search mailboxes for mail matching a regular expression
 
 =head1 SYNOPSIS
 
-  grepmail [--help|--version] [-abBDhHilmrtTRuvV] [-s sizespec]
+  grepmail [--help|--version] [-abBDhHilmrRuvV] [-j status] [-s sizespec]
     [-d <date-specification>] [-X <signature-pattern>] [-Y <header-pattern>]
     [--] <files...>
 
-  grepmail [--help|--version] [-abBDhHilmrtTRuvV] [-s sizespec]
+  grepmail [--help|--version] [-abBDhHilmrRuvV] [-j status] [-s sizespec]
     [-d <date-specification>] [-X <signature-pattern>] [-Y <header-pattern>]
     [[-e] <pattern>] [--] <files...>
 
-  grepmail [--help|--version] [-abBDhHilmrtTRuvV] [-s sizespec]
+  grepmail [--help|--version] [-abBDhHilmrRuvV] [-j status] [-s sizespec]
     [-d <date-specification>] [-X <signature-pattern>] [-Y <header-pattern>]
     [-E <expr>] [--] <files...>
 
@@ -2329,32 +2326,6 @@ Size constraints must be of the form of:
 
 Ignore signatures. The signature consists of everything after a line
 consisting of "-- ".
-
-=item B<-t>
-
-Print the complete, sorted thread for a match instead of only the single
-email. Threads are reconstructed based on "References" and "In-Reply-To"
-headers. In comparison to -T, -t also compares "Subject" headers to detect new
-threads started by replying to a previous email, and to combine related
-threads which do not cross-reference each other. Messages in threads are
-sorted by references first, then by date.
-
-NOTE: The current threading implementation increases the memory requirements
-of grepmail so that it uses an amount approximately equal to the amount of
-email being processed. In addition, results can not be printed until the
-entire input is processed.
-
-=item B<-T>
-
-Print the complete, sorted thread for a match instead of only the single
-email.  In comparison to -t, threads are reconstructed by only using
-"References" and "In-Reply-To" headers. Messages in threads are
-sorted by references first, then by date.
-
-NOTE: The current threading implementation increases the memory requirements
-of grepmail so that it uses an amount approximately equal to the amount of
-email being processed. In addition, results can not be printed until the
-entire input is processed.
 
 =item B<-u>
 
