@@ -2,7 +2,7 @@
 
 # grepmail
 
-$VERSION = '5.00';
+$VERSION = '5.10';
 
 # Grepmail searches a normal, gzip'd, tzip'd, or bzip2'd mailbox for a given
 # regular expression and returns those emails that match the query. It also
@@ -32,702 +32,16 @@ use vars qw( %opts $pattern $commandLine $VERSION %message_ids_seen
 use Getopt::Std;
 
 use strict;
+use warnings 'all';
+use Mail::Mbox::MessageParser;
 use FileHandle;
 use Carp;
 
-# Set to 1 to enable experimental caching capability
-$USE_CACHING = 0;
+# Set to 1 to enable caching capability
+$USE_CACHING = 1;
 
 # Set to 0 to disable use of external grep utility
 $USE_GREP = 1;
-
-################################################################################
-
-package Mail::Folder::SlowReader;
-
-require Exporter;
-
-no strict;
-
-@ISA = qw(Exporter);
-@EXPORT = qw();
-@EXPORT_OK = qw( $DEBUG SETUP_CACHE );
-
-use strict;
-use vars qw( $VERSION $DEBUG );
-
-$VERSION = '1.01';
-
-my %HEADER_PATTERNS = (
-'^TO:' =>
-  '(^((Original-)?(Resent-)?(To|Cc|Bcc)|(X-Envelope|Apparently(-Resent)?)-To):)',
-'^FROM_DAEMON:' =>
-  '(^(Mailing-List:|Precedence:.*(junk|bulk|list)|To: Multiple recipients of |(((Resent-)?(From|Sender)|X-Envelope-From):|>?From )([^>]*[^(.%@a-z0-9])?(Post(ma?(st(e?r)?|n)|office)|(send)?Mail(er)?|daemon|m(mdf|ajordomo)|n?uucp|LIST(SERV|proc)|NETSERV|o(wner|ps)|r(e(quest|sponse)|oot)|b(ounce|bs\.smtp)|echo|mirror|s(erv(ices?|er)|mtp(error)?|ystem)|A(dmin(istrator)?|MMGR|utoanswer))(([^).!:a-z0-9][-_a-z0-9]*)?[%@>\t ][^<)]*(\(.*\).*)?)?))',
-'^FROM_MAILER:' =>
-  '(^(((Resent-)?(From|Sender)|X-Envelope-From):|>?From)([^>]*[^(.%@a-z0-9])?(Post(ma(st(er)?|n)|office)|(send)?Mail(er)?|daemon|mmdf|n?uucp|ops|r(esponse|oot)|(bbs\.)?smtp(error)?|s(erv(ices?|er)|ystem)|A(dmin(istrator)?|MMGR))(([^).!:a-z0-9][-_a-z0-9]*)?[%@>\t][^<)]*(\(.*\).*)?)?$([^>]|$))',
-);
-
-# Need this for a lookahead.
-my $READ_CHUNK_SIZE = 20000;
-
-$DEBUG = 0;
-
-# The class-wide cache, which will be read and written when necessary. i.e.
-# read when an folder reader object is created which uses caching, and
-# written when a different cache is specified, or when the program exits, 
-my $CACHE = undef;
-
-my $GREP_DATA = {};
-
-my %DEFAULT_CACHE_OPTIONS = (
-  'file_name' => "$ENV{'HOME'}/.grepmail-cache",
-);
-
-my %CACHE_OPTIONS;
-
-my $USING_CACHE = 0;
-
-my $UPDATING_CACHE = 0;
-
-my $CACHE_MODIFIED = 0;
-
-#-------------------------------------------------------------------------------
-
-# Outputs debug messages if $DEBUG is true. Be sure to return 1 so code like
-# 'dprint "blah\n" and exit' works.
-
-sub dprint
-{
-  return 1 unless $DEBUG;
-
-  my $message = join '',@_;
-
-  foreach my $line (split /\n/, $message)
-  {
-    warn "DEBUG (" . __PACKAGE__ . "): $line\n";
-  }
-
-  return 1;
-}
-
-#-------------------------------------------------------------------------------
-
-sub SETUP_CACHE
-{
-  my $options = shift;
-
-  # Load Storable if we need to
-  unless (defined $Storable::VERSION)
-  {
-    if (eval 'require Storable;')
-    {
-      import Storable;
-    }
-    else
-    {
-      warn __PACKAGE__ . ": caching is enabled, " .
-        "but you do not have Storable. " .
-        "Get it from CPAN.\n";
-      exit 1;
-    }
-  }
-
-  # See if the client is setting up a different cache
-  if (defined $options && exists $options->{'file_name'} &&
-    $options->{'file_name'} ne $CACHE_OPTIONS{'file_name'})
-  {
-    dprint "New cache file specified--writing old cache if necessary.";
-    _WRITE_CACHE() if $USING_CACHE && $CACHE_MODIFIED;
-    undef $CACHE;
-  }
-
-  # Override the default settings with the user-specified ones
-  %CACHE_OPTIONS = %DEFAULT_CACHE_OPTIONS;
-  map { $CACHE_OPTIONS{$_} = $options->{$_} } keys %$options;
-
-  _READ_CACHE();
-
-  $USING_CACHE = 1;
-  $CACHE_MODIFIED = 0;
-}
-
-#-------------------------------------------------------------------------------
-
-sub _READ_CACHE
-{
-  my $self = shift;
-
-  dprint "Reading cache";
-
-  unless (-e $CACHE_OPTIONS{'file_name'})
-  {
-    dprint "Can't find cache file \"$CACHE_OPTIONS{'file_name'}\" to read";
-    return;
-  }
-
-  # Unserialize using Storable
-  $CACHE = retrieve($CACHE_OPTIONS{'file_name'});
-}
-
-#-------------------------------------------------------------------------------
-
-sub _WRITE_CACHE
-{
-  # In case this is called during cleanup following an error loading
-  # Storable
-  return unless defined $Storable::VERSION;
-
-  dprint "Writing cache.";
-
-  # Serialize using Storable
-  store($CACHE, $CACHE_OPTIONS{'file_name'});
-}
-
-#-------------------------------------------------------------------------------
-
-# Write the cache when the program exits
-sub END
-{
-  dprint "Program is exiting.";
-
-  _WRITE_CACHE() if $USING_CACHE && $CACHE_MODIFIED;
-}
-
-#-------------------------------------------------------------------------------
-
-# Options: 
-# - file_name: the name of the file. This must be set for caching to occur.
-# - file_handle: the file handle to read from
-# - use_grep: set to true if you want to use grep
-# - cache_options: a reference to a hash containing cache options
-sub new
-{
-  my ($proto, $options) = @_;
-
-  my $class = ref($proto) || $proto;
-  my $self  = {};
-  bless ($self, $class);
-
-  $self->{'line_number'} = 1;
-  $self->{'offset'} = 0;
-
-  $self->{'file_handle'} = undef;
-  $self->{'file_handle'} = $options->{'file_handle'}
-    if exists $options->{'file_handle'};
-
-  # The buffer information. (Used when caching is not enabled)
-  $self->{'read_buffer'} = '';
-  $self->{'start'} = 0;
-  $self->{'end'} = 0;
-
-  $self->{'end_of_file'} = 0;
-
-  # The line number of the last read email.
-  $self->{'email_line_number'} = 0;
-  # The offset of the last read email.
-  $self->{'email_offset'} = 0;
-
-
-  # This is the 0-based number of the email. We'll use it as an index into the
-  # cache, if the cache is being used.
-  $self->{'email_number'} = 0;
-
-  # We need the file name as a key to the cache
-  $self->{'file_name'} = $options->{'file_name'};
-
-  $self->_print_debug_information();
-
-  $self->_validate_and_initialize_cache_entry() if $USING_CACHE;
-
-  $self->{"using_grep"} = 1;
-  $self->{"using_grep"} = $options->{'use_grep'}
-    if defined $options->{'use_grep'};
-
-  return $self;
-}
-
-#-------------------------------------------------------------------------------
-
-sub _print_debug_information
-{
-  my $self = shift;
-
-  return unless $DEBUG;
-
-  dprint "Version: $VERSION";
-
-  dprint "Email file: $self->{'file_name'}";
-  dprint "Valid cache entry exists: " .
-    ($#{ $CACHE->{$self->{'file_name'}}{'lengths'} } != -1 ? "Yes" : "No");
-}
-
-#-------------------------------------------------------------------------------
-
-sub _validate_and_initialize_cache_entry
-{
-  my $self = shift;
-
-  if (!defined $self->{'file_name'})
-  {
-    warn __PACKAGE__ . ": no file name, so caching is disabled.\n";
-
-    $USING_CACHE = 0;
-  }
-  else
-  {
-    my @stat = stat $self->{'file_name'};
-
-    # The file should always exist at this point
-    die "The file $self->{'file_name'} does not exist!"
-      unless scalar(@stat);
-
-    my $size = $stat[7];
-    my $time_stamp = $stat[9];
-
-    if (exists $CACHE->{$self->{'file_name'}})
-    {
-      if ($CACHE->{$self->{'file_name'}}{'size'} != $size ||
-        $CACHE->{$self->{'file_name'}}{'time_stamp'} != $time_stamp)
-      {
-        dprint "Size or time stamp has changed for file " .
-          $self->{'file_name'} . ". Invalidating cache entry";
-
-        delete $CACHE->{$self->{'file_name'}};
-      }
-    }
-
-    if (exists $CACHE->{$self->{'file_name'}})
-    {
-      $UPDATING_CACHE = 0;
-    }
-    else
-    {
-      $CACHE->{$self->{'file_name'}}{'size'} = $size;
-      $CACHE->{$self->{'file_name'}}{'time_stamp'} = $time_stamp;
-      $CACHE->{$self->{'file_name'}}{'lengths'} = [];
-      $UPDATING_CACHE = 1;
-    }
-  }
-}
-
-#-------------------------------------------------------------------------------
-
-# Returns true if the file handle has been fully read
-sub end_of_file
-{
-  my $self = shift;
-
-  return $self->{'end_of_file'};
-}
-
-#-------------------------------------------------------------------------------
-
-# The line number of the last email read
-sub line_number
-{
-  my $self = shift;
-
-  return $self->{'email_line_number'};
-}
-
-#-------------------------------------------------------------------------------
-
-# The offset of the last email read
-sub offset
-{
-  my $self = shift;
-
-  return $self->{'email_offset'};
-}
-
-#-------------------------------------------------------------------------------
-
-# Reads an email from the file and returns it.
-# Preconditions:
-# - file handle is set and open
-# - not end of file
-sub _cache_read_next_email
-{
-  my $self = shift;
-
-  dprint "Using cache" if $DEBUG;
-
-  $self->{'email_line_number'} = $self->{'line_number'};
-  $self->{'email_offset'} = $self->{'offset'};
-
-  my $email_length = 
-    $CACHE->{$self->{'file_name'}}{'lengths'}[$self->{'email_number'}];
-
-  while (read($self->{'file_handle'}, $self->{'read_buffer'}, $email_length))
-  {
-    last if $email_length <= length($self->{'read_buffer'});
-  }
-
-  $self->{'start'} = 0;
-  $self->{'end'} = $email_length;
-
-  if (eof $self->{'file_handle'} &&
-    $self->{'end'} == length($self->{'read_buffer'}))
-  {
-    $self->{'end_of_file'} = 1;
-  }
-
-  $self->{'line_number'} +=
-    $CACHE->{$self->{'file_name'}}{'line_numbers'}[$self->{'email_number'}];
-
-  $self->{'offset'} +=
-    $CACHE->{$self->{'file_name'}}{'offset'}[$self->{'email_number'}];
-
-  $self->{'email_number'}++;
-}
-
-#-------------------------------------------------------------------------------
-
-# Reads an email from the file and returns it.
-# Preconditions:
-# - file handle is set and open
-# - not end of file
-sub _noncache_read_next_email
-{
-  my $self = shift;
-
-  dprint "Not using cache or grep data" if $DEBUG;
-
-  $self->{'email_line_number'} = $self->{'line_number'};
-  $self->{'email_offset'} = $self->{'offset'};
-
-  $self->{'start'} = $self->{'end'};
-
-  my $current_read_chunk_size = $READ_CHUNK_SIZE;
-
-  # Look for the start of the next email
-  LOOK_FOR_NEXT_HEADER:
-  while ($self->{'read_buffer'} =~ m/^
-    (X-Draft-From:\s.*|X-From-Line:\s.*|
-    From\s
-      # Skip names, months, days
-      (?> [^:]+ ) 
-      # Match time
-      (?: :\d\d){1,2}
-      # Match time zone (EST), hour shift (+0500), and-or year
-      (?: \s+ (?: [A-Z]{2,3} | [+-]?\d{4} ) ){1,3}
-      # smail compatibility
-      (\sremote\sfrom\s.*)?
-    )$/xmg)
-  {
-    $self->{'end'} = pos($self->{'read_buffer'}) - length($1);
-
-    # Don't stop on email header for the first email in the buffer
-    next unless $self->{'end'};
-
-    # Keep looking if the header we found is part of a "Begin Included
-    # Message".
-    my $end_of_string = substr($self->{'read_buffer'}, $self->{'end'}-200, 200);
-    next if $end_of_string =~
-        /\n-----(?: Begin Included Message |Original Message)-----\n[^\n]*\n*$/i;
-
-    # Found the next email!
-    my $email =
-      substr($self->{'read_buffer'}, $self->{'start'}, $self->{'end'}-$self->{'start'});
-    $self->{'line_number'} += ($email =~ tr/\n//);
-    $self->{'offset'} += length $email;
-
-    if ($UPDATING_CACHE)
-    {
-      dprint("Storing data into cache, length " . length($email)) if $DEBUG;
-
-      $CACHE->{$self->{'file_name'}}{'lengths'}[$self->{'email_number'}] =
-        length($email);
-
-      $CACHE->{$self->{'file_name'}}{'line_numbers'}[$self->{'email_number'}] =
-        $self->{'email_line_number'};
-
-      $CACHE->{$self->{'file_name'}}{'offsets'}[$self->{'email_number'}] =
-        $self->{'email_offset'};
-
-      $CACHE_MODIFIED = 1;
-
-      $self->{'email_number'}++;
-    }
-    return \$email;
-  }
-
-  # Didn't find next email in current buffer. Most likely we need to read some
-  # more of the mailbox. Shift the current email to the front of the buffer
-  # unless we've already done so.
-  $self->{'read_buffer'} = substr($self->{'read_buffer'},$self->{'start'})
-    unless $self->{'start'} == 0;
-  $self->{'start'} = 0;
-
-  # Start looking at the end of the buffer, but back up some in case the edge
-  # of the newly read buffer contains the start of a new header. I believe the
-  # RFC says header lines can be at most 90 characters long.
-  my $search_position = length($self->{'read_buffer'}) - 90;
-  $search_position = 0 if $search_position < 0;
-
-  # Can't use sysread because it doesn't work with ungetc
-  if ($current_read_chunk_size == 0)
-  {
-    local $/ = undef;
-
-    if (eof $self->{'file_handle'})
-    {
-      $self->{'end_of_file'} = 1;
-
-      if ($UPDATING_CACHE)
-      {
-        dprint("Storing data into cache, length " .
-          length($self->{'read_buffer'})) if $DEBUG;
-
-        $CACHE->{$self->{'file_name'}}{'lengths'}[$self->{'email_number'}] =
-          length($self->{'read_buffer'});
-
-        $CACHE->{$self->{'file_name'}}{'line_numbers'}[$self->{'email_number'}] =
-          $self->{'email_line_number'};
-
-        $CACHE->{$self->{'file_name'}}{'offsets'}[$self->{'email_number'}] =
-          $self->{'email_offset'};
-
-        $CACHE_MODIFIED = 1;
-
-        $self->{'email_number'}++;
-      }
-
-      return \$self->{'read_buffer'};
-    }
-    else
-    {
-      # < $self->{'file_handle'} > doesn't work, so we use readline
-      $self->{'read_buffer'} = readline($self->{'file_handle'});
-      pos($self->{'read_buffer'}) = $search_position;
-      goto LOOK_FOR_NEXT_HEADER;
-    }
-  }
-  else
-  {
-    if (read($self->{'file_handle'}, $self->{'read_buffer'},
-      $current_read_chunk_size, length($self->{'read_buffer'})))
-    {
-      pos($self->{'read_buffer'}) = $search_position;
-      $current_read_chunk_size *= 2;
-      goto LOOK_FOR_NEXT_HEADER;
-    }
-    else
-    {
-      $self->{'end_of_file'} = 1;
-
-      if ($UPDATING_CACHE)
-      {
-        dprint("Storing data into cache, length " .
-          length($self->{'read_buffer'})) if $DEBUG;
-
-        $CACHE->{$self->{'file_name'}}{'lengths'}[$self->{'email_number'}] =
-          length($self->{'read_buffer'});
-
-        $CACHE->{$self->{'file_name'}}{'line_numbers'}[$self->{'email_number'}] =
-          $self->{'email_line_number'};
-
-        $CACHE->{$self->{'file_name'}}{'offsets'}[$self->{'email_number'}] =
-          $self->{'email_offset'};
-
-        $CACHE_MODIFIED = 1;
-
-        $self->{'email_number'}++;
-      }
-
-      return \$self->{'read_buffer'};
-    }
-  }
-}
-
-#-------------------------------------------------------------------------------
-
-sub _READ_GREP_DATA
-{
-  my $filename = shift;
-
-  my @lines_and_offsets;
-
-  {
-    my @grep_results = `grep --extended-regexp --line-number --byte-offset '^(X-Draft-From: .*|X-From-Line: .*|From [^:]+(:[0-9][0-9]){1,2}( +([A-Z]{2,3}|[+-]?[0-9]{4})){1,3}( remote from .*)?)\$' $filename`;
-
-    foreach my $match_result (@grep_results)
-    {
-      my ($line_number, $byte_offset) = $match_result =~ /^(\d+):(\d+):/;
-      push @lines_and_offsets,
-        {'line number' => $line_number,'byte offset' => $byte_offset};
-    }
-  }
-
-  for(my $match_number = 0; $match_number <= $#lines_and_offsets; $match_number++)
-  {
-    if ($match_number == $#lines_and_offsets)
-    {
-      my $filesize = -s $filename;
-      $GREP_DATA->{$filename}{'lengths'}[$match_number] =
-        $filesize - $lines_and_offsets[$match_number]{'byte offset'};
-    }
-    else
-    {
-      $GREP_DATA->{$filename}{'lengths'}[$match_number] =
-        $lines_and_offsets[$match_number+1]{'byte offset'} -
-        $lines_and_offsets[$match_number]{'byte offset'};
-    }
-
-    $GREP_DATA->{$filename}{'line_numbers'}[$match_number] =
-      $lines_and_offsets[$match_number]{'line number'};
-
-    $GREP_DATA->{$filename}{'offsets'}[$match_number] =
-      $lines_and_offsets[$match_number]{'byte offset'};
-
-    $GREP_DATA->{$filename}{'validated'}[$match_number] = 0;
-  }
-}
-
-#-------------------------------------------------------------------------------
-
-# Reads an email from the file and returns it.
-# Preconditions:
-# - file handle is set and open
-# - not end of file
-sub _grep_read_next_email
-{
-  my $self = shift;
-
-  dprint "Using grep data" if $DEBUG;
-
-  _READ_GREP_DATA($self->{'file_name'})
-    unless defined $GREP_DATA->{$self->{'file_name'}};
-
-  $self->{'email_line_number'} =
-    $GREP_DATA->{$self->{'file_name'}}{'line_numbers'}[$self->{'email_number'}];
-  $self->{'email_offset'} =
-    $GREP_DATA->{$self->{'file_name'}}{'offsets'}[$self->{'email_number'}];
-
-  my $email = '';
-
-  LOOK_FOR_NEXT_EMAIL:
-  while ($self->{'email_number'} <=
-      $#{$GREP_DATA->{$self->{'file_name'}}{'lengths'}})
-  {
-    {
-      my $bytes_read = 0;
-      my $current_length = length($email);
-      do
-      {
-        $bytes_read += read($self->{'file_handle'},$email,
-        $GREP_DATA->{$self->{'file_name'}}{'lengths'}[$self->{'email_number'}]-$current_length,
-        $current_length);
-      } while ($bytes_read != 
-        $GREP_DATA->{$self->{'file_name'}}{'lengths'}[$self->{'email_number'}]-$current_length);
-    }
-
-    last LOOK_FOR_NEXT_EMAIL
-      if $GREP_DATA->{$self->{'file_name'}}{'validated'}[$self->{'email_number'}];
-
-    # Keep looking if the header we found is part of a "Begin Included
-    # Message".
-    my $end_of_string = substr($email, -200, 200);
-    if ($end_of_string =~
-        /\n-----(?: Begin Included Message |Original Message)-----\n[^\n]*\n*$/i)
-    {
-      $GREP_DATA->{$self->{'file_name'}}{'lengths'}[$self->{'email_number'}] +=
-        $GREP_DATA->{$self->{'file_name'}}{'lengths'}[$self->{'email_number'}+1];
-
-      my $last_email_index = $#{$GREP_DATA->{$self->{'file_name'}}{'lengths'}};
-
-      if($self->{'email_number'}+2 <= $last_email_index)
-      {
-        @{$GREP_DATA->{$self->{'file_name'}}{'lengths'}}
-          [$self->{'email_number'}+1..$last_email_index] =
-            @{$GREP_DATA->{$self->{'file_name'}}{'lengths'}}
-            [$self->{'email_number'}+2..$last_email_index];
-
-        @{$GREP_DATA->{$self->{'file_name'}}{'line_numbers'}}
-          [$self->{'email_number'}+1..$last_email_index] =
-            @{$GREP_DATA->{$self->{'file_name'}}{'line_numbers'}}
-            [$self->{'email_number'}+2..$last_email_index];
-
-        @{$GREP_DATA->{$self->{'file_name'}}{'offsets'}}
-          [$self->{'email_number'}+1..$last_email_index] =
-            @{$GREP_DATA->{$self->{'file_name'}}{'offsets'}}
-            [$self->{'email_number'}+2..$last_email_index];
-      }
-
-      pop @{$GREP_DATA->{$self->{'file_name'}}{'lengths'}};
-      pop @{$GREP_DATA->{$self->{'file_name'}}{'line_numbers'}};
-      pop @{$GREP_DATA->{$self->{'file_name'}}{'offsets'}};
-    }
-    else
-    {
-      $GREP_DATA->{$self->{'file_name'}}{'validated'}[$self->{'email_number'}] = 1;
-      last LOOK_FOR_NEXT_EMAIL;
-    }
-  }
-
-  $self->{'end_of_file'} = 1
-    if $self->{'email_number'} == 
-      $#{$GREP_DATA->{$self->{'file_name'}}{'lengths'}};
-
-  $self->{'email_number'}++;
-
-  return \$email;
-}
-
-#-------------------------------------------------------------------------------
-
-{
-my $has_grep = undef;
-
-sub Has_Grep()
-{
-  unless (defined $has_grep)
-  {
-    my $temp = `grep --help 2>&1`;
-    if ($temp =~ /usage/i && $temp =~ /extended-reg/i &&
-      $temp =~ /byte-off/i && $temp =~ /line-numb/i)
-    {
-      $has_grep = 1;
-    }
-    else
-    {
-      $has_grep = 0;
-    }
-  }
-
-  return $has_grep;
-}
-}
-
-#-------------------------------------------------------------------------------
-
-# Reads an email from the file and returns it as a reference.
-# Preconditions:
-# - file handle is set and open
-# - not end of file
-sub read_next_email
-{
-  my $self = shift;
-
-  if ($USING_CACHE && !$UPDATING_CACHE)
-  {
-    $self->_cache_read_next_email();
-    return \$self->{'read_buffer'};
-  }
-  elsif ($self->{'using_grep'} && Has_Grep() &&
-    defined $self->{'file_name'} && $self->{'file_name'} !~ /\.(gz|Z|bz2|tz)$/)
-  {
-    return $self->_grep_read_next_email();
-  }
-  else
-  {
-    return $self->_noncache_read_next_email();
-  }
-}
-
-################################################################################
-
-package main;
 
 # Internal function return values.
 my $PRINT                 = 0;
@@ -745,6 +59,15 @@ my $LESS_THAN_OR_EQUAL    = 11;
 my $GREATER_THAN          = 12;
 my $GREATER_THAN_OR_EQUAL = 13;
 my $EQUAL                 = 14;
+
+my %HEADER_PATTERNS = (
+'^TO:' =>
+  '(^((Original-)?(Resent-)?(To|Cc|Bcc)|(X-Envelope|Apparently(-Resent)?)-To):)',
+'^FROM_DAEMON:' =>
+  '(^(Mailing-List:|Precedence:.*(junk|bulk|list)|To: Multiple recipients of |(((Resent-)?(From|Sender)|X-Envelope-From):|>?From )([^>]*[^(.%@a-z0-9])?(Post(ma?(st(e?r)?|n)|office)|(send)?Mail(er)?|daemon|m(mdf|ajordomo)|n?uucp|LIST(SERV|proc)|NETSERV|o(wner|ps)|r(e(quest|sponse)|oot)|b(ounce|bs\.smtp)|echo|mirror|s(erv(ices?|er)|mtp(error)?|ystem)|A(dmin(istrator)?|MMGR|utoanswer))(([^).!:a-z0-9][-_a-z0-9]*)?[%@>\t ][^<)]*(\(.*\).*)?)?))',
+'^FROM_MAILER:' =>
+  '(^(((Resent-)?(From|Sender)|X-Envelope-From):|>?From)([^>]*[^(.%@a-z0-9])?(Post(ma(st(er)?|n)|office)|(send)?Mail(er)?|daemon|mmdf|n?uucp|ops|r(esponse|oot)|(bbs\.)?smtp(error)?|s(erv(ices?|er)|ystem)|A(dmin(istrator)?|MMGR))(([^).!:a-z0-9][-_a-z0-9]*)?[%@>\t][^<)]*(\(.*\).*)?)?$([^>]|$))',
+);
 
 #-------------------------------------------------------------------------------
 
@@ -1568,6 +891,8 @@ sub Do_Simple_Pattern_Matching
   my $numberOfMatches = shift;
   my $line = shift;
 
+  die unless ref $email_header && ref $email_body;
+
   dprint "Checking for early match or abort based on header information."
     if $opts{'D'};
 
@@ -1597,8 +922,9 @@ sub Do_Simple_Pattern_Matching
     }
     else
     {
-      ConvertEmailToMboxAndPrintIt($fileName,$$email_header,$$email_body,$number_files,$line)
-        if $opts{'u'} && NotADuplicate($$email_header) || !$opts{'u'};
+      ConvertEmailToMboxAndPrintIt($fileName,$email_header,
+        $email_body,$number_files,$line)
+          if $opts{'u'} && NotADuplicate($email_header) || !$opts{'u'};
 
       return ($CONTINUE,$numberOfMatches);
     }
@@ -1671,12 +997,17 @@ sub Do_Simple_Pattern_Matching
       $matchesBody = 1;
       last;
     }
+
+    pos($$email_body) = 0;
   }
   else
   {
     # Avoid perl 5.6 bug which causes spurious warning even though
     # $pattern is defined.
     local $^W = 0 if $] >= 5.006 && $] < 5.8;
+
+    pos($$email_body) = 0;
+
     if ($$email_body =~ m/($pattern)/omg)
     {
       my $position = pos($$email_body) - length($1);
@@ -1684,6 +1015,8 @@ sub Do_Simple_Pattern_Matching
       $matchesBody = 1 unless $opts{'S'} && 
         defined $signature_offset && $position > $signature_offset;
     }
+
+    pos($$email_body) = 0;
   }
 
   #----------------------------------------------------------------
@@ -1727,9 +1060,9 @@ sub Do_Simple_Pattern_Matching
     }
     else
     {
-      ConvertEmailToMboxAndPrintIt($fileName,$$email_header,
-        $$email_body,$number_files,$line)
-          if $opts{'u'} && NotADuplicate($$email_header) || !$opts{'u'};
+      ConvertEmailToMboxAndPrintIt($fileName,$email_header,
+        $email_body,$number_files,$line)
+          if $opts{'u'} && NotADuplicate($email_header) || !$opts{'u'};
 
       return ($CONTINUE,$numberOfMatches);
     }
@@ -1742,7 +1075,7 @@ sub Do_Simple_Pattern_Matching
   $isMatch = 1;
 
   {
-    my $matchesDate = Email_Matches_Date($$email_header);
+    my $matchesDate = Email_Matches_Date($email_header);
     $isMatch = 0 if defined $opts{'d'} && !$matchesDate;
 
     dprint "Email matches date constraint\n"
@@ -1771,9 +1104,9 @@ sub Do_Simple_Pattern_Matching
     }
     else
     {
-      ConvertEmailToMboxAndPrintIt($fileName,$$email_header,
-        $$email_body,$number_files,$line)
-          if $opts{'u'} && NotADuplicate($$email_header) || !$opts{'u'};
+      ConvertEmailToMboxAndPrintIt($fileName,$email_header,
+        $email_body,$number_files,$line)
+          if $opts{'u'} && NotADuplicate($email_header) || !$opts{'u'};
     }
   }
   else
@@ -1795,6 +1128,8 @@ sub Do_Complex_Pattern_Matching
   my $number_files = shift;
   my $numberOfMatches = shift;
   my $line = shift;
+
+  die unless ref $email_header && ref $email_body;
 
   dprint "Checking for early match or abort based on header information."
     if $opts{'D'};
@@ -1825,8 +1160,9 @@ sub Do_Complex_Pattern_Matching
     }
     else
     {
-      ConvertEmailToMboxAndPrintIt($fileName,$$email_header,$$email_body,$number_files,$line)
-        if $opts{'u'} && NotADuplicate($$email_header) || !$opts{'u'};
+      ConvertEmailToMboxAndPrintIt($fileName,$email_header,
+        $email_body,$number_files,$line)
+          if $opts{'u'} && NotADuplicate($email_header) || !$opts{'u'};
 
       return ($CONTINUE,$numberOfMatches);
     }
@@ -1889,9 +1225,9 @@ sub Do_Complex_Pattern_Matching
     }
     else
     {
-      ConvertEmailToMboxAndPrintIt($fileName,$$email_header,
-        $$email_body,$number_files,$line)
-          if $opts{'u'} && NotADuplicate($$email_header) || !$opts{'u'};
+      ConvertEmailToMboxAndPrintIt($fileName,$email_header,
+        $email_body,$number_files,$line)
+          if $opts{'u'} && NotADuplicate($email_header) || !$opts{'u'};
 
       return ($CONTINUE,$numberOfMatches);
     }
@@ -1904,7 +1240,7 @@ sub Do_Complex_Pattern_Matching
   $isMatch = 1;
 
   {
-    my $matchesDate = Email_Matches_Date($$email_header);
+    my $matchesDate = Email_Matches_Date($email_header);
     $isMatch = 0 if defined $opts{'d'} && !$matchesDate;
 
     dprint "Email matches date constraint\n"
@@ -1933,9 +1269,9 @@ sub Do_Complex_Pattern_Matching
     }
     else
     {
-      ConvertEmailToMboxAndPrintIt($fileName,$$email_header,
-        $$email_body,$number_files,$line)
-          if $opts{'u'} && NotADuplicate($$email_header) || !$opts{'u'};
+      ConvertEmailToMboxAndPrintIt($fileName,$email_header,
+        $email_body,$number_files,$line)
+          if $opts{'u'} && NotADuplicate($email_header) || !$opts{'u'};
     }
   }
   else
@@ -1959,39 +1295,33 @@ sub ProcessMailFile
   my $fileName = shift @_;
   my $number_files = shift @_;
 
+  $fileName = undef if $fileName eq 'Standard input';
+
   my $numberOfMatches = 0;
 
   my $folder_reader;
 
-  $Mail::Folder::SlowReader::DEBUG = $opts{'D'};
+  $USE_CACHING = 0, $USE_GREP = 0 unless defined $fileName;
 
-  if ($fileName eq 'Standard input')
-  {
-    $folder_reader =
-      new Mail::Folder::SlowReader( {
-        'file_handle' => $fileHandle,
-        'use_grep' => $USE_GREP,
-      } );
-  }
-  else
-  {
-    Mail::Folder::SlowReader::SETUP_CACHE() if $USE_CACHING;
-    $folder_reader =
-      new Mail::Folder::SlowReader( {
-        'file_name' => $fileName,
-        'file_handle' => $fileHandle,
-        'use_grep' => $USE_GREP,
-      } );
-  }
+  Mail::Mbox::MessageParser::SETUP_CACHE( {
+      'file_name' => "$ENV{'HOME'}/.grepmail-cache" } )
+    if $USE_CACHING;
+
+  $folder_reader =
+    new Mail::Mbox::MessageParser( {
+      'file_name' => $fileName,
+      'file_handle' => $fileHandle,
+      'enable_cache' => $USE_CACHING,
+      'enable_grep' => $USE_GREP,
+      'debug' => $opts{'D'},
+    } );
 
   # This is the main loop. It's executed once for each email
-  while(1)
+  # Direct access for performance reasons
+  #while($folder_reader->end_of_file())
+  while(!$folder_reader->{'end_of_file'})
   {
     dprint "Reading email" if $opts{'D'};
-
-    # Direct access for performance reasons
-    #last if $folder_reader->end_of_file();
-    last if $folder_reader->{'end_of_file'};
 
     my $email = $folder_reader->read_next_email();
 
@@ -2005,8 +1335,6 @@ sub ProcessMailFile
 
     my $email_body = $email;
     substr($$email_body,0,$end_of_header) = '';
-
-    # Free memory
 
     PrintEmailStatistics($email_header,$email_body) if $opts{'D'};
 
@@ -2049,7 +1377,9 @@ sub NotADuplicate
 {
   my $email_header = shift;
 
-  my ($message_id) = $email_header =~ /^Message-Id:\s*<([^>]+)>/mi;
+  die unless ref $email_header;
+
+  my ($message_id) = $$email_header =~ /^Message-Id:\s*<([^>]+)>/mi;
 
   if (defined $message_id)
   {
@@ -2079,12 +1409,12 @@ sub NotADuplicate
     # Now create a message id
     if (defined $Digest::MD5::VERSION)
     {
-      $message_id = Digest::MD5::md5_hex($email_header);
+      $message_id = Digest::MD5::md5_hex($$email_header);
       dprint "Generated message id $message_id with Digest::MD5";
     }
     else
     {
-      $message_id = $email_header;
+      $message_id = $$email_header;
       dprint "Using email header as message id.";
     }
   }
@@ -2118,6 +1448,8 @@ sub GetHeaderLine
   my $email_header = shift;
   my $header_line = shift;
 
+  die unless ref $email_header;
+
   # Avoid perl 5.6 bug which causes spurious warning even though $email_header
   # is defined.
   local $^W = 0 if $] >= 5.006 && $] < 5.8;
@@ -2144,6 +1476,8 @@ sub PrintEmailStatistics
 {
   my $email_header = shift;
   my $email_body = shift;
+
+  die unless ref $email_header && ref $email_body;
 
   dprint '-'x70;
   dprint "Processing email:";
@@ -2221,6 +1555,8 @@ sub AnalyzeHeader
   my $fileHandle = shift;
   my $pattern = shift;
   my $doHeaderMatch = shift;
+
+  die unless ref $email_header && ref $email_body;
 
   # See if the email fails the status flag restriction
   my $matchesStatus = 1;
@@ -2335,28 +1671,28 @@ sub Header_Matches_Pattern
 sub ConvertEmailToMboxAndPrintIt
 {
   my $fileName = shift;
-  my $header = shift;
-  my $body = shift;
+  my $email_header = shift;
+  my $email_body = shift;
   my $number_files = shift;
   my $line_number = shift;
 
-  ($header,$body) = ConvertEmailToMbox($header,$body);
-  PrintEmail($fileName,$header,$body,$number_files,$line_number);
+  ($email_header,$email_body) = ConvertEmailToMbox($email_header,$email_body);
+  PrintEmail($fileName,$email_header,$email_body,$number_files,$line_number);
 }
 
 #-------------------------------------------------------------------------------
 
 sub ConvertEmailToMbox
 {
-  my $header = shift;
-  my $body = shift;
+  my $email_header = shift;
+  my $email_body = shift;
 
   dprint "Making email mbox format.";
 
   # Check for a Gnus email
-  $header =~ s/^(X-From-Line|X-Draft-From):\s+/From /;
+  $$email_header =~ s/^(X-From-Line|X-Draft-From):\s+/From /;
 
-  return ($header,$body);
+  return ($email_header,$email_body);
 }
 
 #-------------------------------------------------------------------------------
@@ -2364,8 +1700,8 @@ sub ConvertEmailToMbox
 sub PrintEmail
 {
   my $fileName = shift;
-  my $header = shift;
-  my $body = shift;
+  my $email_header = shift;
+  my $email_body = shift;
   my $number_files = shift;
   my $line_number = shift;
 
@@ -2374,7 +1710,7 @@ sub PrintEmail
   if ($opts{'n'})
   {
     # Print line-by-line
-    while ($header =~ /([^\n]*\n)/g)
+    while ($$email_header =~ /([^\n]*\n)/g)
     {
       my $line = $1;
 
@@ -2395,7 +1731,7 @@ sub PrintEmail
     # Don't print the body if -H is specified
     return if $opts{'H'};
 
-    while ($body =~ /([^\n]*\n)/g)
+    while ($$email_body =~ /([^\n]*\n)/g)
     {
       my $line = $1;
 
@@ -2406,15 +1742,15 @@ sub PrintEmail
   }
   else
   {
-    $header =~ s/\n\n/\nX-Mailfolder: $fileName\n\n/ if $opts{'m'};
+    $$email_header =~ s/\n\n/\nX-Mailfolder: $fileName\n\n/ if $opts{'m'};
 
-    print $header;
+    print $$email_header;
 
     # Don't print the body if -H is specified
     return if $opts{'H'};
 
     # Print whatever body we've read already.
-    print $body;
+    print $$email_body;
   }
 }
 
@@ -2426,7 +1762,7 @@ sub PrintEmail
 
 sub Email_Matches_Date
 {
-  my $email_header = shift @_;
+  my $email_header = ${ shift @_ };
 
   my ($emailDate, $isInDate) = ('',0);
 
@@ -2489,38 +1825,34 @@ sub ParseDate
 {
   my $date = shift;
 
-  my $parsedDate;
-
   # First try to parse the date with Date::Parse;
-  $parsedDate = str2time($date);
-  return ($parsedDate,0) if defined $parsedDate;
-
-  # Try to load Date::Manip if we haven't already
-  unless (defined $loaded_date_manip)
   {
-    if (eval "require Date::Manip")
-    {
-      $loaded_date_manip = 1;
-
-      # To prevent warning about variable being used only once
-      my $dummy = $Date::Manip::VERSION;
-    }
-    else
-    {
-      $loaded_date_manip = 0;
-    }
+    my $parsedDate = str2time($date);
+    return ($parsedDate,0) if defined $parsedDate;
   }
 
-  return '' unless $loaded_date_manip;
+  {
+    # Try to load Date::Manip if we haven't already
+    unless (defined $loaded_date_manip)
+    {
+      if (eval "require Date::Manip")
+      {
+        $loaded_date_manip = 1;
 
-  # First try to fix dates which do not have times to use midnight instead.
-  my $temp_date =
-    Date::Manip::UnixDate(Date::Manip::ParseDate("midnight $date"),'%s');
-  return ($temp_date,1) if defined $temp_date;
+        my ($version_number) = $Date::Manip::VERSION =~ /^(\d+\.\d+)/;
+        Date::Manip::Date_Init("TodayIsMidnight=1") if $version_number >= 5.43;
+      }
+      else
+      {
+        $loaded_date_manip = 0;
+      }
+    }
 
-  # If the previous parsing failed, it probably has a time already
-  $temp_date = Date::Manip::UnixDate(Date::Manip::ParseDate($date),'%s');
-  return ($temp_date,0) if defined $temp_date;
+    return '' unless $loaded_date_manip;
+
+    my $parsedDate = Date::Manip::UnixDate(Date::Manip::ParseDate($date),'%s');
+    return ($parsedDate,0) if defined $parsedDate;
+  }
 
   return ('',undef);
 }
@@ -2657,11 +1989,10 @@ sub ProcessSize($)
 
 sub IsInDate($$$$)
 {
-  my ($emailDate,$dateRestriction,$date1,$date2);
-  $emailDate = shift @_;
-  $dateRestriction = shift @_;
-  $date1 = shift @_;
-  $date2 = shift @_;
+  my $emailDate = shift @_;
+  my $dateRestriction = shift @_;
+  my $date1 = shift @_;
+  my $date2 = shift @_;
 
   # Now we do the date checking.
   return 1 if $dateRestriction == $NONE;
@@ -2686,21 +2017,24 @@ sub IsInSize
   my $size1 = shift @_;
   my $size2 = shift @_;
 
-  # Now we do the size checking.
-  return 1 if $sizeRestriction == $NONE;
-  return (length($$email_header) + length($$email_body)) < $size1
-    if $sizeRestriction == $LESS_THAN;
-  return (length($$email_header) + length($$email_body)) <= $size1
-    if $sizeRestriction == $LESS_THAN_OR_EQUAL;
-  return (length($$email_header) + length($$email_body)) > $size1
-    if $sizeRestriction == $GREATER_THAN;
-  return (length($$email_header) + length($$email_body)) >= $size1
-    if $sizeRestriction == $GREATER_THAN_OR_EQUAL;
-  return (length($$email_header) + length($$email_body)) == $size1
-    if $sizeRestriction == $EQUAL;
+  die unless ref $email_header && ref $email_body;
 
-  return (length($$email_header) + length($$email_body)) >= $size1 &&
-      (length($$email_header) + length($$email_body)) <= $size2
+  my $length = length($$email_header) + length($$email_body);
+
+  # Now we do the size checking.
+  return 1
+    if $sizeRestriction == $NONE;
+  return $length < $size1
+    if $sizeRestriction == $LESS_THAN;
+  return $length <= $size1
+    if $sizeRestriction == $LESS_THAN_OR_EQUAL;
+  return $length > $size1
+    if $sizeRestriction == $GREATER_THAN;
+  return $length >= $size1
+    if $sizeRestriction == $GREATER_THAN_OR_EQUAL;
+  return $length == $size1
+    if $sizeRestriction == $EQUAL;
+  return $length >= $size1 && $length <= $size2
     if $sizeRestriction == $BETWEEN;
 
   return 0;

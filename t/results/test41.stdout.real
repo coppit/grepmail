@@ -20,7 +20,7 @@ Subject: Re: Serial Interface
 References: <199807010601.XAA26862@mail3.sirius.com>
 Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-X-Mailfolder: t/mailarc-1.txt
+X-Mailfolder: t/mailboxes/mailarc-1.txt
 
 Aaron Edsinger wrote:
  
@@ -527,7 +527,7 @@ Mime-Version: 1.0
 To: handyboard@media.mit.edu
 Subject: Interrupt Handler for Serial communication
 Content-Type: multipart/mixed; boundary="------------18CC6AC44E2E"
-X-Mailfolder: t/mailarc-1.txt
+X-Mailfolder: t/mailboxes/mailarc-1.txt
 
 This is a multi-part message in MIME format.
 
@@ -812,7 +812,7 @@ Subject: Re: Handyboard/RWP without p-code
 References: <3.0.32.19980716151646.00809d20@nemo.mech.eng.usyd.edu.au>
 Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-X-Mailfolder: t/mailarc-1.txt
+X-Mailfolder: t/mailboxes/mailarc-1.txt
 
 Get a copy of icc11 v5.0 or later (from www.imagecraft.com) and use the
 handyboard library from their site. 
@@ -839,7 +839,7 @@ To: handyboard@media.mit.edu, rye@mech.eng.usyd.edu.au
 Mime-Version: 1.0
 Content-Type: MULTIPART/mixed; BOUNDARY=Troop_of_Baboons_752_000
 X-Mailer: dtmail 1.2.0 CDE Version 1.2 SunOS 5.6 sun4u sparc 
-X-Mailfolder: t/mailarc-1.txt
+X-Mailfolder: t/mailboxes/mailarc-1.txt
 
 --Troop_of_Baboons_752_000
 Content-Type: TEXT/plain; charset=us-ascii
@@ -889,7 +889,7 @@ From: Mark Wallace <mawalla3@vt.edu>
 Subject: serial library for C++ 
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
-X-Mailfolder: t/mailarc-1.txt
+X-Mailfolder: t/mailboxes/mailarc-1.txt
 
 Hello,
 	I have a handy board with poloroid transducers and I am trying use the
@@ -934,7 +934,7 @@ X-Priority: 3
 X-Msmail-Priority: Normal
 X-Mailer: Microsoft Outlook Express 4.72.2106.4
 X-Mimeole: Produced By Microsoft MimeOLE V4.72.2106.4
-X-Mailfolder: t/mailarc-1.txt
+X-Mailfolder: t/mailboxes/mailarc-1.txt
 
 Yes,
         Write a dos/windows client that reads the serial line and then
@@ -980,7 +980,7 @@ X-Priority: 3
 X-Msmail-Priority: Normal
 X-Mailer: Microsoft Outlook Express 4.72.2106.4
 X-Mimeole: Produced By Microsoft MimeOLE V4.72.2106.4
-X-Mailfolder: t/mailarc-1.txt
+X-Mailfolder: t/mailboxes/mailarc-1.txt
 
 
   Check out this site.  It works well.  The only problem I had was timing
@@ -1036,7 +1036,7 @@ To: handyboard@media.mit.edu, rye@mech.eng.usyd.edu.au
 Mime-Version: 1.0
 Content-Type: MULTIPART/mixed; BOUNDARY=Troop_of_Baboons_752_000
 X-Mailer: dtmail 1.2.0 CDE Version 1.2 SunOS 5.6 sun4u sparc 
-X-Mailfolder: t/mailarc-1.txt
+X-Mailfolder: t/mailboxes/mailarc-1.txt
 
 --Troop_of_Baboons_752_000
 Content-Type: TEXT/plain; charset=us-ascii
@@ -1091,7 +1091,7 @@ content-length: 399
 Status: RO
 X-Status: $$$$
 X-UID: 0000000001
-X-Mailfolder: t/mailarc-1.txt
+X-Mailfolder: t/mailboxes/mailarc-1.txt
 
 At long last, I dusted off Chuck McManis Handyboard library and ported it
 to V5. No reason why it can't work with V4.5 either ;-) Anyway, to try it
@@ -1127,7 +1127,7 @@ Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Date: Tue, 13 Jan 1998 01:23:12 -0600
 Sender: jrh@jack.securepipe.com
-X-Mailfolder: t/mailarc-2.txt
+X-Mailfolder: t/mailboxes/mailarc-2.txt
 
 Hi -
 
@@ -1216,7 +1216,7 @@ In-Reply-To: Your message of "Tue, 13 Jan 98 01:23:12 CST."
 Date: Tue, 13 Jan 98 09:10:37 -0500
 From: "Fred G. Martin" <fredm@media.mit.edu>
 X-Mts: smtp
-X-Mailfolder: t/mailarc-2.txt
+X-Mailfolder: t/mailboxes/mailarc-2.txt
 
 Joshua -
 

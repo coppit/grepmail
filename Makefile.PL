@@ -6,7 +6,10 @@ use ExtUtils::MakeMaker;
 
 require 5.004;
 
-@ARGV = Set_Install_Options(@ARGV);
+@ARGV = Set_Install_Options(@ARGV)
+  unless (grep {/^PREFIX=/} @ARGV) || (grep {/^INSTALLDIRS=/} @ARGV);
+
+Configure_Grepmail('grepmail');
 
 my %makefile_attributes = Compute_Makefile_Attributes(@ARGV);
 
@@ -14,20 +17,28 @@ WriteMakefile( %makefile_attributes );
 
 UpdateTestVersion('grepmail','t/results/test25.stdout.real');
 
+exit;
+
 # --------------------------------------------------------------------------
 
 sub Set_Install_Options
 {
   my @args = @_;
 
-  my $printed = 0;
+  my $install_location = ExtUtils::MakeMaker::prompt(
+    "Choose your installation type:\n[1] normal Perl locations\n" .
+    "[2] custom locations\n=>" => '1');
 
-  unless ((grep {/^PREFIX=/} @args) || (grep {/^INSTALLDIRS=/} @args))
+  if ($install_location eq '2')
   {
-    print "\n","-"x78,"\n\n" if $printed;
+    my $home = Get_Home_Directory();
 
-    $printed = 1;
-    @args = Set_Installation_Type_Interactively(@args);
+    print "\n","-"x78,"\n\n";
+
+    my $prefix = ExtUtils::MakeMaker::prompt(
+      "What PREFIX should I use?\n=>" => $home);
+
+    push @args,"PREFIX=$prefix";
   }
 
   return @args;
@@ -35,44 +46,47 @@ sub Set_Install_Options
 
 # --------------------------------------------------------------------------
 
-sub Set_Installation_Type_Interactively
+sub Configure_Grepmail
 {
-  my @args = @_;
+  my $filename = shift;
 
-  print <<EOF;
-Choose your installation type:
-[1] normal Perl locations
-[2] custom locations
-EOF
+  print "\n\n","-"x78,"\n\n";
 
-  print "=> [1] ";
-  my $response = <STDIN>;
-  chomp $response;
-  $response = '1' if $response eq '';
+  print "The following questions are used to configure grepmail.\n";
+  print "You can change these settings later by editing the grepmail script.\n\n";
 
+  my $enable_caching = ExtUtils::MakeMaker::prompt(
+    "Grepmail can cache email location information from parsed mailboxes,\n" .
+    "resulting in 6 times faster execution for later runs. A ~/.grepmail-cache\n" .
+    "file is left on the system.\n\n" .
+    "Would you like to enable caching?" => 'y');
 
-  if ($response eq '1')
-  {
-    push @args, 'INSTALLDIRS=perl';
-  }
-  else
-  {
+  my $enable_grep = ExtUtils::MakeMaker::prompt(
+    "\nGrepmail can use GNU grep to help get location information for mailboxes,\n" .
+    "resulting in 4 times faster execution. Only answer yes to this question\n" .
+    "if you have GNU grep.\n\n" .
+    "Would you like to enable grep support?" => 'y');
 
-    my $home = Get_Home_Directory();
+  $enable_caching = $enable_caching =~ /^y/i ? 1 : 0;
+  $enable_grep = $enable_grep =~ /^y/i ? 1 : 0;
 
-    print "\n","-"x78,"\n\n";
+  local $/ = undef;
 
-    print "What PREFIX should I use?\n";
-    print "=> [$home] ";
+  open SOURCE, $filename
+    or die "Couldn't open grepmail file: $!";
 
-    my $prefix = <STDIN>;
-    chomp $prefix;
-    $prefix = $home if $prefix eq '';
+  my $code = <SOURCE>;
+  close SOURCE;
 
-    push @args,"PREFIX=$prefix";
-  }
+  $code =~ s/^\$USE_CACHING = (\d+);/\$USE_CACHING = $enable_caching;/m;
+  $code =~ s/^\$USE_GREP = (\d+);/\$USE_GREP = $enable_grep;/m;
 
-  return @args;
+  open SOURCE, ">$filename"
+    or die "Couldn't open grepmail file: $!";
+
+  print SOURCE $code;
+
+  close SOURCE;
 }
 
 # --------------------------------------------------------------------------
@@ -105,13 +119,11 @@ sub Compute_Makefile_Attributes
     'VERSION_FROM' => 'grepmail',
 
     'dist'  => { COMPRESS => 'gzip -9', SUFFIX => 'gz' },
-    'clean' =>
-      { FILES => 't/results/*.diff t/results/*.stdout t/results/*.stderr' },
+    'clean' => { FILES => 't/temp' },
     'EXE_FILES' => [ 'grepmail' ],
     'PREREQ_PM' => { 'Date::Parse' => 0, 'Storable' => 0},
+    'DIR' => [],
   );
-
-  $makefile_attributes{'DIR'} = [];
 
   return %makefile_attributes;
 }
@@ -168,12 +180,12 @@ sub MY::postamble
 # functionality
 '
 testspeed :: pure_all
-	PERL_DL_NONLAZY=1 $(FULLPERL) -I$(INST_ARCHLIB) -I$(INST_LIB) \
-	  -I$(PERL_ARCHLIB) -I$(PERL_LIB) $(TEST_FILE)
+	PERL_DL_NONLAZY=1 $(FULLPERLRUN) "-I$(INST_LIB)" \
+	  "-I$(INST_ARCHLIB)" $(TEST_FILE)
 
 testfunc :: pure_all
-	PERL_DL_NONLAZY=1 $(FULLPERL) -I$(INST_ARCHLIB) -I$(INST_LIB) \
-	  -I$(PERL_ARCHLIB) -I$(PERL_LIB) t/functionality.t
+	PERL_DL_NONLAZY=1 $(FULLPERLRUN) "-I$(INST_LIB)" \
+	  "-I$(INST_ARCHLIB)" t/*.t
 ';
 }
 
