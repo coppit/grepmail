@@ -1,4 +1,4 @@
-grepmail 4.45
+grepmail 4.46
 
 usage: grepmail [-abDhilmrRuv] [-s size] [-d "datespec"] [[-e] <expr>] <files...>
 
@@ -28,6 +28,7 @@ compressed ASCII input is taken from STDIN.
 -u Ensure that no duplicate emails are output
 -v Output emails that don't match the expression
 -V Display the version number
+-Z Not use Mail::Folder::FastReader even if it is on the system
 
 Date specifications must be of the form of:
 a date like "today", "1st thursday in June 1992" (requires Date::Manip),

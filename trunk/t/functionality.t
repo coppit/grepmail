@@ -11,6 +11,11 @@
 # (t/results/test#.out) outputs are stored in test#.diff in the current
 # directory.
 
+# The $testNumber is the test number from Test::Harness' point of view. It
+# starts at 1 and goes up to the number of test cases ($#tests + 1) times the
+# number of implementations to test. The $testID is the index into @tests, and
+# is equal to ($testNumber - 1) % ($#tests + 1).
+
 use strict;
 use Test;
 
@@ -54,15 +59,17 @@ my @tests = (
 'grepmail -ad "before 7/15/1998" t/mailarc-1.txt',
 'grepmail -n library t/mailarc-1.txt',
 'grepmail -n library t/mailarc-1.txt t/mailarc-2.txt',
-'grepmail "From.*luikeith@egr.msu.edu" t/mailarc-1.txt'
+'grepmail "From.*luikeith@egr.msu.edu" t/mailarc-1.txt',
+'grepmail -m library t/mailarc-1.txt t/mailarc-2.txt',
+'grepmail -mn library t/mailarc-1.txt t/mailarc-2.txt',
 );
 
 # Tests for certain supported options.
-my @date_manip = (34);
-my @bzip2 = (21,22);
-my @gzip = (16,17,18,20,24);
-my @tzip = (26);
-my @error_cases = (27,28,29);
+my @date_manip = (33);
+my @bzip2 = (20,21);
+my @gzip = (15,16,17,19,23);
+my @tzip = (25);
+my @error_cases = (26,27,28);
 
 my $version = GetVersion();
 
@@ -70,6 +77,7 @@ my $bzip2 = 0;
 my $gzip = 0;
 my $tzip = 0;
 my $date_manip = 0;
+my $mail_folder_fastreader = 0;
 
 {
   my $temp;
@@ -100,54 +108,38 @@ my $date_manip = 0;
   {
     $date_manip = 0;
   }
+
+  if (ModuleInstalled("Mail::Folder::FastReader"))
+  {
+    $mail_folder_fastreader = 1;
+  }
+  else
+  {
+    $mail_folder_fastreader = 0;
+  }
 }
 
-print "Testing $version version of grepmail.\n";
-
-plan (tests => $#tests+1);
-
-print "\n";
-
-my $testNumber = 1;
-foreach my $test (@tests)
+if ($mail_folder_fastreader)
 {
-  if (defined $ARGV[0])
-  {
-    next if ($ARGV[0] =~ /^\d+$/ && $testNumber != $ARGV[0]);
-    next if ($ARGV[0] =~ /^(\d+)-$/ && $testNumber < $1);
-    next if ($ARGV[0] =~ /^(\d+)-(\d+)$/ &&
-      ($testNumber < $1 || $testNumber > $2));
-  }
-
-  local $" = " -I";
-  my $includes = "-I@INC";
-
-  $test =~ s#grepmail#$^X $includes blib/script/grepmail#sg;
-  print "$test\n";
-
-  if (CheckSkip($testNumber))
-  {
-    print "\n";
-    next;
-  }
-
-  system "$test 1>t/results/test$testNumber.stdout " .
-    "2>t/results/test$testNumber.stderr";
-
-  if ($? && (!grep {$_ == $testNumber} @error_cases))
-  {
-    print "Error executing test.\n\n";
-    ok(0);
-    next;
-  }
-
-  CheckDiffs($testNumber);
-  print "\n";
+  plan (tests => ($#tests + 1) * 2);
 }
-continue
+else
 {
-  $testNumber++;
+  plan (tests => $#tests + 1);
 }
+
+print "Testing $version version of grepmail.\n\n";
+
+if ($mail_folder_fastreader)
+{
+  print "Testing Mail::Folder::FastReader-based folder reader implementation.\n\n";
+
+  DoTests($ARGV[0],1);
+}
+
+print "Testing perl-based folder reader implementation.\n\n";
+
+DoTests($ARGV[0],0);
 
 # ---------------------------------------------------------------------------
 
@@ -165,30 +157,30 @@ sub GetVersion
 
 sub CheckSkip
 {
-  my $testNumber = shift;
+  my $testID = shift;
 
-  if((grep {$_ == $testNumber} @date_manip) && !$date_manip)
+  if((grep {$_ == $testID} @date_manip) && !$date_manip)
   {
     print "Skipping test for Date::Manip version\n";
     skip(1,1);
     return 1;
   }
 
-  if((grep {$_ == $testNumber} @bzip2) && !$bzip2)
+  if((grep {$_ == $testID} @bzip2) && !$bzip2)
   {
     print "Skipping test using bzip2\n";
     skip(1,1);
     return 1;
   }
 
-  if((grep {$_ == $testNumber} @gzip) && !$gzip)
+  if((grep {$_ == $testID} @gzip) && !$gzip)
   {
     print "Skipping test using gzip\n";
     skip(1,1);
     return 1;
   }
 
-  if((grep {$_ == $testNumber} @tzip) && !$tzip)
+  if((grep {$_ == $testID} @tzip) && !$tzip)
   {
     print "Skipping test using tzip\n";
     skip(1,1);
@@ -217,12 +209,72 @@ sub ModuleInstalled
 
 # ---------------------------------------------------------------------------
 
+my $testNumber;
+
+sub DoTests
+{
+  my $test_constraint = shift;
+  my $mail_folder_fastreader = shift;
+
+  $testNumber = 1 unless defined $testNumber;
+
+  my $testID = ($testNumber - 1) % ($#tests+1);
+
+  while (1)
+  {
+    my $test = $tests[$testID];
+    if (defined $test_constraint)
+    {
+      next if ($test_constraint =~ /^\d+$/ && $testNumber != $test_constraint);
+      next if ($test_constraint =~ /^(\d+)-$/ && $testNumber < $1);
+      next if ($test_constraint =~ /^(\d+)-(\d+)$/ &&
+        ($testNumber < $1 || $testNumber > $2));
+    }
+
+    local $" = " -I";
+    my $includes = "-I@INC";
+
+    $test =~ s#grepmail#$^X $includes blib/script/grepmail#sg;
+    $test =~ s#grepmail#grepmail -Z#sg unless $mail_folder_fastreader;
+
+    print "$test\n";
+
+    if (CheckSkip($testID))
+    {
+      print "\n";
+      next;
+    }
+
+    system "$test 1>t/results/test$testNumber.stdout " .
+      "2>t/results/test$testNumber.stderr";
+
+    if ($? && (!grep {$_ == $testID} @error_cases))
+    {
+      print "Error executing test.\n\n";
+      ok(0);
+      next;
+    }
+
+    CheckDiffs($testNumber,$testID+1);
+    print "\n";
+  }
+  continue
+  {
+    $testNumber++;
+    return if $testID == $#tests;
+    $testID = ($testNumber - 1) % ($#tests + 1);
+  }
+}
+
+# ---------------------------------------------------------------------------
+
 sub CheckDiffs
 {
   my $testNumber = shift;
+  my $testID1 = shift;
 
-  my ($stdout_diff,$stdout_result) = DoDiff($testNumber,'stdout');
-  my ($stderr_diff,$stderr_result) = DoDiff($testNumber,'stderr');
+  my ($stdout_diff,$stdout_result) = DoDiff($testNumber,$testID1,'stdout');
+  my ($stderr_diff,$stderr_result) = DoDiff($testNumber,$testID1,'stderr');
 
   ok(0), return if $stdout_diff == 0 || $stderr_diff == 0;
   ok(0), return if $stdout_result == 0 || $stderr_result == 0;
@@ -236,10 +288,11 @@ sub CheckDiffs
 sub DoDiff
 {
   my $testNumber = shift;
+  my $testID = shift;
   my $resultType = shift;
 
   my $diffstring = "diff t/results/test$testNumber.$resultType " .
-    "t/results/test$testNumber.$resultType.real";
+    "t/results/test$testID.$resultType.real";
 
   system "echo $diffstring > t/results/test$testNumber.$resultType.diff ".
     "2>t/results/test$testNumber.$resultType.diff.error";
