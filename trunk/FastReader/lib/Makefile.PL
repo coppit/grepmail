@@ -2,7 +2,7 @@ use ExtUtils::MakeMaker;
 $Verbose = 1;
 
 WriteMakefile(
-   NAME      => 'Mail::Folder::FastReader',
+   NAME      => 'libemailreader',
    SKIP      => [qw(all static static_lib dynamic dynamic_lib)],                   clean     => {'FILES' => 'libemailreader$(LIB_EXT)'},
 );
 

@@ -1,0 +1,34 @@
+grepmail 4.44
+
+usage: grepmail [-abDhilmrRuv] [-s size] [-d "datespec"] [[-e] <expr>] <files...>
+
+At least one of -s, -d, -u, and -e must be specified, and can appear in any
+relative order following the other flags. The -e flag is optional if expr
+appears immediately before -s or -d. Files can be plain ASCII or ASCII files
+compressed with gzip, tzip, or bzip2. If no file is provided, normal or
+compressed ASCII input is taken from STDIN.
+
+-b Search must match body
+-d Specify a date range (see below)
+-a Use received date instead of sent date for -d matching
+-D Debug mode
+-e Explicitely name expr (when searching for strings beginning with "-")
+-h Search must match header
+-i Ignore case in the search expression
+-l Output the names of files having an email matching the expression
+-M Do not search non-text mime attachments
+-m Append "X-Mailfolder: <folder>" to all headers to indicate in which folder
+   the match occurred
+-q Quiet mode -- don't output warnings
+-r Output the names of the files and the number of emails matching the
+   expression
+-R Recurse directories
+-s Restrict results to emails less than a certain size (in bytes)
+-u Ensure that no duplicate emails are output
+-v Output emails that don't match the expression
+
+Date specifications must be of the form of:
+a date like "today", "1st thursday in June 1992" (requires Date::Manip),
+  "05/18/93", "12:30 Dec 12th 1880", "8:00pm december tenth",
+OR "before", "after", or "since", followed by a date as defined above,
+OR "between <date> and <date>", where <date> is defined as above.
