@@ -2,7 +2,7 @@
 
 # grepmail
 
-$VERSION = '4.42';
+$VERSION = '4.43';
 
 # Grepmail searches a normal, gzip'd, tzip'd, or bzip2'd mailbox for a given
 # regular expression and returns those emails that match the query. It also
@@ -713,6 +713,7 @@ sub ProcessMailFile ($$)
       {
         $numberOfMatches++;
         SkipToNextEmail($fileHandle,\$next_header,$fileName);
+        next;
       }
       else
       {
@@ -790,6 +791,7 @@ sub ProcessMailFile ($$)
       {
         $numberOfMatches++;
         SkipToNextEmail($fileHandle,\$next_header,$fileName);
+        next;
       }
       else
       {
@@ -1061,13 +1063,13 @@ sub SkipToNextEmail($\$$)
       # the ---- Begin Included Message ----
       if ($paragraph =~ /- Begin Included Message -.*?\n./)
       {
-        next;
+        $paragraph = '';
       }
       # Otherwise drop the next paragraph
       else
       {
         $paragraph = <$fileHandle>; 
-        next;
+        $paragraph = '';
       }
     } 
   }

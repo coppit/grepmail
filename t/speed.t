@@ -47,7 +47,7 @@ foreach $test (@timedtests)
   }
 
   print "$test\n";
-  $test =~ s!grepmail!$oldGrepmailLocation/grepmail!;
+  $test =~ s!grepmail!perl $oldGrepmailLocation/grepmail!;
 
   timethis(4,sub {system "$test > /dev/null"},'OLD');
   exit if $?;
