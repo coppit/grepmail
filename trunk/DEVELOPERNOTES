@@ -3,9 +3,6 @@ developers readying a set of files for distribution.
 
 Checklist for a release:
 - Be sure to add new test cases for new features
-- Diff with the script in the devel directory to make sure everything's
-  kosher:
-  $ ./nocvsdiff -r ../devel ../dist | less
 - Make sure version number increases.
 - Edit version number in README.
 - Add version changes to README and CHANGES.
@@ -41,6 +38,7 @@ Checklist for a release:
   cpan-upload grepmail-X.XX.tar.gz
 - Release file:
   http://sourceforge.net/account/login.php
+  ncftpput upload.sf.net incoming grepmail-X.XX.tar.gz
   https://sourceforge.net/project/admin/qrs.php?package_id=&group_id=2207
 - Announce any news on SourceForge:
   http://sourceforge.net/news/submit.php?group_id=2207
