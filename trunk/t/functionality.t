@@ -77,6 +77,7 @@ my @tests = (
 'grepmail -Y \'.*\' -v library t/mailarc-1.txt',
 'grepmail -Y \'(^From:|^TO:)\' Edsinger t/mailarc-1.txt',
 'grepmail -Y \'(?i)^x-mailer:\' -i mozilla.4 t/mailarc-1.txt',
+'grepmail -u t/mailarc-3.txt',
 );
 
 # Tests for certain supported options.
@@ -329,8 +330,8 @@ sub DoTests
     local $" = " -I";
     my $includes = "-I@INC";
 
-    $test =~ s#grepmail#$^X $includes blib/script/grepmail#sg;
-    $test =~ s#grepmail#grepmail -Z#sg unless $mail_folder_fastreader;
+    $test =~ s#\bgrepmail\s#$^X $includes blib/script/grepmail #sg;
+    $test =~ s#\bgrepmail\s#grepmail -Z #sg unless $mail_folder_fastreader;
 
     print "$test\n";
 
