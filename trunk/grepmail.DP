@@ -2,7 +2,7 @@
 
 # grepmail
 
-$VERSION = 4.30;
+$VERSION = 4.22;
 
 # Grepmail searches a normal, gzip'd, tzip'd, or bzip2'd mailbox for a given
 # regular expression and returns those emails that match the query. It also
@@ -92,28 +92,9 @@ $VERSION = 4.30;
 
 require 5.00396;
 
-use vars qw(%opts $pattern $commandLine $VERSION);
+use vars qw(%opts $pattern $commandLine $VERSION $DEBUG);
 
 use Getopt::Std;
-
-# We need to do this early to check for the -D flag when setting the DEBUG
-# constant
-BEGIN
-{
-  $commandLine = "$0 @ARGV";
-
-  # Print usage error if no arguments given
-  print "No arguments given. grepmail -h for help.\n" and exit if (!@ARGV);
-
-  # So we don't have to test whether they are defined later.
-  $opts{'D'} = $opts{'d'} = $opts{'e'} = $opts{'i'} = $opts{'q'} = 0;
-  $opts{'h'} = $opts{'b'} = $opts{'v'} = $opts{'l'} = $opts{'r'} = 0;
-  $opts{'M'} = $opts{'m'} = $opts{'s'} = 0;
-
-  getopt("eds",\%opts);
-}
-
-use constant DEBUG => $opts{'D'} || 0;
 
 use strict;
 use FileHandle;
@@ -126,7 +107,7 @@ use Carp;
 
 sub dprint
 {
-  return 1 unless DEBUG;
+  return 1 unless $DEBUG;
 
   my $message = join '',@_;
 
@@ -155,6 +136,20 @@ sub cleanExit
 }
 
 #-------------------------------------------------------------------------------
+
+$commandLine = "$0 @ARGV";
+
+# So we don't have to test whether they are defined later.
+$opts{'D'} = $opts{'d'} = $opts{'e'} = $opts{'i'} = $opts{'q'} = 0;
+$opts{'h'} = $opts{'b'} = $opts{'v'} = $opts{'l'} = $opts{'r'} = 0;
+$opts{'M'} = $opts{'m'} = $opts{'s'} = 0;
+
+# Print usage error if no arguments given
+print "No arguments given. grepmail -h for help.\n" and exit if (!@ARGV);
+
+getopt("eds",\%opts);
+
+$DEBUG = $opts{'D'} || 0;
 
 dprint "Command line was:";
 dprint "  $commandLine";
@@ -204,7 +199,7 @@ elsif (!$opts{'e'} && !$opts{'d'} && !$opts{'s'})
   $pattern = shift @ARGV;
 }
 
-if (DEBUG)
+if ($DEBUG)
 {
   dprint "Options are:";
   foreach my $i (sort keys %opts)
@@ -342,8 +337,6 @@ sub HandleInputFiles
   {
     dprint '#'x70;
     dprint "Processing file $file";
-    dprint "Initial inode times are A:".(stat $file)[8]." M:".(stat $file)[9].
-      " C:".(stat $file)[10];
 
     # First of all, silently ignore empty files...
     next if -z $file;
@@ -356,124 +349,108 @@ sub HandleInputFiles
     }
 
     my $fileHandle = new FileHandle;
+    my ($filter,$filterError);
 
     # If it's not a compressed file
     if ($file !~ /\.(gz|Z|bz2|tz)$/)
     {
-      SaveFileTimes($file);
-      my $isBinary = -B $file;
-      RestoreFileTimes($file);
-
-      if ($isBinary)
+      if (-B $file)
       {
         warn "** Skipping binary file: '$file' **\n" unless $opts{'q'};
         next;
       }
 
-      $fileHandle->open($file) || cleanExit "Can't open $file";
+      unless ($fileHandle->open($file))
+      {
+        warn "** Can't open $file: $!, skipping **\n" unless $opts{'q'};
+        next;
+      }
     }
     # If it is a tzipped file
     elsif ($file =~ /\.tz$/)
     {
       dprint "Calling tzip to decompress file.";
-      $fileHandle->open("tzip -cd '$file'|") 
-        or cleanExit "Can't execute tzip for file $file";
+
+      $filter = 'tzip';
+
+      use vars qw(*OLDSTDERR);
+      open OLDSTDERR,">&STDERR" or die "Can't save STDERR: $!\n";
+      open STDERR,">/dev/null"
+        or die "Can't redirect STDERR to /dev/null: $!\n";
+
+      unless ($fileHandle->open("tzip -cd '$file'|"))
+      {
+        $filterError = $!;
+      }
+
+      open STDERR,">&OLDSTDERR" or die "Can't restore STDERR: $!\n";
     }
     # If it is a gzipped file
     elsif ($file =~ /\.(gz|Z)$/)
     {
       dprint "Calling gunzip to decompress file.";
-      $fileHandle->open("gunzip -c '$file'|")
-        or cleanExit "Can't execute gunzip for file $file";
+
+      $filter = 'gunzip';
+
+      use vars qw(*OLDSTDERR);
+      open OLDSTDERR,">&STDERR" or die "Can't save STDERR: $!\n";
+      open STDERR,">/dev/null"
+        or die "Can't redirect STDERR to /dev/null: $!\n";
+
+      unless ($fileHandle->open("gunzip -c '$file'|"))
+      {
+        $filterError = $!;
+      }
+
+      open STDERR,">&OLDSTDERR" or die "Can't restore STDERR: $!\n";
     }
     # If it is a bzipped file
     elsif ($file =~ /\.bz2$/)
     {
       dprint "Calling bzip2 to decompress file.";
-      $fileHandle->open("bzip2 -dc '$file'|")
-        or cleanExit "Can't execute bzip2 for file $file";
+
+      $filter = 'bzip2';
+
+      use vars qw(*OLDSTDERR);
+      open OLDSTDERR,">&STDERR" or die "Can't save STDERR: $!\n";
+      open STDERR,">/dev/null"
+        or die "Can't redirect STDERR to /dev/null: $!\n";
+
+      unless ($fileHandle->open("bzip2 -dc '$file'|"))
+      {
+        $filterError = $!;
+      }
+
+      open STDERR,">&OLDSTDERR" or die "Can't restore STDERR: $!\n";
     }
 
-    SaveFileTimes($file);
+    if ($filterError)
+    {
+      warn "** Can't execute \"$filter\" for file \"$file\": $filterError, ".
+           "skipping **\n" unless $opts{'q'};
+      next;
+    }
+
+    unless (DataOnFileHandle($fileHandle))
+    {
+      unless ($fileHandle->close())
+      {
+        warn "** Can't execute \"$filter\" for file \"$file\": $!, ".
+             "skipping **\n" unless $opts{'q'};
+      }
+      next;
+    }
+
     if (!IsMailbox($fileHandle))
     {
       warn "** Skipping non-mailbox ASCII file: '$file' **\n" unless $opts{'q'};
-      RestoreFileTimes($file);
       next;
     }
-    RestoreFileTimes($file);
 
     ProcessMailFile($fileHandle,$file);
 
-    SaveFileTimes($file);
     $fileHandle->close();
-    RestoreFileTimes($file);
-
-    dprint "Final inode times are A:".(stat $file)[8]." M:".(stat $file)[9].
-      " C:".(stat $file)[10];
   }
-}
-
-#-------------------------------------------------------------------------------
-
-{
-# Access time is a variable used by only SaveFileTimes and RestoreFileTimes
-my %access_time;
-
-# This function stores the access time for the given filename or filehandle.
-# It should be called immediately before an operation that can change the
-# file's access time, and it should be accompanied by a corresponding
-# RestoreFileTimes function call immediately after the "dangerous" operation.
-# Informal experiments show that -B, eof, reading from a file, and closing a
-# file change the access time. (Closing may not change the access time,
-# depending on whether the file was read.)
-
-sub SaveFileTimes
-{
-  my $file = shift;
-
-  return if $file eq 'Standard input';
-
-# Adds about 2.5% to running time
-#  die "File \"$file\" is not a plain file.\n" unless -f $file;
-
-  $access_time{$file} = (stat $file)[8];
-
-#  dprint "SaveFileTimes $file: A: ".(stat $file)[8]." M: ".(stat $file)[9].
-#    " C: ".(stat $file)[10];
-
-  return 1;
-}
-
-#-------------------------------------------------------------------------------
-
-# This function restores the access time for the given filename or filehandle.
-# It should be called immediately after an operation that can change the
-# file's access time, and it should be accompanied by a corresponding
-# SaveFileTimes function call immediately before the "dangerous" operation. 
-
-sub RestoreFileTimes
-{
-  my $file = shift;
-
-  return if $file eq 'Standard input';
-
-# Adds about 2.5% to running time
-#  die "File \"$file\" is not a plain file.\n" unless -f $file;
-
-  die "SaveFileTimes(\"$file\") was not called.\n"
-    unless defined $access_time{$file};
-
-  utime $access_time{$file}, (stat $file)[9], $file;
-
-  delete $access_time{$file};
-
-#  dprint "RestoreFileTimes $file: A: ".(stat $file)[8]." M: ".(stat $file)[9].
-#    " C: ".(stat $file)[10];
-
-  return 1;
-}
-
 }
 
 #-------------------------------------------------------------------------------
@@ -532,9 +509,17 @@ sub HandleStandardInput
     }
 
     # Here we invoke another copy of grepmail with a filter in front.
+    use vars qw(*OLDSTDERR);
+    open OLDSTDERR,">&STDERR" or die "Can't save STDERR: $!\n";
+    open STDERR,">/dev/null"
+      or die "Can't redirect STDERR to /dev/null: $!\n";
+
     my $newGrepmail = new FileHandle;
     $newGrepmail->open("|$filter|$commandLine")
-      or cleanExit "Can't execute '$filter' on stdin";
+      or warn "** Can't execute \"$filter\" on STDIN: $! **\n"
+        unless $opts{'q'};
+
+    open STDERR,">&OLDSTDERR" or die "Can't restore STDERR: $!\n";
 
     while (!eof $fileHandle)
     {
@@ -542,7 +527,9 @@ sub HandleStandardInput
       print $newGrepmail $temp;
     }
 
-    close $newGrepmail;
+    $newGrepmail->close()
+      or warn "** Can't execute \"$filter\" on STDIN: $! **\n"
+        unless $opts{'q'};
   }
   # Otherwise process it directly
   else
@@ -555,6 +542,20 @@ sub HandleStandardInput
 
     ProcessMailFile($fileHandle,"Standard input");
   }
+}
+
+#-------------------------------------------------------------------------------
+
+# Checks to see if there is data on a filehandle, without reading that data.
+
+sub DataOnFileHandle
+{
+  my $fileHandle = shift;
+
+  my $buffer = <$fileHandle>;
+  PutBackString($fileHandle,$buffer);
+
+  return $buffer ? 1 : 0;
 }
 
 #-------------------------------------------------------------------------------
@@ -585,7 +586,7 @@ sub IsMailbox
   # Read whole paragraphs
   local $/ = "\n\n";
 
-  # Read a paragraph to get the header. (If we have to.)
+  # Read a paragraph to get the header.
   my $buffer = <$fileHandle>;
 
   my $returnVal;
@@ -629,16 +630,8 @@ sub ProcessMailFile ($$)
   local $/ = "\n\n";
 
   # This is the main loop. It's executed once for each email
-  while (1)
+  while (!eof($fileHandle))
   {
-    SaveFileTimes($fileName);
-    if (eof($fileHandle))
-    {
-      RestoreFileTimes($fileName);
-      last;
-    }
-    RestoreFileTimes($fileName);
-
     $header_buffer = '';
     $body_buffer = '';
 
@@ -646,9 +639,7 @@ sub ProcessMailFile ($$)
     {
       dprint "Getting header for first email.";
 
-      SaveFileTimes($fileName);
       $header_buffer = <$fileHandle>;
-      RestoreFileTimes($fileName);
     }
     else
     {
@@ -658,7 +649,7 @@ sub ProcessMailFile ($$)
       undef $next_header;
     }
 
-    PrintEmailStatistics($header_buffer) if DEBUG;
+    PrintEmailStatistics($header_buffer) if $DEBUG;
 
     #----------------------------------------------------------------
 
@@ -929,18 +920,14 @@ sub SkipToNextEmail($\$$)
   # address, so we don't need to do anything. Joy.
   return if defined $$next_header;
 
-  SaveFileTimes($fileName);
   do
   {
     $paragraph = <$fileHandle>;
   }
   while (!eof($fileHandle) && ($paragraph !~ /^\n?From .*\d:\d+:\d.* \d{4}/i)) ;
-  RestoreFileTimes($fileName);
 
   # Buffer if we went too far. Zap the starting newline while we're at it.
-  SaveFileTimes($fileName);
   ($$next_header) = $paragraph =~ /^\n?(.*)/s if (!eof($fileHandle));
-  RestoreFileTimes($fileName);
 }
 
 #-------------------------------------------------------------------------------
@@ -956,7 +943,6 @@ sub GetRestOfBody($\$\$$)
 
   # Read the entire email body into the buffer
   my $doneLooking = 0;
-  SaveFileTimes($fileName);
   do
   {
     my $paragraph = <$fileHandle>;
@@ -983,7 +969,6 @@ sub GetRestOfBody($\$\$$)
     }
   }
   while (!$doneLooking);
-  RestoreFileTimes($fileName);
 }
 
 #-------------------------------------------------------------------------------
