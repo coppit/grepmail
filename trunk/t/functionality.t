@@ -66,7 +66,17 @@ my @tests = (
 'grepmail -ibS Free t/mailarc-1.txt',
 'grepmail Driving t/mailarc-1.txt',
 'grepmail -r . t/mailseparators.txt',
-'grepmail -R library t/directory',
+'grepmail -Rq library t/directory',
+'grepmail -S \'So I got Unix\' t/mailarc-1.txt',
+'grepmail -X \'={75,}\' -S \'61 2 9844 5381\' t/mailarc-1.txt',
+'grepmail -Y \'.*\' Wallace t/mailarc-1.txt',
+'grepmail -Y \'.*\' "^From.*aarone" t/mailarc-1.txt',
+'grepmail -Y \'.*\' -b library t/mailarc-1.txt',
+'grepmail -Y \'.*\' library t/mailarc-1.txt',
+'grepmail -Y \'.*\' -bv library t/mailarc-1.txt',
+'grepmail -Y \'.*\' -v library t/mailarc-1.txt',
+'grepmail -Y \'(^From:|^TO:)\' Edsinger t/mailarc-1.txt',
+'grepmail -Y \'(?i)^x-mailer:\' -i mozilla.4 t/mailarc-1.txt',
 );
 
 # Tests for certain supported options.
