@@ -1,6 +1,3 @@
-This directory contains two versions of grepmail -- one for Date::Manip and
-one for Date::Parse. Please update both when necessary.
-
 The t directory contains speed tests that are not part of the test suite that
 is distributed with the software.
 
