@@ -1,0 +1,285 @@
+From jrh@jack.securepipe.com  Tue Jan 13 03:19:47 1998
+Received: from aleve.media.mit.edu by hub.media.mit.edu; (5.65v3.2/1.1/06Jun95-8.2MPM)
+	id AA08834; Tue, 13 Jan 1998 03:19:47 -0500
+Received: from splat.securepipe.com (splat.securepipe.com [169.207.51.74])
+	by aleve.media.mit.edu (8.8.7/ML970927) with SMTP id CAA00703
+	for <handyboard@media.mit.edu>; Tue, 13 Jan 1998 02:15:36 -0500 (EST)
+Message-Id: <199801130715.CAA00703@aleve.media.mit.edu>
+Received: (qmail 7615 invoked from network); 13 Jan 1998 07:23:07 -0000
+Received: from jack.securepipe.com (network-user@169.207.51.75)
+  by splat.securepipe.com with SMTP; 13 Jan 1998 07:23:07 -0000
+X-Mailer: exmh version 2.0zeta 7/24/97
+From: Joshua Heling <jrh@securepipe.com>
+To: handyboard@media.mit.edu
+Subject: questions re: unix version of IC
+Reply-To: Joshua Heling <jrh@securepipe.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Date: Tue, 13 Jan 1998 01:23:12 -0600
+Sender: jrh@jack.securepipe.com
+
+Hi -
+
+I'm a handy-board/ic newbie, so please excuse this question if it's answers 
+seem obvious.  After two weeks of writing code in DOS/Windows (yuck), I 
+downloaded the ic-2.860beta source code, which compiled without significant 
+trouble in linux (redhat 5).  The version is, of course, a bit different from 
+that which came with the handy-board (from Gleason Rsch, was version 2.851).
+
+My question is, can I just copy the library files that came from Gleason Rsch. 
+into the lib directory on the unix ic installation (it seems that I can, I 
+just want to be sure)?  Are there any other issues I should be aware of 
+(w.r.t. the beta, or using ic from unix, end-of-line conventions on library 
+files, etc.).  I'm not particularly concerned with being able to download the 
+pcode in unix - I do have DOS easily available...
+
+BTW, thanks to all that have contributed to this really neat project - this is 
+my first exposure to robotics, and it's been great fun so far.
+
+----- Begin Included Message -----
+
+From owner-laser@ns1.qsl.net Thu May  1 09:58:06 1997
+X-Authentication-Warning: ns1.qsl.net: majordom set sender to owner-laser@qsl.net using -f
+From: "Guy Hamblen" <tel1gah@is.ups.com>
+To: "Laser" <laser@qsl.net>
+Subject: [LASER] Which Circuit for OPT210?
+Date: Thu, 1 May 1997 12:53:29 -0400
+X-Msmail-Priority: Normal
+X-Priority: 3
+X-Mailer: Microsoft Internet Mail 4.70.1155
+Mime-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Sender: owner-laser@qsl.net
+Reply-To: "Guy Hamblen" <tel1gah@is.ups.com>
+Content-Length: 1037
+
+Thanks everyone for sourcing information on this device.  I've got several
+in hand, feedback resistors are in the mail.  Now can I get existing
+OPT1210 user experience re: the following questions:
+
+1)  I assume (dangerous I know...) that the easiest circuit (per the
+Burr-Brown App Notes) is the Fig. 3 "Single Power Supply Operation"?
+2)  Is 12v operation recommended?
+3)  If 12v operation, did you use a 5.6v zener or lower value?
+4)  Did you use electrolytics to bypass to ground pins 1 & 8?
+5)  Did you build this circuit in a shielded box?
+6)  Does the on-board opamp provide sufficient output to drive a set of
+headphones or did you add another opamp gain circuit?  If so what low noise
+device?  Any highpass filter circuits?  Is there any need for a bandpass
+filter circuit to get rid of audio highs?
+
+I am using a 3" PVC with a focusing lens (f/4") - - how did you
+mechanically place the OPT210 so the focused light source falls on the
+photodiode?  My approach would be trial-versus-error....
+
+Thanks in advance....Guy N7UN/2
+
+----- End Included Message -----
+
+
+- Joshua 
+
+--------
+Joshua Heling				             jrh@securepipe.com
+SecurePipe Communications, Inc.
+
+
+
+From fredm@ml.media.mit.edu  Tue Jan 13 10:41:57 1998
+Received: from aleve.media.mit.edu by hub.media.mit.edu; (5.65v3.2/1.1/06Jun95-8.2MPM)
+	id AA21129; Tue, 13 Jan 1998 10:41:57 -0500
+Received: from ml.media.mit.edu (ml.media.mit.edu [18.85.13.107])
+	by aleve.media.mit.edu (8.8.7/ML970927) with ESMTP id JAA22423
+	for <handyboard@media.mit.edu>; Tue, 13 Jan 1998 09:10:43 -0500 (EST)
+Received: from localhost (localhost [127.0.0.1])
+	by ml.media.mit.edu (8.8.7/8.8.7) with SMTP id JAA26699;
+	Tue, 13 Jan 1998 09:10:37 -0500 (EST)
+Message-Id: <199801131410.JAA26699@ml.media.mit.edu>
+X-Authentication-Warning: ml.media.mit.edu: localhost [127.0.0.1] didn't use HELO protocol
+To: Joshua Heling <jrh@securepipe.com>
+Cc: handyboard@media.mit.edu
+Subject: Re: questions re: unix version of IC 
+In-Reply-To: Your message of "Tue, 13 Jan 98 01:23:12 CST."
+             <199801130715.CAA00703@aleve.media.mit.edu> 
+Date: Tue, 13 Jan 98 09:10:37 -0500
+From: "Fred G. Martin" <fredm@media.mit.edu>
+X-Mts: smtp
+
+Joshua -
+
+There should be no problems using the Gleason Research libraries (or
+any of the libraries that are on the web site).  There are no differences
+between version 2.851 and 2.860 from the point of view of the
+libraries.
+
+There is a pre-compiled version for Linux.  See
+
+ftp://cher.media.mit.edu/pub/projects/interactive-c/unix/
+
+Fred
+
+
+In your message you said:
+> Hi -
+> 
+> I'm a handy-board/ic newbie, so please excuse this question if it's answers 
+> seem obvious.  After two weeks of writing code in DOS/Windows (yuck), I 
+> downloaded the ic-2.860beta source code, which compiled without significant 
+> trouble in linux (redhat 5).  The version is, of course, a bit different from
+ 
+> that which came with the handy-board (from Gleason Rsch, was version 2.851).
+> 
+> My question is, can I just copy the library files that came from Gleason Rsch
+. 
+> into the lib directory on the unix ic installation (it seems that I can, I 
+> just want to be sure)?  Are there any other issues I should be aware of 
+> (w.r.t. the beta, or using ic from unix, end-of-line conventions on library 
+> files, etc.).  I'm not particularly concerned with being able to download the
+ 
+> pcode in unix - I do have DOS easily available...
+> 
+> BTW, thanks to all that have contributed to this really neat project - this i
+s 
+> my first exposure to robotics, and it's been great fun so far.
+> 
+> 
+> - Joshua 
+> 
+> --------
+> Joshua Heling				             jrh@securepipe.com
+> SecurePipe Communications, Inc.
+> 
+> 
+> 
+
+From dakott@alpha.delta.edu  Thu Jan  1 05:56:53 1998
+Received: from aleve.media.mit.edu by hub.media.mit.edu; (5.65v3.2/1.1/06Jun95-8.2MPM)
+	id AA29720; Thu, 1 Jan 1998 05:56:53 -0500
+Received: from kott.my.domain (root@pm233-26.dialip.mich.net [198.110.144.127])
+	by aleve.media.mit.edu (8.8.7/ML970927) with ESMTP id FAA31795
+	for <handyboard@media.mit.edu>; Thu, 1 Jan 1998 05:06:14 -0500 (EST)
+Received: from kott.my.domain (dakott@kott.my.domain [192.168.0.1])
+	by kott.my.domain (8.8.8/8.8.5) with SMTP id FAA01072
+	for <handyboard@media.mit.edu>; Thu, 1 Jan 1998 05:06:33 -0500 (EST)
+Date: Thu, 1 Jan 1998 05:06:32 -0500 (EST)
+From: David Kott <dakott@alpha.delta.edu>
+Sender: dakott@kott.my.domain
+To: handyboard@media.mit.edu
+Subject: Re: Digital outputs.
+In-Reply-To: <199712312227.QAA03595@augusta.netperceptions.com>
+Message-Id: <Pine.BSF.3.96.980101041900.956D-100000@kott.my.domain>
+Mime-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+
+On Wed, 31 Dec 1997, Tom Brusehaver wrote:
+
+<snip>
+> 
+>  G> Wich are the options to have 3 digital outputs in the handyboard?
+>  G> No matter if i have to do little modifications to the Hardware.  I
+>  G> already know how to conect the keypad if you can tell me how
+>  G> obtain 3 outputs..  :)
+> 
+> 
+> The SPI port is sitting there.  I think you can get at 3 outputs from
+> those pins (SD/RD/CLK).  
+> 
+</snip>
+
+yet ANOTHER idea, if you are suitably masochistic, is to use the SPI port
+for a much more extensible I/O system.  As you know, SPI uses 4 basic
+control signals, MOSI, MISO, CLK and SS... Ok, what we used to do in
+Embedded Controllers class is hook up a Serial In/Parallel Out
+(hereforward referred to as a SIPO) shift register.  You must have at
+least ONE output available, so, this pretty much eliminates a L293 or, if
+you are bold enough, obtain additional outputs using a '138 as outlined in
+the HandyBoard FAQ.  A SIPO you might use is the 8 bit 74164.
+
+Hook the DATA IN on the SIPO to the MOSI pin on the SPI.  Hook the
+SPI's CLK output to the SIPO's clock pin.  Use a transparent latch to
+update and hold the data on the outputs of the SIPO and update it with the
+one output pin, perhaps a 74373.
+
+To update the new 8 bits of data appearing at your latch's output, you load 
+the SPI's data register with the byte value that you want to have across
+your new outputs.  This data will be shifted out during the next 8 E-clock
+cycles.  After the SPI's data register is empty indicating that the SIPO
+has the output byte on it's parallel outputs, pulse the single control
+output to update the latch's outputs.
+
+With this arrangement, you could, in theory, have many, many SIPO shift
+register/Latch pairs;  the Serial Data In of the next stage connected to
+the last Parallel Output on the previous adjacent stage.
+
+One would just have to make sure that you coordinated the number of stages
+with the number of bytes outshifted by the SPI data register (naturally).
+The downside to this arrangement is the time it takes to update a digital
+output.  The entire train (8 bits, 16 bits, 24 bits... more?) Need to be
+loaded and shifted out to change just ONE output.  The upside is, the data
+will shift at 2 Mhz, which makes for a (250 ns * [8+2] ) 2.5 ms update
+time.  Not suitable for time critical applications, (PWM, Communication)
+but not bad for bulk outputs.
+
+I don't think I have explained my little circuit here very well.. perhaps
+an ASCII graphic?
+
+        Output originally going to an L293D
+     +---------------------------------------+
+     |Or added via a '138 from the           |
+     |expansion buss.                        |
+     |                                    +--+----+
++----+---------+           +---------+    |  LE   |
+|              | SPI CLK   |'164  PO0|----| '373  |----   
+|              +-----------+ CP   PO1|----|       |----
+|   68HC11     | SPI MOSI  |      PO2|----|       |----
+|              +-----------+ Data PO3|----|       |----   New
+|              |           |      PO4|----|       |----   Digital
++--------------+           |      PO5|----|       |----   Outputs
+                           |      PO6|----|       |----
+                           |      PO7|----|       |----
+                           +---------+    +-------+
+
+
+Where: 
+    PO# is a "Parallel Output" on a SIPO
+    Data is the "Serial Data Input" on a SIPO
+    CP is the SIPO's clock
+
+
+							-d
+
+
+Win95/NT - 32 bit extensions and a graphical shell for a 16 bit patch to
+an 8 bit operating system originally coded for a 4 bit microprocessor,
+written by a 2 bit company that can't stand 1 bit of competition.  -UGU
+
+
+
+From fredm@ml.media.mit.edu  Thu Jan  1 10:20:57 1998
+Received: from aleve.media.mit.edu by hub.media.mit.edu; (5.65v3.2/1.1/06Jun95-8.2MPM)
+	id AA28944; Thu, 1 Jan 1998 10:20:57 -0500
+Received: from ml.media.mit.edu (ml.media.mit.edu [18.85.13.107])
+	by aleve.media.mit.edu (8.8.7/ML970927) with ESMTP id JAA23720
+	for <handyboard@mailhub.media.mit.edu>; Thu, 1 Jan 1998 09:41:01 -0500 (EST)
+Received: (from fredm@localhost)
+	by ml.media.mit.edu (8.8.7/8.8.7) id JAA32741
+	for handyboard; Thu, 1 Jan 1998 09:41:01 -0500 (EST)
+From: Fred G Martin <fredm@media.mit.edu>
+Message-Id: <199801011441.JAA32741@ml.media.mit.edu>
+To: handyboard@media.mit.edu
+Subject: Re: Digital outputs.
+
+Thanks David for a nice explanation of how to add I/O using shift 
+registers.
+
+Let us not all forget that the HB does have two uncommitted digital
+output ASIDE from the four SPI pins:  PA7 (a bidirectional pin which
+is marked as digital input #9) and PA5 (a timer output pin which is
+marked as TO3 on the expansion header).
+
+It would seem silly to disconnect a motor driver signal when these
+two signals are available.
+
+Fred
+
