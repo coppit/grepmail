@@ -248,9 +248,9 @@ my @tests = (
 
 # Tests for certain supported options. (0-based indices)
 my @date_manip = (33);
-my @bzip2 = (20,21);
-my @gzip = (15,16,17,19,23);
-my @tzip = (25);
+my @bzip2 = (20,21,79,80);
+my @gzip = (15,16,17,19,23,74,75,81,107);
+my @tzip = (25,82);
 my @error_cases = (27, 28, 84, 85);
 my @unimplemented =
   ( 88, 94, 97, 98, 99, 100, 101, 102, 103, 104, 105, 106);
