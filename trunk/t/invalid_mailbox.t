@@ -5,12 +5,13 @@ use strict;
 use Test;
 use lib 'lib';
 use Test::Utils;
+use File::Spec::Functions qw( :ALL );
 use File::Copy;
 
 my %tests = (
 'cat t/mailboxes/non-mailbox.txt.gz | grepmail pattern'
   => ['none','not_a_mailbox_pipe'],
-'cat t/mailboxes/non-mailbox.txt.gz | grepmail -E \'$email =~ /pattern/\''
+"cat t/mailboxes/non-mailbox.txt.gz | grepmail -E $single_quote\$email =~ /pattern/$single_quote"
   => ['none','not_a_mailbox_pipe'],
 );
 
@@ -22,7 +23,7 @@ my %localization = (
     { 'stderr' => { 'search' => "[Broken Pipe]\n",
                     'replace' => Broken_Pipe() },
     },
-  'cat t/mailboxes/non-mailbox.txt.gz | grepmail -E \'$email =~ /pattern/\'' =>
+  "cat t/mailboxes/non-mailbox.txt.gz | grepmail -E $single_quote\$email =~ /pattern/$single_quote" =>
     { 'stderr' => { 'search' => "[Broken Pipe]\n",
                     'replace' => Broken_Pipe() },
     },
@@ -52,16 +53,16 @@ sub TestIt
   my $error_expected = shift;
   my $localization = shift;
 
-  my $testname = $0;
-  $testname =~ s/.*\///;
-  $testname =~ s/\.t//;
+  my $testname = [splitdir($0)]->[-1];
+  $testname =~ s#\.t##;
 
   {
     my @standard_inc = split /###/, `perl -e '\$" = "###";print "\@INC"'`;
     my @extra_inc;
     foreach my $inc (@INC)
     {
-      push @extra_inc, $inc unless grep { /^$inc$/ } @standard_inc;
+      push @extra_inc, "$single_quote$inc$single_quote"
+        unless grep { /^$inc$/ } @standard_inc;
     }
 
     local $" = ' -I';
@@ -75,8 +76,8 @@ sub TestIt
     }
   }
 
-  my $test_stdout = "t/temp/${testname}_$stdout_file.stdout";
-  my $test_stderr = "t/temp/${testname}_$stderr_file.stderr";
+  my $test_stdout = catfile('t','temp',"${testname}_$stdout_file.stdout");
+  my $test_stderr = catfile('t','temp',"${testname}_$stderr_file.stderr");
 
   system "$test 1>$test_stdout 2>$test_stderr";
 
@@ -98,8 +99,8 @@ sub TestIt
   my $modified_stdout = "t/temp/$stdout_file";
   my $modified_stderr = "t/temp/$stderr_file";
 
-  my $real_stdout = "t/results/$stdout_file";
-  my $real_stderr = "t/results/$stderr_file";
+  my $real_stdout = catfile('t','results',$stdout_file);
+  my $real_stderr = catfile('t','results',$stderr_file);
 
   if (defined $localization->{'stdout'})
   {
@@ -139,7 +140,7 @@ sub SetSkip
   {
     $skip{'cat t/mailboxes/non-mailbox.txt.gz | grepmail pattern'}
       = 'gzip support not enabled in Mail::Mbox::MessageParser';
-    $skip{'cat t/mailboxes/non-mailbox.txt.gz | grepmail -E \'$email =~ /pattern/\''}
+    $skip{"cat t/mailboxes/non-mailbox.txt.gz | grepmail -E $single_quote\$email =~ /pattern/$single_quote"}
       = 'gzip support not enabled in Mail::Mbox::MessageParser';
   }
 

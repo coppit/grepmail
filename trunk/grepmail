@@ -2,7 +2,7 @@
 
 # grepmail
 
-$VERSION = '5.22';
+$VERSION = '5.23';
 
 # Grepmail searches a normal, gzip'd, tzip'd, or bzip2'd mailbox for a given
 # regular expression and returns those emails that match the query. It also
@@ -166,6 +166,9 @@ sub GetFiles(@);
 # Make the pattern insensitive if we need to
 $pattern = "(?i)$pattern" if ($opts{'i'}) && $pattern ne $NO_PATTERN;
 
+# Make the pattern match word boundaries if we need to
+$pattern = "\\b$pattern\\b" if ($opts{'w'}) && $pattern ne $NO_PATTERN;
+
 my ($dateRestriction, $date1, $date2);
 
 if (defined $opts{'d'})
@@ -231,7 +234,7 @@ sub Get_Options
   print "$VERSION\n" and exit(0) if grep { /^--version$/ } @ARGV;
 
   my @valid_options =
-    qw( a b B C d D e E f F i j h H l M m n q r R s S t T u v V X Y Z );
+    qw( a b B C d D e E f F i j h H l M m n q r R s S t T u v V w X Y Z );
 
   my %opts;
 
@@ -241,7 +244,7 @@ sub Get_Options
   # And some to non-zero.
   $opts{'d'} = $opts{'V'} = undef;
   $opts{'X'} = '^-- $';
-  $opts{'C'} = "$ENV{'HOME'}/.grepmail-cache";
+  $opts{'C'} = undef;
 
   # Ensure valid options. ALSO UPDATE 2ND GETOPT CALL BELOW
   getopt("CdeEfjsXY",\%opts);
@@ -425,6 +428,22 @@ sub Get_Options
       {
         reportAndExit "-$option can not be used with -E";
       }
+    }
+  }
+
+  unless (defined $opts{'C'})
+  {
+    if(defined $ENV{'HOME'})
+    {
+      $opts{'C'} = "$ENV{'HOME'}/.grepmail-cache";
+    }
+    elsif ($USE_CACHING)
+    {
+      # No cache file, so disable caching
+      $USE_CACHING = 0;
+      warn "grepmail: No cache file specified, and \$HOME not set. " .
+        "Disabling cache.\n"
+        unless $opts{'q'};
     }
   }
 
@@ -646,7 +665,7 @@ sub Do_Simple_Pattern_Matching
     dprint "Doing an early printout based on header." if $opts{'D'};
     if ($opts{'l'})
     {
-      print "$fileName\n";
+      print GetFileName($fileName)."\n";
   
       # We can return since we found at least one email that matches.
       return ($DONE,$numberOfMatches);
@@ -784,7 +803,7 @@ sub Do_Simple_Pattern_Matching
   
     if ($opts{'l'})
     {
-      print "$fileName\n";
+      print GetFileName($fileName)."\n";
       
       # We can return since we found at least one email that matches.
       return ($DONE,$numberOfMatches);
@@ -829,7 +848,7 @@ sub Do_Simple_Pattern_Matching
 
     if ($opts{'l'})
     {
-      print "$fileName\n";
+      print GetFileName($fileName)."\n";
 
       # We can return since we found at least one email that matches.
       return ($DONE,$numberOfMatches);
@@ -891,7 +910,7 @@ sub Do_Complex_Pattern_Matching
     dprint "Doing an early printout based on header." if $opts{'D'};
     if ($opts{'l'})
     {
-      print "$fileName\n";
+      print GetFileName($fileName)."\n";
   
       # We can return since we found at least one email that matches.
       return ($DONE,$numberOfMatches);
@@ -956,7 +975,7 @@ sub Do_Complex_Pattern_Matching
   
     if ($opts{'l'})
     {
-      print "$fileName\n";
+      print GetFileName($fileName)."\n";
       
       # We can return since we found at least one email that matches.
       return ($DONE,$numberOfMatches);
@@ -1001,7 +1020,7 @@ sub Do_Complex_Pattern_Matching
 
     if ($opts{'l'})
     {
-      print "$fileName\n";
+      print GetFileName($fileName)."\n";
 
       # We can return since we found at least one email that matches.
       return ($DONE,$numberOfMatches);
@@ -1095,12 +1114,24 @@ sub ProcessMailFile
     #my $line = $folder_reader->line_number();
     my $line = $folder_reader->{'email_line_number'};
 
-    my $end_of_header = index($$email,"\n\n")+2;
-    my $email_header;
-    $$email_header = substr($$email,0,$end_of_header);
+    my ($email_header,$email_body);
+    {
+      my $newlines_position = index($$email,"\n\n");
 
-    my $email_body = $email;
-    substr($$email_body,0,$end_of_header) = '';
+      my $end_of_header;
+      if ($newlines_position == -1)
+      {
+        $end_of_header = length($$email);
+      }
+      else
+      {
+        $end_of_header = $newlines_position+2;
+      }
+      $$email_header = substr($$email,0,$end_of_header);
+
+      $email_body = $email;
+      substr($$email_body,0,$end_of_header) = '';
+    }
 
     PrintEmailStatistics($email_header,$email_body) if $opts{'D'};
 
@@ -1127,7 +1158,7 @@ sub ProcessMailFile
 
   }
 
-  print "$fileName: $numberOfMatches\n" if ($opts{'r'});
+  print GetFileName($fileName).": $numberOfMatches\n" if $opts{'r'};
 }
 
 #-------------------------------------------------------------------------------
@@ -1476,6 +1507,22 @@ sub ConvertEmailToMbox
 
 #-------------------------------------------------------------------------------
 
+sub GetFileName
+{
+  my $fileName = shift;
+
+  if (defined $fileName)
+  {
+    return "$fileName";
+  }
+  else
+  {
+    return "(standard input)";
+  }
+}
+
+#-------------------------------------------------------------------------------
+
 sub PrintEmail
 {
   my $fileName = shift;
@@ -1497,9 +1544,10 @@ sub PrintEmail
       # about line numbers!
       if ($opts{'m'} && $header eq "\n")
       {
-        print "$fileName:" if $number_files > 1;
+        print GetFileName($fileName).":" if $number_files > 1;
 
-        print " " x length $line_number, ":X-Mailfolder: $fileName\n";
+        print " " x length $line_number,
+          ":X-Mailfolder: ", GetFileName($fileName), "\n";
       }
 
       # Print only 3-line header if -B
@@ -1511,7 +1559,7 @@ sub PrintEmail
       else
       {
         my $prefix = '';
-        $prefix = "$fileName:" if $number_files > 1;
+        $prefix = GetFileName($fileName).":" if $number_files > 1;
 
         $header =~ s/^/$line_number++;$prefix . ($line_number-1) . ':'/mge;
         print $header;
@@ -1529,7 +1577,7 @@ sub PrintEmail
     {
       my $line = $1;
 
-      print "$fileName:" if $number_files > 1;
+      print GetFileName($fileName).":" if $number_files > 1;
       print "$line_number:$line";
       $line_number++;
     }
@@ -1543,14 +1591,14 @@ sub PrintEmail
       print GetHeaderField($email_header,'Date:');
       print GetHeaderField($email_header,'From:');
       print GetHeaderField($email_header,'Subject:');
-      print "X-Mailfolder: $fileName\n\n" if $opts{'m'};
+      print "X-Mailfolder: ".GetFileName($fileName)."\n\n" if $opts{'m'};
     }
     else
     {
       # Had better be a newline!
       chop $$email_header;
       print $$email_header;
-      print "X-Mailfolder: $fileName\n" if $opts{'m'};
+      print "X-Mailfolder: ".GetFileName($fileName)."\n" if $opts{'m'};
       print "\n";
       $$email_header .= "\n";
     }
@@ -1862,17 +1910,17 @@ grepmail $VERSION
 
 usage:
 
-  grepmail [--help|--version] [-abBDFhHilmrRuvV] [-C <cache-file>]
+  grepmail [--help|--version] [-abBDFhHilmrRuvVw] [-C <cache-file>]
     [-j <status>] [-s <sizespec>] [-d <date-specification>]
     [-X <signature-pattern>] [-Y <header-pattern>]
     [-e] <pattern> <files...>
 
-  grepmail [--help|--version] [-abBDFhHilmrRuvV] [-C <cache-file>]
+  grepmail [--help|--version] [-abBDFhHilmrRuvVw] [-C <cache-file>]
     [-j <status>] [-s <sizespec>] [-d <date-specification>]
     [-X <signature-pattern>] [-Y <header-pattern>]
     -E <expr> <files...>
 
-  grepmail [--help|--version] [-abBDFhHilmrRuvV] [-C <cache-file>]
+  grepmail [--help|--version] [-abBDFhHilmrRuvVw] [-C <cache-file>]
     [-j <status>] [-s <sizespec>] [-d <date-specification>]
     [-X <signature-pattern>] [-Y <header-pattern>]
     -f <pattern-file> <files...>
@@ -1912,6 +1960,7 @@ compressed ASCII input is taken from STDIN.
 -u Ensure that no duplicate emails are output
 -v Output emails that don't match the expression
 -V Display the version number
+-w Match word boundaries
 -X Specify a regular expression for the signature separator
 -Y Specify a header to search (implies -h)
 --help Print a help message
@@ -1939,17 +1988,17 @@ grepmail - search mailboxes for mail matching a regular expression
 
 =head1 SYNOPSIS
 
-  grepmail [--help|--version] [-abBDFhHilmrRuvV] [-C <cache-file>]
+  grepmail [--help|--version] [-abBDFhHilmrRuvVw] [-C <cache-file>]
     [-j <status>] [-s <sizespec>] [-d <date-specification>]
     [-X <signature-pattern>] [-Y <header-pattern>]
     [-e] <pattern> <files...>
 
-  grepmail [--help|--version] [-abBDFhHilmrRuvV] [-C <cache-file>]
+  grepmail [--help|--version] [-abBDFhHilmrRuvVw] [-C <cache-file>]
     [-j <status>] [-s <sizespec>] [-d <date-specification>]
     [-X <signature-pattern>] [-Y <header-pattern>]
     -E <expr> <files...>
 
-  grepmail [--help|--version] [-abBDFhHilmrRuvV] [-C <cache-file>]
+  grepmail [--help|--version] [-abBDFhHilmrRuvVw] [-C <cache-file>]
     [-j <status>] [-s <sizespec>] [-d <date-specification>]
     [-X <signature-pattern>] [-Y <header-pattern>]
     -f <pattern-file> <files...>
@@ -2176,6 +2225,16 @@ without the B<-v> switch.
 
 Print the version and exit.
 
+=item B<-w>
+
+Search for only those lines which contain the pattern as part of a word group.
+That is, the start of the pattern must match the start of a word, and the end
+of the pattern must match the end of a word. (Note that the start and end need
+not be for the I<same> word.)
+
+If you are familiar with Perl regular expressions, this flag simply puts a
+"\b" before and after the search pattern.
+
 =item B<-X>
 
 Specify a regular expression for the signature separator. By default this
@@ -2310,6 +2369,11 @@ its cache file.
 =head1 BUGS AND LIMITATIONS
 
 =over 2
+
+=item Mails without bodies cause problems
+
+According to RFC 822, mail messages need not have message bodies. I've found
+and removed one bug related to this. I'm not sure if there are others.
 
 =item Test case 1 fails on some platforms
 

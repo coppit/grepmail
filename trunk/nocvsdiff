@@ -1,9 +1,35 @@
-#!/usr/bin/perl
+#!/usr/bin/perl -w
 
+use strict;
+
+open FOO, "diff @ARGV |";
+
+my $line;
+while ($line = <FOO>)
+{
+  next if $line =~ /^Only in [^:]*\/CVS: /;
+
+  if ($line =~ /^diff .*\/CVS\/.* .*\/CVS\//)
+  {
+    # Skip the rest
+    while ($line = <FOO>)
+    {
+      last if $line !~ /^([\d,acd]+\n|< |---\n|> )/;
+    }
+
+    last if eof FOO;
+    redo;
+  }
+
+  print $line if defined $line;
+}
+
+# Old, non-buffered version
+=for nobody
 my $results = `diff @ARGV`;
 
 $results =~ s/^diff.*\/CVS\/.*\/CVS\/.*\n([\d,acd]+\n|< .*\n|---\n|> .*\n)+//mg;
-$results =~ s/^Only in.*\bCVS\b.*\n//mg;
+$results =~ s/^Only in [^:]*\/CVS: .*\n//mg;
 
 print $results;
-
+=cut

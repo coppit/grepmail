@@ -5,22 +5,23 @@ use strict;
 use Test;
 use lib 'lib';
 use Test::Utils;
+use File::Spec::Functions qw( :ALL );
 
 my %tests = (
 'grepmail -ibS Free t/mailboxes/mailarc-1.txt'
   => ['ignore_signatures','none'],
-'grepmail -S \'So I got Unix\' t/mailboxes/mailarc-1.txt'
+"grepmail -S ${single_quote}So I got Unix$single_quote t/mailboxes/mailarc-1.txt"
   => ['none','none'],
-'grepmail -X \'={75,}\' -S \'61 2 9844 5381\' t/mailboxes/mailarc-1.txt'
-  => ['none','none'],
-# Unimplemented
-'grepmail -iS -E \'$email_body =~ /Free/\' t/mailboxes/mailarc-1.txt'
+"grepmail -X $single_quote={75,}$single_quote -S ${single_quote}61 2 9844 5381$single_quote t/mailboxes/mailarc-1.txt"
   => ['none','none'],
 # Unimplemented
-'grepmail -S \'$email =~ /So I got Unix/\' t/mailboxes/mailarc-1.txt'
+"grepmail -iS -E $single_quote\$email_body =~ /Free/$single_quote t/mailboxes/mailarc-1.txt"
   => ['none','none'],
 # Unimplemented
-'grepmail -X \'={75,}\' -S -E \'$email =~ /61 2 9844 5381/\' t/mailboxes/mailarc-1.txt'
+"grepmail -S $single_quote\$email =~ /So I got Unix/$single_quote t/mailboxes/mailarc-1.txt"
+  => ['none','none'],
+# Unimplemented
+"grepmail -X $single_quote\={75,}$single_quote -S -E $single_quote\$email =~ /61 2 9844 5381/$single_quote t/mailboxes/mailarc-1.txt"
   => ['none','none'],
 );
 
@@ -50,16 +51,16 @@ sub TestIt
   my ($stdout_file,$stderr_file) = @{ shift @_ };
   my $error_expected = shift;
 
-  my $testname = $0;
-  $testname =~ s/.*\///;
-  $testname =~ s/\.t//;
+  my $testname = [splitdir($0)]->[-1];
+  $testname =~ s#\.t##;
 
   {
     my @standard_inc = split /###/, `perl -e '\$" = "###";print "\@INC"'`;
     my @extra_inc;
     foreach my $inc (@INC)
     {
-      push @extra_inc, $inc unless grep { /^$inc$/ } @standard_inc;
+      push @extra_inc, "$single_quote$inc$single_quote"
+        unless grep { /^$inc$/ } @standard_inc;
     }
 
     local $" = ' -I';
@@ -73,8 +74,8 @@ sub TestIt
     }
   }
 
-  my $test_stdout = "t/temp/${testname}_$stdout_file.stdout";
-  my $test_stderr = "t/temp/${testname}_$stderr_file.stderr";
+  my $test_stdout = catfile('t','temp',"${testname}_$stdout_file.stdout");
+  my $test_stderr = catfile('t','temp',"${testname}_$stderr_file.stderr");
 
   system "$test 1>$test_stdout 2>$test_stderr";
 
@@ -94,8 +95,8 @@ sub TestIt
   }
 
 
-  my $real_stdout = "t/results/$stdout_file";
-  my $real_stderr = "t/results/$stderr_file";
+  my $real_stdout = catfile('t','results',$stdout_file);
+  my $real_stderr = catfile('t','results',$stderr_file);
 
   CheckDiffs([$real_stdout,$test_stdout],[$real_stderr,$test_stderr]);
 }
@@ -108,11 +109,11 @@ sub SetSkip
 
   my %skip;
 
-  $skip{'grepmail -iS -E \'$email_body =~ /Free/\' t/mailboxes/mailarc-1.txt'}
+  $skip{"grepmail -iS -E $single_quote\$email_body =~ /Free/$single_quote t/mailboxes/mailarc-1.txt"}
     = 'unimplemented';
-  $skip{'grepmail -S \'$email =~ /So I got Unix/\' t/mailboxes/mailarc-1.txt'}
+  $skip{"grepmail -S $single_quote\$email =~ /So I got Unix/$single_quote t/mailboxes/mailarc-1.txt"}
     = 'unimplemented';
-  $skip{'grepmail -X \'={75,}\' -S -E \'$email =~ /61 2 9844 5381/\' t/mailboxes/mailarc-1.txt'}
+  $skip{"grepmail -X $single_quote={75,}$single_quote -S -E $single_quote\$email =~ /61 2 9844 5381/$single_quote t/mailboxes/mailarc-1.txt"}
     = 'unimplemented';
 
   return %skip;

@@ -1,18 +1,18 @@
-grepmail 5.21
+grepmail 5.23
 
 usage:
 
-  grepmail [--help|--version] [-abBDFhHilmrRuvV] [-C <cache-file>]
+  grepmail [--help|--version] [-abBDFhHilmrRuvVw] [-C <cache-file>]
     [-j <status>] [-s <sizespec>] [-d <date-specification>]
     [-X <signature-pattern>] [-Y <header-pattern>]
     [-e] <pattern> <files...>
 
-  grepmail [--help|--version] [-abBDFhHilmrRuvV] [-C <cache-file>]
+  grepmail [--help|--version] [-abBDFhHilmrRuvVw] [-C <cache-file>]
     [-j <status>] [-s <sizespec>] [-d <date-specification>]
     [-X <signature-pattern>] [-Y <header-pattern>]
     -E <expr> <files...>
 
-  grepmail [--help|--version] [-abBDFhHilmrRuvV] [-C <cache-file>]
+  grepmail [--help|--version] [-abBDFhHilmrRuvVw] [-C <cache-file>]
     [-j <status>] [-s <sizespec>] [-d <date-specification>]
     [-X <signature-pattern>] [-Y <header-pattern>]
     -f <pattern-file> <files...>
@@ -52,6 +52,7 @@ compressed ASCII input is taken from STDIN.
 -u Ensure that no duplicate emails are output
 -v Output emails that don't match the expression
 -V Display the version number
+-w Match word boundaries
 -X Specify a regular expression for the signature separator
 -Y Specify a header to search (implies -h)
 --help Print a help message

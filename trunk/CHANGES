@@ -3,6 +3,21 @@ Features which haven't made it in yet:
   <zbrown@tumblerings.org> for the excellent feature idea and a prototype
   implementation.)
 
+New in version 5.23:
+- Updated test cases to run under Windows.
+- Fixed a bug in speed tests which would cause the grep implementation to
+  fail.
+- Fixed incorrect output for emails without message bodies. (Thanks to Volker
+  Kuhlmann <VolkerKuhlmann@gmx.de> for the bug report.)
+- Fixed filename output for -n, -m and other situations when input comes from
+  standard input. (Thanks to an anonymous submittor on SourceForge for an
+  initial patch.)
+- Added -w flag to match word boundaries. (Thanks to Ed Avis
+  <epaepa@users.sourceforge.net> for the feature request.)
+- A warning is now issued and caching is disabled if -C is not specified and
+  $HOME is not set (as might be the case when running grepmail in a cron job).
+  (Thanks to Dr. Oliver Muth <Dr.O.Muth@gmx.de> for the bug report.)
+
 New in version 5.22:
 - X-Mailfolder header no longer has a line number when -n is used. (bugfix by
   Kevin Pfeiffer <pfeiffer@iu-bremen.de>)

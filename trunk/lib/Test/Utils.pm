@@ -10,10 +10,24 @@ use Mail::Mbox::MessageParser;
 
 @ISA = qw( Exporter );
 @EXPORT = qw( CheckDiffs DoDiff InitializeCache ModuleInstalled %PROGRAMS
-  Broken_Pipe No_such_file_or_directory
+  Broken_Pipe No_such_file_or_directory $single_quote $command_separator
+  $set_env
 );
 
-use vars qw( %PROGRAMS );
+use vars qw( %PROGRAMS $single_quote $command_separator $set_env );
+
+if ($^O eq 'MSWin32')
+{
+  $set_env = 'set';
+  $single_quote = '"';
+  $command_separator = '&';
+}
+else
+{
+  $set_env = '';
+  $single_quote = "'";
+  $command_separator = '';
+}
 
 %PROGRAMS = (
  'tzip' => undef,
