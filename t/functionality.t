@@ -54,6 +54,7 @@ my @tests = (
 'grepmail -ad "before 7/15/1998" t/mailarc-1.txt',
 'grepmail -n library t/mailarc-1.txt',
 'grepmail -n library t/mailarc-1.txt t/mailarc-2.txt',
+'grepmail "From.*luikeith@egr.msu.edu" t/mailarc-1.txt'
 );
 
 # Tests for certain supported options.
@@ -110,6 +111,8 @@ print "\n";
 my $testNumber = 1;
 foreach my $test (@tests)
 {
+  ok(1),next if defined $ARGV[0] && $testNumber < $ARGV[0];
+
   local $" = " -I";
   my $includes = "-I@INC";
 
