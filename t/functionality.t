@@ -62,6 +62,7 @@ my @tests = (
 'grepmail "From.*luikeith@egr.msu.edu" t/mailarc-1.txt',
 'grepmail -m library t/mailarc-1.txt t/mailarc-2.txt',
 'grepmail -mn library t/mailarc-1.txt t/mailarc-2.txt',
+'grepmail . t/gnus.txt',
 );
 
 # Tests for certain supported options.
