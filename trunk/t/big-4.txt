@@ -32606,7 +32606,7 @@ Received: from lib.drury.edu (lib.drury.edu [198.209.49.6])
 	for <handyboard@media.mit.edu>; Thu, 10 Dec 1998 09:40:37 -0500 (EST)
 Received: from lib.drury.edu (gatekeeper.sps.k12.mo.us [204.184.214.252]) by lib.drury.edu (AIX4.2/UCB 8.7/8.7) with ESMTP id IAA14712 for <handyboard@media.mit.edu>; Thu, 10 Dec 1998 08:44:32 -0600 (CST)
 Message-Id: <E6EA2066.714D6276@lib.drury.edu>
-Date: Thu, 30 Aug 1956 21:23:46 +0000
+Date: Thu, 30 Aug 1986 21:23:46 +0000
 From: ffotsch <ffotsch@lib.drury.edu>
 X-Mailer: Mozilla 4.5 (Macintosh; I; PPC)
 X-Accept-Language: en
@@ -34209,8 +34209,16 @@ vwait events
 #                                                                              #
 ################################################################################
 # $Log$
-# Revision 1.1  2000/02/05 22:38:12  coppit
-# Initial revision
+# Revision 1.2  2000/11/03 07:42:54  coppit
+# This version of grepmail has a new, slightly faster file read mechanism. This
+# new design also simplified the code quite a bit. The big-4.txt mailbox was
+# updated to fix a bad date.
+#
+# Revision 1.1.1.1  2000/02/05 22:38:12  coppit
+# Initial creation of devel branch for grepmail project.
+#
+# David Coppit
+#
 #
 # Revision 1.1  1998/12/15 02:21:00  philippi
 # Initial revision...
