@@ -2,7 +2,7 @@
 
 # grepmail
 
-$VERSION = '4.45';
+$VERSION = '4.46';
 
 # Grepmail searches a normal, gzip'd, tzip'd, or bzip2'd mailbox for a given
 # regular expression and returns those emails that match the query. It also
@@ -906,8 +906,7 @@ sub NotADuplicate
 {
   my $email_header = shift;
 
-  my $message_id = $email_header;
-  $message_id =~ m/^Message-Id:<.*>$/m;
+  my ($message_id) = $email_header =~ /^Message-Id:\s*<([^>]+)>/mi;
 
   my $result;
 
