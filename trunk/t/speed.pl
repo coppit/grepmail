@@ -7,7 +7,7 @@
 use strict;
 use warnings 'all';
 
-use lib 'lib';
+use lib 't';
 use Benchmark;
 use Benchmark::Timer;
 use FileHandle;

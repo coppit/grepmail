@@ -2,7 +2,7 @@ package Test::Utils;
 
 use strict;
 use Exporter;
-use Test;
+use Test::More;
 use FileHandle;
 
 use vars qw( @EXPORT @ISA );
