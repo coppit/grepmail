@@ -2,7 +2,7 @@
 
 # grepmail
 
-$VERSION = '4.47';
+$VERSION = '4.48';
 
 # Grepmail searches a normal, gzip'd, tzip'd, or bzip2'd mailbox for a given
 # regular expression and returns those emails that match the query. It also
@@ -268,7 +268,7 @@ my @args = @ARGV;
 $opts{'D'} = $opts{'e'} = $opts{'i'} = $opts{'q'} = $opts{'h'} = 0;
 $opts{'b'} = $opts{'v'} = $opts{'l'} = $opts{'r'} = $opts{'a'} = 0;
 $opts{'M'} = $opts{'m'} = $opts{'s'} = $opts{'u'} = $opts{'n'} = 0;
-$opts{'Z'} = 0;
+$opts{'Z'} = $opts{'H'} = 0;
 $opts{'d'} = $opts{'V'} = undef;
 
 # Initialize seen messages data structure to empty.
@@ -1322,6 +1322,9 @@ sub PrintEmail
       $line_number++;
     }
 
+    # Don't print the body if -H is specified
+    return if $opts{'H'};
+
     while ($body =~ /([^\n]*\n)/g)
     {
       my $line = $1;
@@ -1336,6 +1339,9 @@ sub PrintEmail
     $header =~ s/\n\n/\nX-Mailfolder: $fileName\n\n/ if $opts{'m'};
 
     print $header;
+
+    # Don't print the body if -H is specified
+    return if $opts{'H'};
 
     # Print whatever body we've read already.
     print $body;
@@ -1618,8 +1624,9 @@ compressed ASCII input is taken from STDIN.
 -d Specify a date range (see below)
 -a Use received date instead of sent date for -d matching
 -D Debug mode
--e Explicitely name expr (when searching for strings beginning with "-")
+-e Explicitly name expr (when searching for strings beginning with "-")
 -h Search must match header
+-H Print headers but not bodies of matching emails
 -i Ignore case in the search expression
 -l Output the names of files having an email matching the expression
 -M Do not search non-text mime attachments
@@ -1652,7 +1659,7 @@ grepmail - search mailboxes for mail matching a regular expression
 
 =head1 SYNOPSIS
 
-  grepmail [-bDhilmrRuv] [-s size] [-d "datespec"] [[-e] <expr>] <files...>
+  grepmail [-bDhHilmrRuv] [-s size] [-d "datespec"] [[-e] <expr>] <files...>
 
 =head1 DESCRIPTION
 
@@ -1722,12 +1729,16 @@ without a "Date: ..." line in the header.
 
 =item B<-e>
 
-Explicitely specify the search pattern. This is useful for specifying patterns
+Explicitly specify the search pattern. This is useful for specifying patterns
 that begin with "-", which would otherwise be interpreted as a flag.
 
 =item B<-h>
 
 Asserts that the pattern must match in the header of the email.
+
+=item B<-H>
+
+Print the header but not body of matching emails.
 
 =item B<-i>
 

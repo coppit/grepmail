@@ -110,6 +110,7 @@ my $mail_folder_fastreader = 0;
 
   if (ModuleInstalled("Date::Manip"))
   {
+    Check_Known_Timezone();
     $date_manip = 1;
   }
   else
@@ -148,6 +149,24 @@ if ($mail_folder_fastreader)
 print "Testing perl-based folder reader implementation.\n\n";
 
 DoTests($ARGV[0],0);
+
+# ---------------------------------------------------------------------------
+
+sub Check_Known_Timezone
+{
+  require Date::Manip;
+
+  unless (eval 'Date::Manip::Date_TimeZone()')
+  {
+    print <<EOF;
+
+WARNING: Your time zone is not recognized by Date::Manip. It is likely
+that many test cases related to dates will fail. See the README for more
+information on how to resolve this problem.
+
+EOF
+  }
+}
 
 # ---------------------------------------------------------------------------
 
