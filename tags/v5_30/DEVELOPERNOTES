@@ -1,0 +1,58 @@
+This file is not distributed with grepmail. It outlines some notes for
+developers readying a set of files for distribution.
+
+Checklist for a release:
+- Be sure to add new test cases for new features
+- Make sure version number increases.
+- Edit version number in README.
+- Add version changes to README and CHANGES.
+- Add new module dependencies to Makefile.PL, and update README
+- Update MANIFEST if necessary.
+- Test your distribution and scripts against the functional tests:
+  $ make clean
+  $ perl Makefile.PL
+  $ make
+  $ make test
+  (run this in the devel directory to also test speed)
+- After the functional tests have passed, make the distribution file:
+  $ make dist
+- Install the distribution file elsewhere to test it.
+  $ scp grepmail-X.XX.tar.gz coppit@linux.sourceforge.net:.
+  $ ssh -l coppit linux.sourceforge.net
+  $ tar xvfz grepmail-X.XX.tar.gz
+  $ cd grepmail-X.XX
+  $ perl Makefile.PL
+  $ make
+  $ make test
+- Update CHANGES file, and copy to server:
+  $ scp CHANGES coppit@grepmail.sourceforge.net:/home/groups/g/gr/grepmail/htdocs
+  (Use your username instead of coppit)
+- Make distribution file. (See above.)
+- Upload to CPAN:
+  http://pause.perl.org/pause/authenquery
+  or
+  cpan-upload grepmail-X.XX.tar.gz
+- Release file:
+  http://sourceforge.net/account/login.php
+  ncftpput upload.sf.net incoming grepmail-X.XX.tar.gz
+  http://sourceforge.net/project/admin/editpackages.php?group_id=2207
+- Announce any news on SourceForge:
+  http://sourceforge.net/news/submit.php?group_id=2207
+- Update webpage:
+  $ scp coppit@grepmail.sourceforge.net:/home/groups/g/gr/grepmail/htdocs/index.html .
+  [edit URL & version]
+  $ scp index.html coppit@grepmail.sourceforge.net:/home/groups/g/gr/grepmail/htdocs/
+  $ rm index.html
+- Announce on freshmeat:
+  http://freshmeat.net/login/
+  [search for grepmail, select add release]
+- Announce it to grepmail-announce@sourceforge.net and to
+  comp.lang.perl.announce.
+- Copy current code to old in devel
+  $ cp grepmail grepmail.old
+- Check in code:
+  $ export CVS_RSH=ssh
+  $ cvs -z3 -d:ext:coppit@cvs.grepmail.sourceforge.net:/cvsroot/grepmail ci
+  (use your userid instead of coppit)
+- Tag the release for easy retrieval later
+  $ cvs tag "v5_21"

@@ -1,0 +1,580 @@
+Features which haven't made it in yet:
+- Support for searches on email threads. (Thanks to Zack Brown
+  <zbrown@tumblerings.org> for the excellent feature idea and a prototype
+  implementation.)
+
+New in version 5.30:
+- Updated t/recursive.t to work better when there are version control
+  directories in t/mailboxes/directory. (Thanks to Joey Hess
+  <joey@kitenet.net> for the feature suggestion and initial patch.)
+- Updated t/invalid_mailbox.t to be more robust. (Thanks to an anonymous bug
+  report on SourceForge.)
+- Fixed a bug in t/invalid_mailbox.t for Solaris. (Thanks to Jost Krieger
+  <Jost.Krieger+smokeback@sunu991.rz.ruhr-uni-bochum.de> for the bug report.)
+- -F now works again (Thanks to Graham Gough <graham@cs.man.ac.uk> for the bug
+  report.)
+- Changed incorrect "-h" to "--help" in two error messages. (Thanks to David
+  Sewell <dsew@users.sourceforge.net> for catching this.)
+- Now correctly handles DOS-style line endings in mailboxes. (Thanks to Martin
+  Hosken <martin_hosken@sil.org> for the initial patch.) Requires
+  Mail::Mbox::MessageParser 1.20 or better now.
+- Changed single dates so that they are treated as inferred spans, instead of
+  a single day. For example "2004" now means "between Jan 1 2004 and Jan 1
+  2005" instead of "between Jan 1 2004 and Jan 2 2004". (Thanks to Dan Pritts
+  <danno@internet2.edu> for the feature suggestion.)
+
+New in version 5.23:
+- Updated test cases to run under Windows.
+- Fixed a bug in speed tests which would cause the grep implementation to
+  fail.
+- Fixed incorrect output for emails without message bodies. (Thanks to Volker
+  Kuhlmann <VolkerKuhlmann@gmx.de> for the bug report.)
+- Fixed filename output for -n, -m and other situations when input comes from
+  standard input. (Thanks to an anonymous submittor on SourceForge for an
+  initial patch.)
+- Added -w flag to match word boundaries. (Thanks to Ed Avis
+  <epaepa@users.sourceforge.net> for the feature request.)
+- A warning is now issued and caching is disabled if -C is not specified and
+  $HOME is not set (as might be the case when running grepmail in a cron job).
+  (Thanks to Dr. Oliver Muth <Dr.O.Muth@gmx.de> for the bug report.)
+
+New in version 5.22:
+- X-Mailfolder header no longer has a line number when -n is used. (bugfix by
+  Kevin Pfeiffer <pfeiffer@iu-bremen.de>)
+- New -B flag prints abbreviated headers (initial patch by Kevin Pfeiffer
+  <pfeiffer@iu-bremen.de>)
+- Headers spanning multiple lines are now printed correctly in warnings and
+  such.
+- Fixed a spurious warning which would be printed if caching was not enabled.
+- grepmail will now disable caching if the caching version of
+  Mail::Mbox::MessageParser can not be loaded, instead of exiting.
+
+New in version 5.21:
+- Fixed line ending bugs under MS-DOS/Windows.
+
+New in version 5.20:
+- Added speed testing to the distribution
+- Fixed Makefile.PL so that test modules would not be installed.
+- Changed testing to use PERLRUN instead of FULLPERLRUN, which is not
+  available with older versions of MakeMaker that ship with older versions of
+  Perl. (Thanks to Ed Avis <ed.avis@kbcfp.com> for catching this.)
+- Fixed interactive installation problems. (Thanks to Joey Hess
+  <joeyh@debian.org> for catching this (again).)
+- Fixed broken searching of $HOME/mail, $HOME/Mail, and $HOME/Mailbox
+  directories when a mail folder can not be found. Changed $MAIL to $MAILDIR
+  since $MAIL usually points to the user's inbox. (Bug found and initial patch
+  by Peter Cordes <peter@llama.nslug.ns.ca>.)
+- Cache file permissions are now set to protect against prying eyes. (Patch by
+  Joey Hess <joey@kitenet.net>)
+- The user can now specify the cache file location with the -C flag.
+- Fixed compatibility problems with perl 5.005_01
+
+New in version 5.10:
+- Extracted mail parsing into the new Mail::Mbox::MessageParser module.
+- Fixed small performance loss bugs in short-circuit matching of headers which
+  were introduced in the last version
+- Fixed some uses of uninitialized values (Originally reported by Ed Avis
+  <ed.avis@kbcfp.com>.)
+- Improved performance a bit.
+- The Makefile.PL now uses the default values when run non-interactively.
+- Caching is now enabled by default. (It's no longer experimental.) Users can
+  disable it during installation.
+- Date specifications without times (e.g. "today") are interpreted as midnight
+  of the given day instead of the current time of that day. grepmail now
+  relies on Date::Manip to handle this--users must upgrade Date::Manip to get
+  this support. (Thanks to Reuben Thomas <rrt@sc3d.org> for working with
+  Sullivan Beck <sbeck@cise.ufl.edu> to get TodayIsMidnight added to
+  Date::Manip. Original bug report by Philip Douglass
+  <philipsd@users.sourceforge.net>)
+- Restructured test cases
+
+New in version 5.00:
+- grepmail is now orders of magnitude faster for mailboxes which have very
+  large (>30MB) emails in them
+- "grep" is now used to find the start of emails, if it is installed. For
+  mailboxes with large emails in them, this can speed things up by about 5x.
+- Reduced memory consumption by about 3 times.
+- -- now marks the end of options and the beginning of folders (Thanks to
+  Reuben Thomas <rrt@sc3d.org> for the idea.)
+- -f now reads patterns from a file like GNU grep does. (Feature suggestion by
+  Darxus@chaosreigns.com) -j is now used for status
+- Added smail compatibility. (Thanks to Roy <qroy@ghg.net> for the patch.)
+- The "**" prefix on warnings has been changed to "grepmail:"
+- Date specifications without times (e.g. "today") are interpreted as midnight
+  of the given day instead of the current time of that day. (Bugfix and
+  initial patch by Reuben Thomas <rrt@sc3d.org>.)
+- Fixed -i when used with -Y--it was always case sensitive. (Bugfix by Michael
+  C. Toren <mct@toren.net>)
+- Updated t/functionality.t to avoid running gzip-related test cases when gzip
+  is not installed on the system.
+- Improved some error messages so that they prepend "grepmail: " as they
+  should
+- Cleaned up some warnings about ambiguous hash values (Thanks to Philip
+  Douglass <philipsd@sf.net> for pointing them out in a bug report.)
+- Added a warning about the version of perl required for new pattern features
+  (Thanks to Philip Douglass <philipsd@sf.net> for the bug report.)
+- -t flag is now -j
+- Fixed broken Gnus support
+- Improved test case for Gnus
+
+New in version 4.91:
+- Added missing dependency for Storable.
+- Storable now only necessary if you plan on using caching
+- Fixed a bug in test case 83
+- Changed -s to support "<", ">", "<=", ">=" and "-". (Feature suggestion by
+  Jens Schleusener <Jens.Schleusener@debis-sfr.de>)
+
+New in version 4.90:
+- Made Mail::Folder::SlowReader object-oriented
+- Removed FastReader from distribution. (It's no longer faster! Also, I
+  couldn't integrate it easily with the new object-oriented reader design.)
+- Fixed a bug where in some cases emails were not being converted to mbox
+  format before being printed
+- Made searches involving header-related constraints a bit faster
+- Added missing documentation for -F flag
+- Added -f flag to search based on message status. (Feature suggestion by
+  Richard D Alloway <ralloway@winbeam.com>)
+- Fixed a bug where -X and -Y flags after a pattern would not be processed
+- Added experimental caching capability, which is perhaps 5% slower the first
+  time you run grepmail on a mail folder, and 10-20% faster on subsequent
+  runs. The cache is stored in ~/.grepmail-cache. You must edit the grepmail
+  file and set $USE_CACHING to true to use this feature. (Idea and initial
+  patch by terry jones <terry@eatoni.com>)
+
+New in version 4.81:
+- Fixed incompatibilities with older (5.005_03) versions of Perl
+- Fixed test cases which fail on operating systems (shells?) which emit
+  "Broken Pipe" to standard output. I'd rather break the pipe than have
+  grepmail gobble megabytes of data when it can't handle it.
+- Added --version flag (patch by Gerald Pfeifer <pfeifer@dbai.tuwien.ac.at>)
+- Added documentation for -V flag.
+
+New in version 4.80:
+- Added prototype -E flag to support complex searches. (Thanks to Nelson Minar
+  <nelson@monkey.org> for the original suggestion in Sep 2000, And terry jones
+  <terry@eatoni.com> for seconding the idea.)
+- Added -F flag to force processing of files which grepmail determines are not
+  mailboxes. (feature suggested by terry jones <terry@eatoni.com>)
+- Documentation updated to reflect that -B no longer exists. (By terry jones
+  <terry@eatoni.com>)
+- The test to determine if a file is a mailbox was improved to adhere better
+  to RFC 822, while still providing some flexibility. (Initial suggestion and
+  patch by terry jones <terry@eatoni.com>)
+- Improved date extraction to also look at the 'From ' line when both the
+  Received and Date headers fail. (patch by terry jones <terry@eatoni.com>)
+- Fixed a long-standing bug in which filenames of compressed mailboxes which
+  contained special shell characters would cause problems. (Thanks to Jost
+  Krieger <jkrieger@users.sourceforge.net> for giving me the kick in the pants
+  to finally fix this.)
+- Fixed a long-standing bug in which grepmail would incorrectly report the
+  filename of compressed mailboxes in error messages. (Thanks to Jost Krieger
+  <jkrieger@users.sourceforge.net> for giving me the kick in the pants to
+  finally fix this.)
+
+New in version 4.72:
+- 20% speed improvement in the Perl mailbox parser (By terry jones
+  <terry@eatoni.com>)
+- Fixed a number of potential bugs in command line processing and date
+  processing. (By terry jones <terry@eatoni.com>)
+- Cleaned up return values and use of quotes in the code. (By terry jones
+  <terry@eatoni.com>)
+- Fixed a bug in -X signature processing (By terry jones <terry@eatoni.com>)
+- Modified anonymize_mailbox to anonymize To: and Subject: in the header.
+  (Thanks to terry jones <terry@eatoni.com> for the idea.)
+- Fixed a bug in FastReader where emails less than 255 characters in size
+  would occasionally cause a core dump. (Thanks to terry jones
+  <terry@eatoni.com> for submitting a bug report and sample mailbox.)
+- Made "big" test mailboxes 4 times bigger for more meaningful speed tests
+
+New in version 4.71:
+- Fixed warning about SIGHUP on Windows.
+- Fixed -u functionality for emails without the Message-Id header. (Thanks to
+  Felix E. Klee <felix.klee@inka.de> for finding the bug.) NOTE: grepmail will
+  use Digest::MD5 to compute a hash for the email header. If you don't have
+  Digest::MD5, grepmail will just store the header. So, the default tradeoff
+  is time for space.
+- Fixed a bug in the test script. (Thanks to Joey Hess <joey@kitenet.net> for
+  finding and fixing the bug.)
+- Extended workaround for spurious warning about undefined variable to Perl
+  5.8. (Thanks to Joey Hess <joey@kitenet.net> for reporting the ongoing
+  heisenbug.)
+
+New in version 4.7:
+- Fixed signal handling to make grepmail easier to debug. Thanks to Ilya
+  Zakharevich for providing the solution.
+- Fixed a possible performance problem in reading of emails (Perl
+  implementation), and documented the settings in the README.
+- Expanded the pattern for matching the start of emails to allow different
+  types of emails to be parsed.
+- Fixed a bug where -R was reported as not recognized. (Thanks to Nicholas
+  Riley <nriley@sf.net> for the bug report and fix.)
+- "anonymize_mailbox" utility included to help people submit bug reports
+- If a mailbox can not be found, grepmail now searches the $home/mail,
+  $home/Mail, $home/Mailbox directories (or the directory specified by the
+  MAIL environment variable). (Thanks to Michael Friendly <friendly@yorku.ca>
+  for the feature suggestion and initial patch.)
+- Added -X flag to allow the user to specify a pattern for the signature
+  separator. (Thanks to Michael Friendly <friendly@yorku.ca> for the feature
+  suggestion.)
+- Added -Y flag to search specific headers. (Thanks to Terry Jones
+  <terry@eatoni.com> for the idea to automatically wrap header lines as
+  necessary.)
+
+New in version 4.60:
+- Removed -B flag and added -S flag. -B is now performed using -bS.
+- Added installation flags to suppress interactive installation. (Thanks to
+  Joey Hess <joey@kitenet.net> for the problem report. He had to patch
+  Makefile.PL for his Debian packaging.)
+- Fixed a slow implementation of searching for signatures that would cause
+  grepmail to crawl for very large emails. Thanks to Joey Hess
+  <joey@kitenet.net> for discovering the inefficiency.
+- Fixed a short-circuit which should have bypassed the search for signatures
+  if -B was not specified. Thanks to Joey Hess <joey@kitenet.net> for finding
+  the bug.
+- Implemented a new Perl parser which is 5% to 50% faster depending on how
+  I/O-bound your system is.
+- Restructured the code a bit and improved detection of invalid arguments.
+
+New in version 4.51:
+- grepmail now dies gracefully when invalid patterns like 'strcpy(' are
+  supplied. (It should be 'strcpy\('.)
+- Fixed a bug in attachment boundary matching which would cause the boundary
+  match to fail if the boundary contained special pattern matching characters.
+  (Thanks to Richard Everson <rme at users.sourceforge.net> for identifying
+  the bug, and providing a sample email which demonstrates the problem.)
+- Added a check for Inline 0.41 or better during "perl Makefile.PL" when
+  Mail::Folder::FastReader is selected to be installed. (Thanks to Brian L.
+  Johnson <blj8@blj8.com> for the problem report.)
+- Fixed a bug where grepmail would fail to print matching emails which had
+  signatures, and added a test case for it. This bug was introduced with -B
+  support in version 4.49.  (A *huge* thanks to Moritz Barsnick
+  <barsnick@gmx.net> for reporting the bug and doing the initial analysis of
+  the cause.)
+- Modified Makefile.PL to ask whether the user wants FastReader regardless of
+  whether they specified arguments to "make Makefile.PL".
+- Modified Makefile.PL to allow the user to interactively specify the
+  installation path.
+- Fixed a typo in debugging output for emails without "Date:" headers.
+- Improved error messages.
+- Usage message now displays just the flags, --help shows a summary of their
+  meanings as well.
+
+New in version 4.50:
+- Added X-Draft-From to support newer versions of Gnus (Thanks to Nevin Kapur
+  <nevin@jhu.edu> for the patch).
+
+New in version 4.49:
+- Fixed test cases to work around PATH modifications made by Date::Manip
+- Added -B to search the body but not the signature. (Thanks to Helmut
+  Springer <delta@faveve.uni-stuttgart.de> for the feature request.)
+- Added LICENSE file. (Thanks to Janet Casey <jcasey@gnu.org> for the
+  reminder.)
+
+New in version 4.48:
+- Mail::Folder::FastReader migrated from XS to Inline.
+- -H flag added by Nevin Kapur <nevin@jhu.edu>
+- Error messages are localized in test cases. (Thanks to cpan-testers and in
+  particular Jost Krieger <Jost.Krieger@ruhr-uni-bochum.de> for finding this
+  bug and diagnosing it.)
+- Fixed a problem with timezones in the test cases. (Thanks to Roy Lanek
+  <lanek@ranahminang.net> for helping me debug this.)
+- Added a check in the test cases for determining if the user's timezone is
+  not recognized by Date::Manip.
+
+New in version 4.47:
+- Grepmail now converts Gnus emails into mbox emails before printing them.
+  (Thanks to Johan Vromans <JVromans@squirrel.nl> for supplying a patch and
+  explaining the need for it.
+- Fixed a couple bugs in -M processing
+- -M is now 19% faster. (It's now only about 9% slower than without -M.)
+
+New in version 4.46:
+- Fixed a bug in -u message id processing. (Thanks go to an anonymous bug
+  reporter on SourceForge.)
+- Added more workarounds to prevent warnings resulting from a bug in Perl 5.6
+  (Thanks to Joey Hess <joey@kitenet.net>)
+- Added -Z flag to tell grepmail not to use Mail::Folder::FastReader even if
+  it is installed.
+- Fixed a bug introduced in version 4.44 where -m would not work unless used
+  with -n. (Thanks to Imre Simon <is@ime.usp.br> for catching this.)
+- --help anywhere on the command line now causes the help to be printed,
+  instead of only when used as the first argument.
+- Test script now exercises both the Mail::Folder::FastReader and perl mailbox
+  implementations as appropriate.
+- Restructured code to separate out Perl mailbox implementation as
+  Mail::Folder::SlowReader. (This module is embedded in the grepmail script.)
+
+New in version 4.45:
+- Added -n and -V to usage message. (Thanks to Wolfgang Rohdewald
+  <WRohdewald@dplanet.ch> for catching this.)
+- Added workarounds to prevent warnings resulting from a bug in Perl 5.6
+- A blank line before the start of an email is not required now. This
+  allows broken folders created by Netscape to be read. (Thanks to Jeremy
+  Malcolm <terminus@terminus.net.au> for the bug report.)
+- Mail::FastReader is 8% faster.
+
+New in version 4.44:
+- execution with -M flag now 35% faster
+- Added a Mail::Folder::FastReader module which can cause grepmail to
+  run 10-40% faster, depending on your system. Since this module is
+  experimental, the installation script will allow you to not install
+  the module. A C compiler is required.
+- "-----Original Message-----" now recognized as beginning an included
+  message
+- Fixed a bug where errors would not be displayed if compressed data
+  was piped to grepmail
+- Date::Parse is now only required if -d is used. (Date::Manip is
+  still only required if you use complex date specfications.) (Thanks
+  to Richard Stallman <rms@gnu.org> for pointing this out.)
+- Added -n flag to print line numbers a la grep. (Thanks to Richard
+  Stallman <rms@gnu.org> for the suggestion)
+- Fixed a bug in debug output where the email subject was actually the
+  sender
+- Fixed an undefined value in the printing of flag information
+- An ASCII file is now determined to be a mailbox if it has a line
+  whose prefix is 'From' or 'X-From-Line:', and another line whose
+  prefix is 'Received ', 'Date:', 'Subject:', 'X-Status:', or
+  'Status:'.
+- Error exits now return 1 (Thanks to Wolfgang Rohdewald
+  <WRohdewald@dplanet.ch> for the bug report)
+- -V flag prints the version (Thanks to Wolfgang Rohdewald
+  <WRohdewald@dplanet.ch> for the feature request)
+- Restructured code: localized reading of the emails from the file,
+  removed two functions
+
+New in version 4.43:
+- Fixed a bug in -r counting when used with -h. (Thanks to Andrew
+  <andrew@ugh.net.au> for the bug report.)
+- Fixed a bug in the handling of included messages. (Thanks to Antoine
+  Martin <antonus@libertysurf.fr> for the bug report and suggestion
+  for the fix.)
+
+New in version 4.42:
+- Added -a flag to use received date instead of sent date for -d matches.
+  (Thanks to Michael Liljeblad <liljeblad at users.sourceforge.net> for the
+  patch.)
+- Included emails are now ignored properly (Thanks to an anonymous submittor 
+  for the bug report and part of a patch
+  https://sourceforge.net/bugs/?func=detailbug&bug_id=112159&group_id=2207)
+- If an email has no date, the -d switch now issues a warning and does not
+  treat the email as a match (Thanks to David Blaine <blained at
+  users.sourceforge.net> for the bug report.)
+- -d "" can be used to find emails without dates
+- Mailbox files are now detected as files using
+  if ($buffer =~ /^(X-From-Line:|From) /im && $buffer =~ /^Subject: /im)
+  rather than
+  if ($buffer =~ /^(X-From-Line:|From) /im && $buffer =~ /^Date: /im)
+- Improved detection of binary files. (Thanks to Dan Sugalski
+  <dan@tuatha.sidhe.org> for the sample code.)
+- STDERR and STDOUT now checked separately during "make test"
+- Headers can now be in the format "Date:<tab>" in addition to "Date: "
+  (Thanks to Benjamin Korvemaker <korvemaker at users.sourceforge.net> for the
+  patch and concept.)
+
+New in version 4.41:
+- Support for Gnus-style mail files added (Thanks to Werner Bosse
+  <Werner.Bosse@alcatel.de> for the patch.)
+- Test mail files tweaked to make the test cases work better across all time
+  zones. (Thanks to Andreas Kutschera <Andreas.Kutschera@bln.siemens.de> for
+  the patch.)
+- Added check for unparsable dates in email headers.
+- Fixed a Perl warning raised when date parsing fails.
+- Added instructions for getting the necessary modules to README.
+
+New in version 4.40:
+- Date::Parse and Date::Manip version unified -- Date::Parse is now required,
+  and Date::Manip (if present) is used to parse complex dates. (Patch by
+  Seth Cohn <sethcohn@users.sourceforge.net>, modified by David Coppit)
+
+New in version 4.31:
+- Distro has missing test cases for -u functionality. Doh!
+
+New in version 4.30:
+- Updated code to avoid warnings under Perl 5.6 (Thanks to Andreas Kutschera
+  <Andreas.Kutschera@bln.siemens.de> for the bug report.)
+- Fixed a bug in the test script where bzip2, gzip, and tzip support would not
+  be tested even though the programs were available. (Thanks to Andreas
+  Kutschera <Andreas.Kutschera@bln.siemens.de> for the patch.)
+- Added standard --help flag (Patch by Seth Cohn <seth@users.sourceforge.net>)
+- Added -u ("unique") flag, which ensures that no duplicate messages will be
+  output. (A BIG thanks to Seth Cohn <seth@users.sourceforge.net>.)
+
+New in version 4.23:
+- Updated the test cases to work better in timezones close to +0000 and +2300.
+  (email if you have problems with tests 1 and 23. Thanks to Harald Krause
+  <harald.krause@a-city.de> for first finding the bug, and Adam Huffman
+  <adam.huffman@man.ac.uk> for his help debugging it.)
+- Fixed a bug in the "ignore attachments" code
+
+New in version 4.22:
+- grepmail now behaves better when tzip, bzip2 or gunzip aren't present on the
+  system.
+- The code has been restructured to compile more easily with perlcc.
+
+New in version 4.21:
+- Fixed a bug that would cause grepmail to runaway when a pipe following it
+  was broken. (Thanks to Gerald Pfeifer <pfeifer@dbai.tuwien.ac.at> for the
+  bug report)
+
+New in version 4.20:
+- grepmail development has been moved to SourceForge, and made public. Visit
+  http://grepmail.sourceforge.net/
+- Added -s flag, which limits matched emails to a given size
+- Restructured the code to be more robust with respect to feature interaction.
+  (At a 5-10% slowdown cost.)
+- Fixed an uninitialized variable warning caused by emails without subjects in
+  debug mode.
+
+New in version 4.11:
+- Fixed a bug where an ASCII file would not be recognized as a mailbox when
+  the first couple emails did not have a "From:" line. (Thanks to Jeff Flowers
+  <jeff.flowers@npl.co.uk>)
+- Added standard Perl testing.
+
+New in version 4.1:
+- Stripped auto-perl execution code, since it never works on all platforms.
+  (Installation instructions modified to require the user to fix the #! line.)
+- Minor changes to allow grepmail to run without -w complaints.
+
+New in version 4.0:
+- Fixed a bug where shell characters needed to be escaped for compressed
+  files. (Bug found by Richard Clamp <richardc@tw2.com>
+- Added #!/bin/sh as first line to make the rest compatible with csh/tcsh
+  users. (Bug found by Ed Arnold <era@ucar.edu>)
+
+New in version 3.9:
+- Took out specialization engine because there wasn't enough support to
+  program in that style.
+- Offering 2 main versions now -- Date::Manip and Date::Parse
+- Added -R option, which causes grepmail to recurse any directories
+  encountered. (Thanks to Emil Tiller <etiller@asc.corp.mot.com> for the
+  initial code.)
+- Fixed a small bug that would cause some attachments not to be identified.
+
+New in version 3.8:
+- Added a prototype engine to allow users to specialize grepmail at
+  installation time. (See below)
+- Fixed buggy mailbox detection algorithm
+- Fixed bug in identification of email headers.
+- Fixed bug in parsing timezones of emails. (Thanks to Wolfgang Weisselberg
+  <weisselberg@element5.de>)
+- Fixed bug in handling of date specifications like "2 days ago" and "2 weeks
+  ago"
+- Added -M switch, which causes grepmail to ignore non-text attachments.
+- Added "quiet mode", -q switch, which supresses warnings about directories,
+  non-mailbox ASCII files, binary files that can't be decompressed, etc.
+- Restructured code a bit. Moved file and STDIN processing out of main. The
+  whole email is now read before the match is made to the body, instead of
+  trying to match the pattern while reading the body. (This simplifies the
+  algorithms and makes -M support a lot easier, at the cost of increasing the
+  required memory slightly.) Now uses ungetc to put the test characters used
+  during file type detection back on the stream.
+
+New in version 3.7:
+- Added -D for debugging output
+- Now ignores ASCII files that don't look like mailboxes. Thanks to oak
+  <oak@eskimo.com> for pointing this out.
+- Uses Date::Parse instead of Date::Manip, which results in faster execution
+  time at the expense of less flexibility. (e.g. You can't do "12pm January 5
+  1997" any more)
+
+New in version 3.6:
+- No more temporary files! This addresses the security issues that a few
+  people have sent me email about. The script may use slightly more memory,
+  depending on the size of the largest email. (Email is now buffered as it is
+  read, and the whole buffer is printed when a match occurs. This is in
+  contrast to storing the file pointer and seeking back to the start of the
+  email.) The script is substantially faster for large amounts of data piped
+  as STDIN. Many thanks go to Joey Hess (<joey@kitenet.net>), who supplied
+  insights and contributions toward making this release happen, especially the
+  buffering code.  
+
+New in version 3.5:
+- grepmail will not try to decompress piped input that is empty.
+- Temporary files are now placed in the user's home directory to help avoid
+  privacy attacks (or in the directory specified by the TMPDIR environment
+  variable, if it exists).
+- Fixed a bug that would occasionally leave a tempfile around.
+
+New in version 3.4.1:
+- Fixed a bug that added an extra line to the start of output. (Thanks to
+  Moritz Barsnick <barsnick@gmx.net> for helping to find this.)
+
+New in version 3.4:
+- Added tzip support. (thanks to Marc Lehmann <pcg@goof.com>)
+- Reordered flags to better match grep.
+- Changed command line syntax again. (Last time, I hope.)
+
+New in version 3.3:
+- Added bzip2 support. (thanks to Josh Plautz <plautz@milner.com>).
+- Improved error checking on piped binary input.
+- Added debugging code.
+
+New in version 3.2:
+- Added TMPFILE environment variable support, and a signal handler. (thanks
+  to Ulli Horlacher (<framstag@moep.bb.bawue.de>).
+- Fixed a bug where the last paragraph of the last email in a mailbox would
+  not be printed on Linux. (How's that for obscure? Thanks to Eli Criffield
+  <rexracer@mammoth.org> for discovering it.)
+
+New in version 3.1:
+- Modified the decompression to be more compatible with older versions of gzip.
+- Improved error checking so that "grepmail -h" prints a usage message.
+- Added -m flag, which causes an "X-Mailfolder" line to be added to the
+  header, thereby showing which folder contained the message. (by Ulli
+  Horlacher <framstag@moep.bb.bawue.de>).
+- Improved error checking on flags.
+- Changed "zcat" to "gunzip -c" to help with backwards compatibility with older
+  versions of gzip (thanks to Eugene Kim <eekim@eekim.com>).
+
+New in version 3.0:
+- -h and -b can be used together.
+- Rewrote the ProcessMailFile to run 2 to 3 times faster, and use less memory.
+- Correctly diagnoses directories as such (by Gerald Pfeifer
+  <pfeifer@dbai.tuwien.ac.at>).
+
+New in version 2.1:
+- Added -l,-r, and -e, as suggested by Reinhard Max <max@suse.de>.
+- Now uses about 1/3 the memory, and is a little faster.
+
+New in version 2.0.1:
+- Added POD documentation at the end of the script (thanks, Jeffrey
+  Haemer <jsh@boulder.qms.com>).
+- -h for headers only -b for body only
+
+New in version 1.9:
+- "Ignore empty files" by Gerald Pfeifer <pfeifer@dbai.tuwien.ac.at>.
+- Emails without dates are now automatically output no matter what the
+  date specification is. (Better safe than sorry!)
+
+New in version 1.7:
+- Sped up by Andrew Johnson. It no longer looks for dates unless the email
+  matches the search string.
+
+New in version 1.6:
+- Removed use of Compress::Zlib because it was 30% slower, complicated the
+  code, and because any user with gzip'd mail has zcat...
+
+New in version 1.5:
+- Andrew Johnson <ajohnson@gpu.srv.ualberta.ca> fixed a couple of bugs.
+
+New in version 1.4:
+- Incorporated conditional loading of the date module (submitted by Andrew
+  Johnson <ajohnson@gpu.srv.ualberta.ca> Many thanks!).
+- compress::Zlib used instead of shelling out to gunzip (submitted by Andrew
+  Johnson <ajohnson@gpu.srv.ualberta.ca> Many thanks!).
+- Some bug fixes (submitted by Andrew Johnson <ajohnson@gpu.srv.ualberta.ca>
+  Many thanks!).
+- Also restructured the code a bit.
+
+New in version 1.3:
+- Made it pipeable so you can do: grepmail <pattern> file | grepmail <pattern>
+
+New in version 1.2:
+- Restructured the code a bit.
+
+New in version 1.1:
+- Support for dates.
+
+New in version 1.0:
+- Initial version, with -v -i, and gzip support

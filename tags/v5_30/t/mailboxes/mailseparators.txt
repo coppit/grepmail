@@ -1,0 +1,139 @@
+From xxx8x@ares.cs.Virginia.EDU Thu Sep 13 12:30:05 2001 -0400
+Return-Path: <xxx8x@cs.virginia.edu>
+Received: from cobra.cs.Virginia.EDU (cobra.cs.Virginia.EDU [128.143.137.16])
+	by ares.cs.Virginia.EDU (8.9.2/8.9.2/UVACS-2000040300) with ESMTP id MAA13111
+	for <cs650-discussion-fall2001@cs.Virginia.EDU>; Thu, 13 Sep 2001 12:30:05 -0400 (EDT)
+Received: from localhost (bmb5v@localhost)
+	by cobra.cs.Virginia.EDU (8.9.2/8.9.2) with ESMTP id MAA07898
+	for <cs650-discussion-fall2001@cs.Virginia.EDU>; Thu, 13 Sep 2001 12:30:05 -0400 (EDT)
+X-Authentication-Warning: cobra.cs.Virginia.EDU: xxx8x owned process doing -bs
+Date: Thu, 13 Sep 2001 12:30:05 -0400 (EDT)
+From: David Coppit <xxx8x@cs.virginia.edu>
+To: <cs650-discussion-fall2001@cs.virginia.edu>
+Subject: Debugging Compiled Libraries
+Message-ID: <Pine.GSO.4.32.0109131228250.3892-100000@cobra.cs.Virginia.EDU>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Status: RO
+X-Status: 
+X-Keywords:                 
+X-UID: 193
+
+xxxxx x xxxxxxx x xxxxxx xxxxxxx xxx x xxx xx xxx xxx xxxxxxxx, xx xxxxx
+xxxxxx xx xxxx xxxxxxx xxx xxxx xxxx xx xxxxxxx.  x'x xxxxxx xx xxxxxxx x
+xxxxx xxxxxxxx xx x xxxxx xxxxx xxxxx xxx xxxxxxx xxx xxx xxxxxxx xxxx xx
+xx xxxx xx xx xxx xxxxxxx x xxx'x xxx xx xx xxx xx x xxxxxx xxxxx xxxx xx
+xxxxxxxxx xxxxx xxxxx.  xxx xxxxx?
+
+xxxxx xxxx
+xxxx xxxxx xxx xxxxx
+xxxxxxxxxxxxxxx, xx xxxxx
+(xxx) xxx-xxxx
+xxxxx@xxxxxxxx.xxx
+
+
+From david@coppit.org Sat Sep  1 20:58 EDT 2001
+Received: from mail.virginia.edu (mail.Virginia.EDU [128.143.2.9])
+	by ares.cs.Virginia.EDU (8.9.2/8.9.2/UVACS-2000040300) with SMTP id UAA25603
+	for <xxx8x@cs.virginia.edu>; Sat, 1 Sep 2001 20:58:43 -0400 (EDT)
+Received: from ares.cs.virginia.edu by mail.virginia.edu id aa21233;
+          1 Sep 2001 20:58 EDT
+Received: from mamba.cs.Virginia.EDU (mamba.cs.Virginia.EDU [128.143.137.15])
+	by ares.cs.Virginia.EDU (8.9.2/8.9.2/UVACS-2000040300) with ESMTP id UAA25598;
+	Sat, 1 Sep 2001 20:58:40 -0400 (EDT)
+Received: from localhost (dwc3q@localhost)
+	by mamba.cs.Virginia.EDU (8.9.2/8.9.2) with ESMTP id UAA17581;
+	Sat, 1 Sep 2001 20:58:38 -0400 (EDT)
+X-Authentication-Warning: mamba.cs.Virginia.EDU: dwc3q owned process doing -bs
+Date: Sat, 1 Sep 2001 20:58:38 -0400 (EDT)
+From: David Coppit <david@coppit.org>
+X-X-Sender:  <dwc3q@mamba.cs.Virginia.EDU>
+To: Foo Bar <xxx8x@cs.virginia.edu>
+cc: foobar@coppit.org
+MMDF-Warning:  Parse error in original version of preceding line at mail.virginia.edu
+Subject: Re: To Make an Appointment for assignment checking 
+In-Reply-To: <Pine.GSO.4.32.0109012007020.17149-100000@cobra.cs.Virginia.EDU>
+Message-ID: <Pine.SUN.4.33.0109012057310.17368-100000@mamba.cs.Virginia.EDU>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Length: 846
+Status: RO
+X-Status: 
+X-Keywords:                 
+X-UID: 25
+
+xx xxx, x xxx xxxx, xxxxxx xx xxxxx:
+
+> xx xxx xxxxxx xx xxx xxxx xxxxx, xxx xxxx xxxxx xx xxx xxxxx.
+> xx xxxx xxxxxxxx xxx xxxxxxxxxxx xx xxxxxxx xxxxxx xxx
+> xxx xxxxxxx xxx xxxx xxxxxxxx.
+
+x xxxxxxx xxxxxxxxxx, xxx xx xxxxx xxxx. xxx xxxx xxxxxxxxx xx xxxx x
+xxxx xx xxx xxx xxx xxxxxxxxx. xxx xxx xxxx xx xxxx xx xxxxxxx
+xxxxxxxx xx xxx'x xxxx. xxxx xxx xxx xxxxx xxxx xxxx xxx xx xxxxx.
+
+x xxxx xxx (xxxxxxxxxxx) xxxxxxxxx xx xxx xxxxx. xxx'xx xxxx xx xxx
+xxxx xxxxx xxx xxxx xxxx xx xx xxxxxxxx xx.
+
+xxxxx
+
+_________________________________________________________________________
+xxxxx xxxxxx - xx.x. xxxxxxxxx         xxxxx@xxxxxx.xxx
+xxx xxxxxxxxxx xx xxxxxxxx             xxxx://xxxxxx.xxx/
+    "xxx," xxxx xxxxxx, "xxxxxx xxx xxxxx." xxxxx xxx x xxxx xxxxxxx.
+"x xxxxxxx," xxxx xxxx, "xxxx xxxx'x xxx xx xxxxx xxxxxxxxxxx xxxxxxxx."
+
+
+From owner-cs650-discussion-fall01@virginia.edu Fri Sep 28 13:34 EDT 2001
+Received: from mail.virginia.edu (mail.Virginia.EDU [128.143.2.9])
+	by ares.cs.Virginia.EDU (8.9.2/8.9.2/UVACS-2000040300) with SMTP id NAA04122;
+	Fri, 28 Sep 2001 13:34:07 -0400 (EDT)
+Received: from Virginia.EDU by mail.virginia.edu id ab08855;
+          28 Sep 2001 13:33 EDT
+Received: from ares.cs.virginia.edu by mail.virginia.edu id ab08851;
+          28 Sep 2001 13:33 EDT
+Received: from cobra.cs.Virginia.EDU (cobra.cs.Virginia.EDU [128.143.137.16])
+	by ares.cs.Virginia.EDU (8.9.2/8.9.2/UVACS-2000040300) with ESMTP id NAA04110;
+	Fri, 28 Sep 2001 13:33:57 -0400 (EDT)
+Received: from localhost (dwc3q@localhost)
+	by cobra.cs.Virginia.EDU (8.9.2/8.9.2) with ESMTP id NAA01261;
+	Fri, 28 Sep 2001 13:33:57 -0400 (EDT)
+X-Authentication-Warning: cobra.cs.Virginia.EDU: dwc3q owned process doing -bs
+Date: Fri, 28 Sep 2001 13:33:57 -0400 (EDT)
+From: David Coppit <david@coppit.org>
+X-X-Sender:  <dwc3q@cobra.cs.Virginia.EDU>
+To: Foo Bar <xxx8x@cs.virginia.edu>
+cc: cs650-discussion-fall01@virginia.edu
+MMDF-Warning:  Parse error in original version of preceding line at mail.virginia.edu
+Subject: Re: where is document
+In-Reply-To: <023b01c14839$b2f57110$30438f80@cs.virginia.edu>
+Message-ID: <Pine.SUN.4.33.0109281333260.868-100000@cobra.cs.Virginia.EDU>
+MIME-Version: 1.0
+Precedence: bulk
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Length: 840
+Status: RO
+X-Status: 
+X-Keywords:                 
+X-UID: 331
+
+xx xxx, xx xxx xxxx, xxxxxxx xxxxx xxxxx:
+
+> xx xxx xxxxxxxxxx xxxx, xx xxxx 'xxxx xx xxxxxxxxx xxx xxxxxxxxx xx
+> xxxxxxx x.x xx xxx xxxxxxxxxxx xxxxxxxxxxxxx, xxxxxxxx xxxxx xx
+> xxxx...'. xxx xxxxx xx xxx xxxxxxxxxxxxx. xx'x xxxxxx xxxxxxxxx xxxx
+> xxxx ' xxxxxxxxxxx xxxxxxxxxxxxx' xxxxx. xxxxx xxx xxxx xx
+> xxxxxxxxxxxxxx. xxx xxxxxx xxxx xx xxx xxx? xxxxxx.
+
+xxxx xxx xxxxx xxxx xx xxx xxx. xxx xx-xxxxxxxxxxx xxxxxxxxxxxxx xx xx
+xxx xx-xxxxxxxxxxx xxxxxxxxxxxx xxxx xxx xxxxxxxx xxxx xx.xxx.
+
+xxxxx
+
+_________________________________________________________________________
+xxxxx xxxxxx - xx.x. xxxxxxxxx         xxxxx@xxxxxx.xxx
+xxx xxxxxxxxxx xx xxxxxxxx             xxxx://xxxxxx.xxx/
+    "xxx," xxxx xxxxxx, "xxxxxx xxx xxxxx." xxxxx xxx x xxxx xxxxxxx.
+"x xxxxxxx," xxxx xxxx, "xxxx xxxx'x xxx xx xxxxx xxxxxxxxxxx xxxxxxxx."
+
+
