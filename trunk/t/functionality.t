@@ -18,6 +18,7 @@
 
 use strict;
 use Test;
+use lib 'lib';
 use Test::CompareFiles;
 
 mkdir 't/temp';
@@ -259,20 +260,26 @@ my @tests = (
 # More non -E tests
 # 116
 'grepmail -f t/patterns t/mailboxes/mailarc-1.txt',
+
+# Test auto-searching for mailboxes
+# 117
+'MAILDIR=t/mailboxes grepmail library mailarc-1.txt',
+# 118
+'MAILDIR=t/mailboxes grepmail -d "before July 15 1998" mailarc-1.txt',
 );
 
-# Tests for certain supported options. (0-based indices)
-my @date_manip = (33);
-my @date_parse = (0, 22, 28, 33, 34, 35, 36, 59, 85);
-my @bzip2 = (20,21,79,80);
-my @gzip = (15,16,23,58,74,75,81,107);
-my @tzip = (25,82);
-my @broken_pipe = (58,107);
-my @error_cases = (27, 28, 84, 85);
+# Test numbers for certain supported options.
+my @date_manip = (34);
+my @date_parse = (1, 23, 29, 34, 35, 36, 37, 60, 86);
+my @bzip2 = (21,22,80,81);
+my @gzip = (16,17,24,59,75,76,82,108);
+my @tzip = (26,83);
+my @error_cases = (28, 29, 85, 86);
 my @unimplemented =
-  ( 88, 94, 97, 98, 99, 100, 101, 102, 103, 104, 105, 106);
+  ( 89, 95, 98, 99, 100, 101, 102, 103, 104, 105, 106, 107);
 
-# Tests that need language localization
+# Tests that need platform or language localization
+my @broken_pipe = (59,108);
 my %localization = (
   27 => { 'stderr' => { 'search' => 'No such file or directory',
                         'replace' => No_such_file_or_directory() },
@@ -360,42 +367,42 @@ sub CheckSkip
 {
   my $testID = shift;
 
-  if(grep {$_ == $testID} @unimplemented)
+  if(grep {$_ == $testID+1} @unimplemented)
   {
     print "Skipping test for unimplemented feature\n";
     skip('Skip unimplemented feature',1);
     return 1;
   }
 
-  if((grep {$_ == $testID} @date_manip) && !$date_manip)
+  if((grep {$_ == $testID+1} @date_manip) && !$date_manip)
   {
     print "Skipping test for Date::Manip version\n";
     skip('Skip Date::Manip not available',1);
     return 1;
   }
 
-  if((grep {$_ == $testID} @date_parse) && !$date_parse)
+  if((grep {$_ == $testID+1} @date_parse) && !$date_parse)
   {
     print "Skipping test for Date::Parse\n";
     skip('Skip Date::Parse not available',1);
     return 1;
   }
 
-  if((grep {$_ == $testID} @bzip2) && !$bzip2)
+  if((grep {$_ == $testID+1} @bzip2) && !$bzip2)
   {
     print "Skipping test using bzip2\n";
     skip('Skip bzip2 not available',1);
     return 1;
   }
 
-  if((grep {$_ == $testID} @gzip) && !$gzip)
+  if((grep {$_ == $testID+1} @gzip) && !$gzip)
   {
     print "Skipping test using gzip\n";
     skip('Skip gzip not available',1);
     return 1;
   }
 
-  if((grep {$_ == $testID} @tzip) && !$tzip)
+  if((grep {$_ == $testID+1} @tzip) && !$tzip)
   {
     print "Skipping test using tzip\n";
     skip('Skip tzip not available',1);
@@ -403,6 +410,34 @@ sub CheckSkip
   }
 
   return 0;
+}
+
+# ---------------------------------------------------------------------------
+
+sub HandleBrokenPipe
+{
+  my $testID = shift;
+
+  $testID++;
+
+  return
+    unless scalar(grep { $testID == $_ } @broken_pipe) && $^O eq 'solaris';
+
+  open REAL, "t/results/test$testID.stderr.real";
+  local $/ = undef;
+  my $output = <REAL>;
+  close REAL;
+
+  my $replaced = $output;
+
+  $replaced .= "Broken Pipe\n" unless $output =~ /Broken Pipe/;
+
+  if ($output ne $replaced)
+  {
+    open REAL, ">t/results/test$testID.stderr.real";
+    print REAL $replaced;
+    close REAL;
+  }
 }
 
 # ---------------------------------------------------------------------------
@@ -503,10 +538,12 @@ sub DoTests
 
     @INC = @newinc;
 
-    local $" = " -I";
-    my $includes = "-I@INC";
+    {
+      local $" = " -I";
+      my $includes = "-I@INC";
 
-    $test =~ s#\bgrepmail\s#$^X $includes blib/script/grepmail #sg;
+      $test =~ s#\bgrepmail\s#$^X $includes blib/script/grepmail #sg;
+    }
 
     print "$test\n";
 
@@ -516,6 +553,7 @@ sub DoTests
       next;
     }
 
+    HandleBrokenPipe($testID);
     LocalizeTestOutput($testID);
 
     my $test_stdout_result = "t/temp/test$testNumber.stdout";
@@ -523,14 +561,14 @@ sub DoTests
 
     system "$test 1>$test_stdout_result 2>$test_stderr_result";
 
-    if (!$? && (grep {$_ == $testID} @error_cases))
+    if (!$? && (grep {$_ == $testID+1} @error_cases))
     {
       print "Did not encounter an error executing the test when one was expected.\n\n";
       ok(0);
       next;
     }
 
-    if ($? && (!grep {$_ == $testID} @error_cases))
+    if ($? && (!grep {$_ == $testID+1} @error_cases))
     {
       print "Encountered an error executing the test when one was not expected.\n\n";
       ok(0);

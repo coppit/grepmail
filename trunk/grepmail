@@ -2,7 +2,7 @@
 
 # grepmail
 
-$VERSION = '5.10';
+$VERSION = '5.20';
 
 # Grepmail searches a normal, gzip'd, tzip'd, or bzip2'd mailbox for a given
 # regular expression and returns those emails that match the query. It also
@@ -277,7 +277,7 @@ sub Get_Options
       {
         # If $ARGV[0] looks like a file we assume there was no pattern and
         # set a default pattern of "." to match everything.
-        if ($#ARGV != -1 && -f $ARGV[0])
+        if ($#ARGV != -1 && -f Search_Mailbox_Directories($ARGV[0]))
         {
           $pattern = '.';
         }
@@ -551,7 +551,7 @@ sub HandleInputFiles
       next;
     }
 
-    $file = Search_Mailbox_Directories($file) unless -e $file;
+    $file = Search_Mailbox_Directories($file) unless -f $file;
 
     my $fileHandle = new FileHandle;
     my ($filter,$filterError);
@@ -664,12 +664,23 @@ sub Search_Mailbox_Directories
 {
   my $file = shift;
 
-  return $file unless exists $ENV{'MAIL'};
+  my @maildirs;
 
-  my $mail_folder = $ENV{'MAIL'};
+  push @maildirs, $ENV{'MAILDIR'}
+    if defined $ENV{'MAILDIR'} && -d $ENV{'MAILDIR'};
 
-  for ('', 'mail/', 'Mail/', 'Mailbox/'){
-    my $path_and_file = "$mail_folder/${_}$file";
+  push @maildirs, "$ENV{HOME}/mail"
+    if defined $ENV{'HOME'} && -d "$ENV{HOME}/mail";
+
+  push @maildirs, "$ENV{HOME}/Mail"
+    if defined $ENV{'HOME'} && -d "$ENV{HOME}/Mail";
+
+  push @maildirs, "$ENV{HOME}/Mailbox"
+    if defined $ENV{'HOME'} && -d "$ENV{HOME}/Mailbox";
+
+  foreach my $mail_folder (@maildirs)
+  {
+    my $path_and_file = "$mail_folder/$file";
     return $path_and_file if -e $path_and_file;
   }
 
@@ -1294,26 +1305,26 @@ sub ProcessMailFile
 
   $fileName = undef if $fileName eq 'Standard input';
 
-  my $numberOfMatches = 0;
+  my ($use_caching, $use_grep) = ($USE_CACHING, $USE_GREP);
 
-  my $folder_reader;
-
-  $USE_CACHING = 0, $USE_GREP = 0 unless defined $fileName;
-  # Add compression support to Mail::Mbox::MessageParser::Grep
-  $USE_CACHING = 0, $USE_GREP = 0 if defined $compression_filter;
+  # Disable caching & grep on STDIN, grep on compressed files
+  $use_caching = 0, $use_grep = 0 unless defined $fileName;
+  $use_grep = 0 if defined $compression_filter;
 
   Mail::Mbox::MessageParser::SETUP_CACHE( {
       'file_name' => "$ENV{'HOME'}/.grepmail-cache" } )
-    if $USE_CACHING;
+    if $use_caching;
 
-  $folder_reader =
+  my $folder_reader =
     new Mail::Mbox::MessageParser( {
       'file_name' => $fileName,
       'file_handle' => $fileHandle,
-      'enable_cache' => $USE_CACHING,
-      'enable_grep' => $USE_GREP,
+      'enable_cache' => $use_caching,
+      'enable_grep' => $use_grep,
       'debug' => $opts{'D'},
     } );
+
+  my $numberOfMatches = 0;
 
   # This is the main loop. It's executed once for each email
   # Direct access for performance reasons
@@ -2159,9 +2170,9 @@ optional if there is no file whose name is the pattern. The B<-E> option can
 be used to specify complex search expressions involving logical operators.
 (See below.)
 
-If a mailbox can not be found, grepmail searches the $home/mail, $home/Mail,
-$home/Mailbox directories (or the directory specified by the MAIL environment
-variable).
+If a mailbox can not be found, grepmail first searches the directory specified
+by the MAILDIR environment variable (if one is defined), then searches the
+$HOME/mail, $HOME/Mail, and $HOME/Mailbox directories.
 
 =back
 
@@ -2457,9 +2468,13 @@ of the largest email message in the mailbox.
 
 =head1 ENVIRONMENT
 
-The MAIL environment variable can be used to specify the default mail
+The MAILDIR environment variable can be used to specify the default mail
 directory. This directory will be searched if the specified mailbox can not be
 found directly.
+
+The HOME environment variable is also used to find mailboxes if they can not
+be found directly. It is also used to store grepmail state information such as
+its cache file.
 
 =head1 BUGS AND LIMITATIONS
 

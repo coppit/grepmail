@@ -1099,10 +1099,6 @@ sub Get_Options
     }
   }
 
-  # Check for -t and -T flag incompatibilities.
-  reportAndExit "-t can not be used with -T"
-    if $opts{'t'} and $opts{'T'};
-
   return (\%opts, @ARGV);
 }
 
