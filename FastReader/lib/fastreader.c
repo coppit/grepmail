@@ -1,3 +1,9 @@
+/*
+This version of fastreader.c tries to read from the file in chunks, saving
+the slop in a buffer. It's slower and buggy, but I thought I would check it in
+in case anyone wants to use the code as a starting point for something faster.
+*/
+
 #include <stdio.h>
 #include <string.h>
 
@@ -162,7 +168,16 @@ void reset_file(FILE *infile)
 #if DEBUG==1 || DEBUG==2 || DEBUG==3
   fprintf(stderr,"resetting line number\n");
 #endif
+
+  BUFFER_SIZE = 0;
+  START_OF_BUFFER = NULL;
+  END_OF_BUFFER = NULL;
+
+  START_OF_EMAIL = NULL;
+  END_OF_EMAIL = NULL;
+
   FILE_HANDLE=infile;
+
   LINE = 1;
 }
 

@@ -1343,7 +1343,6 @@ sub CheckDate($)
 
     warn "** Couldn't find a date. Assuming email doesn't match the " .
          "date constraint:\n";
-    die $header;
     warn "  " . GetFromLine($header) . "\n"
       if defined GetFromLine($header);
     warn "  " . GetSubjectLine($header) . "\n"
