@@ -1,4 +1,4 @@
-grepmail 4.47
+grepmail 4.48
 
 usage: grepmail [-abDhilmrRuv] [-s size] [-d "datespec"] [[-e] <expr>] <files...>
 
@@ -12,8 +12,9 @@ compressed ASCII input is taken from STDIN.
 -d Specify a date range (see below)
 -a Use received date instead of sent date for -d matching
 -D Debug mode
--e Explicitely name expr (when searching for strings beginning with "-")
+-e Explicitly name expr (when searching for strings beginning with "-")
 -h Search must match header
+-H Print headers but not bodies of matching emails
 -i Ignore case in the search expression
 -l Output the names of files having an email matching the expression
 -M Do not search non-text mime attachments

@@ -1,10 +1,6 @@
 Changes                                  Change log
 FastReader.pm                            Mail::Folder::FastReader module
-FastReader.xs                            XS stubs
 MANIFEST                                 This file
 Makefile.PL                              Make script
-lib/Makefile.PL                          Make script for the C library
-lib/fastreader.c                         C implementation of module
-lib/main.c                               A simple test program for the library
 t/simple.t                               A perl test script
 t/mailarc-1.txt                          Data file for the test script
