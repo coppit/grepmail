@@ -2,7 +2,7 @@
 
 # grepmail
 
-$VERSION = '4.41';
+$VERSION = '4.42';
 
 # Grepmail searches a normal, gzip'd, tzip'd, or bzip2'd mailbox for a given
 # regular expression and returns those emails that match the query. It also
@@ -1141,7 +1141,10 @@ sub ParseDate
 
   return '' unless $loaded_date_manip;
 
-  return Date::Manip::UnixDate(Date::Manip::ParseDate($date),'%s');
+  my $temp_date = Date::Manip::UnixDate(Date::Manip::ParseDate($date),'%s');
+
+  return '' unless defined $temp_date;
+  return $temp_date;
 }
 }
 
