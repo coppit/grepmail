@@ -864,241 +864,241 @@ t/mailarc-1.txt:897:--Troop_of_Baboons_752_000
 t/mailarc-1.txt:898:Content-Type: MESSAGE/rfc822; name=Mailbox
 t/mailarc-1.txt:899:Content-Description: Mailbox
 t/mailarc-1.txt:900:
-t/mailarc-1.txt:1231:From mawalla3@vt.edu  Wed Aug 12 13:10:06 1998
-t/mailarc-1.txt:1232:Received: from aleve.media.mit.edu by hub.media.mit.edu; (5.65v3.2/1.1/06Jun95-8.2MPM)
-t/mailarc-1.txt:1233:	id AA07529; Wed, 12 Aug 1998 13:10:06 -0400
-t/mailarc-1.txt:1234:Received: from quackerjack.cc.vt.edu (root@quackerjack.cc.vt.edu [198.82.160.250])
-t/mailarc-1.txt:1235:	by aleve.media.mit.edu (8.8.7/ML970927) with ESMTP id MAA05729
-t/mailarc-1.txt:1236:	for <Handyboard@media.mit.edu>; Wed, 12 Aug 1998 12:13:53 -0400 (EDT)
-t/mailarc-1.txt:1237:Received: from sable.cc.vt.edu (sable.cc.vt.edu [128.173.16.30])
-t/mailarc-1.txt:1238:	by quackerjack.cc.vt.edu (8.8.8/8.8.8) with ESMTP id MAA20678
-t/mailarc-1.txt:1239:	for <Handyboard@media.mit.edu>; Wed, 12 Aug 1998 12:20:09 -0400 (EDT)
-t/mailarc-1.txt:1240:Received: from research10.phys.vt.edu (dhcp9.phys.vt.edu [128.173.176.166])
-t/mailarc-1.txt:1241:	by sable.cc.vt.edu (8.8.8/8.8.8) with SMTP id MAA05159
-t/mailarc-1.txt:1242:	for <Handyboard@media.mit.edu>; Wed, 12 Aug 1998 12:13:51 -0400 (EDT)
-t/mailarc-1.txt:1243:Message-Id: <3.0.5.32.19980812121345.00796960@mail.vt.edu>
-t/mailarc-1.txt:1244:X-Sender: mawalla3@mail.vt.edu (Unverified)
-t/mailarc-1.txt:1245:X-Mailer: QUALCOMM Windows Eudora Light Version 3.0.5 (32)
-t/mailarc-1.txt:1246:Date: Wed, 12 Aug 1998 12:13:45 -0400
-t/mailarc-1.txt:1247:To: Handyboard@media.mit.edu
-t/mailarc-1.txt:1248:From: Mark Wallace <mawalla3@vt.edu>
-t/mailarc-1.txt:1249:Subject: serial library for C++ 
-t/mailarc-1.txt:1250:Mime-Version: 1.0
-t/mailarc-1.txt:1251:Content-Type: text/plain; charset="us-ascii"
-t/mailarc-1.txt:1252:
-t/mailarc-1.txt:1253:Hello,
-t/mailarc-1.txt:1254:	I have a handy board with poloroid transducers and I am trying use the
-t/mailarc-1.txt:1255:results of my distance measurments in a C++ program on the computer.  I
-t/mailarc-1.txt:1256:have found programs on the handyboard web page that should alow the
-t/mailarc-1.txt:1257:handyboard to transmit information over the serial line.  What I am looking
-t/mailarc-1.txt:1258:for is if anyone knows were I could find a serial for Microsofts
-t/mailarc-1.txt:1259:Visual C++ 5.0.  I would like to find one that is free or sharware but any
-t/mailarc-1.txt:1260:information on any serial that will work would be appreciated.
-t/mailarc-1.txt:1261:Thanks.
-t/mailarc-1.txt:1262:Mark Wallace
-t/mailarc-1.txt:1263:
-t/mailarc-1.txt:1264: e-mail  mawalla3@vt.edu
-t/mailarc-1.txt:1265:	 mwallace@sps1.phys.vt.edu
-t/mailarc-1.txt:1266:web page http://sps1.phys.vt.ede/~mwallace
-t/mailarc-1.txt:1267:
-t/mailarc-1.txt:1268:"What a waist it would be after 4 billion tortuous years of evolution if
-t/mailarc-1.txt:1269:the dominant organism contrived its own self-distruction"
-t/mailarc-1.txt:1270:			Carl Sagan
-t/mailarc-1.txt:1271:
+t/mailarc-1.txt:1232:From mawalla3@vt.edu  Wed Aug 12 13:10:06 1998
+t/mailarc-1.txt:1233:Received: from aleve.media.mit.edu by hub.media.mit.edu; (5.65v3.2/1.1/06Jun95-8.2MPM)
+t/mailarc-1.txt:1234:	id AA07529; Wed, 12 Aug 1998 13:10:06 -0400
+t/mailarc-1.txt:1235:Received: from quackerjack.cc.vt.edu (root@quackerjack.cc.vt.edu [198.82.160.250])
+t/mailarc-1.txt:1236:	by aleve.media.mit.edu (8.8.7/ML970927) with ESMTP id MAA05729
+t/mailarc-1.txt:1237:	for <Handyboard@media.mit.edu>; Wed, 12 Aug 1998 12:13:53 -0400 (EDT)
+t/mailarc-1.txt:1238:Received: from sable.cc.vt.edu (sable.cc.vt.edu [128.173.16.30])
+t/mailarc-1.txt:1239:	by quackerjack.cc.vt.edu (8.8.8/8.8.8) with ESMTP id MAA20678
+t/mailarc-1.txt:1240:	for <Handyboard@media.mit.edu>; Wed, 12 Aug 1998 12:20:09 -0400 (EDT)
+t/mailarc-1.txt:1241:Received: from research10.phys.vt.edu (dhcp9.phys.vt.edu [128.173.176.166])
+t/mailarc-1.txt:1242:	by sable.cc.vt.edu (8.8.8/8.8.8) with SMTP id MAA05159
+t/mailarc-1.txt:1243:	for <Handyboard@media.mit.edu>; Wed, 12 Aug 1998 12:13:51 -0400 (EDT)
+t/mailarc-1.txt:1244:Message-Id: <3.0.5.32.19980812121345.00796960@mail.vt.edu>
+t/mailarc-1.txt:1245:X-Sender: mawalla3@mail.vt.edu (Unverified)
+t/mailarc-1.txt:1246:X-Mailer: QUALCOMM Windows Eudora Light Version 3.0.5 (32)
+t/mailarc-1.txt:1247:Date: Wed, 12 Aug 1998 12:13:45 -0400
+t/mailarc-1.txt:1248:To: Handyboard@media.mit.edu
+t/mailarc-1.txt:1249:From: Mark Wallace <mawalla3@vt.edu>
+t/mailarc-1.txt:1250:Subject: serial library for C++ 
+t/mailarc-1.txt:1251:Mime-Version: 1.0
+t/mailarc-1.txt:1252:Content-Type: text/plain; charset="us-ascii"
+t/mailarc-1.txt:1253:
+t/mailarc-1.txt:1254:Hello,
+t/mailarc-1.txt:1255:	I have a handy board with poloroid transducers and I am trying use the
+t/mailarc-1.txt:1256:results of my distance measurments in a C++ program on the computer.  I
+t/mailarc-1.txt:1257:have found programs on the handyboard web page that should alow the
+t/mailarc-1.txt:1258:handyboard to transmit information over the serial line.  What I am looking
+t/mailarc-1.txt:1259:for is if anyone knows were I could find a serial for Microsofts
+t/mailarc-1.txt:1260:Visual C++ 5.0.  I would like to find one that is free or sharware but any
+t/mailarc-1.txt:1261:information on any serial that will work would be appreciated.
+t/mailarc-1.txt:1262:Thanks.
+t/mailarc-1.txt:1263:Mark Wallace
+t/mailarc-1.txt:1264:
+t/mailarc-1.txt:1265: e-mail  mawalla3@vt.edu
+t/mailarc-1.txt:1266:	 mwallace@sps1.phys.vt.edu
+t/mailarc-1.txt:1267:web page http://sps1.phys.vt.ede/~mwallace
+t/mailarc-1.txt:1268:
+t/mailarc-1.txt:1269:"What a waist it would be after 4 billion tortuous years of evolution if
+t/mailarc-1.txt:1270:the dominant organism contrived its own self-distruction"
+t/mailarc-1.txt:1271:			Carl Sagan
 t/mailarc-1.txt:1272:
-t/mailarc-1.txt:1273:From aarone@sirius.com  Wed Sep 30 12:35:05 1998
-t/mailarc-1.txt:1274:Received: from aleve.media.mit.edu by hub.media.mit.edu; (5.65v4.0/1.1/06Jun95-8.2MPM)
-t/mailarc-1.txt:1275:	id AA09172; Wed, 30 Sep 1998 12:35:05 -0400
-t/mailarc-1.txt:1276:Received: from mail3.sirius.com (mail3.sirius.com [205.134.253.133])
-t/mailarc-1.txt:1277:	by aleve.media.mit.edu (8.8.7/ML970927) with ESMTP id KAA02849
-t/mailarc-1.txt:1278:	for <handyboard@media.mit.edu>; Wed, 30 Sep 1998 10:46:53 -0400 (EDT)
-t/mailarc-1.txt:1279:Received: from aarone (ppp-asfm03--129.sirius.net [205.134.240.129])
-t/mailarc-1.txt:1280:	by mail3.sirius.com (8.8.7/Sirius-8.8.7-97.08.12) with SMTP id HAA08635;
-t/mailarc-1.txt:1281:	Wed, 30 Sep 1998 07:46:49 -0700 (PDT)
-t/mailarc-1.txt:1282:Message-Id: <008901bdec9a$76f469d0$63f186cd@aarone.sirius.com>
-t/mailarc-1.txt:1283:From: "Aaron Edsinger" <aarone@sirius.com>
-t/mailarc-1.txt:1284:To: "Keith - Lui" <luikeith@egr.msu.edu>
-t/mailarc-1.txt:1285:Cc: "handy" <handyboard@media.mit.edu>
-t/mailarc-1.txt:1286:Subject: Re: output to file
-t/mailarc-1.txt:1287:Date: Wed, 30 Sep 1998 10:47:58 -0700
-t/mailarc-1.txt:1288:Mime-Version: 1.0
-t/mailarc-1.txt:1289:Content-Type: text/plain;
-t/mailarc-1.txt:1290:	charset="iso-8859-1"
-t/mailarc-1.txt:1291:Content-Transfer-Encoding: 7bit
-t/mailarc-1.txt:1292:X-Priority: 3
-t/mailarc-1.txt:1293:X-Msmail-Priority: Normal
-t/mailarc-1.txt:1294:X-Mailer: Microsoft Outlook Express 4.72.2106.4
-t/mailarc-1.txt:1295:X-Mimeole: Produced By Microsoft MimeOLE V4.72.2106.4
-t/mailarc-1.txt:1296:
-t/mailarc-1.txt:1297:Yes,
-t/mailarc-1.txt:1298:        Write a dos/windows client that reads the serial line and then
-t/mailarc-1.txt:1299:writes it to file using the C stdio library.
-t/mailarc-1.txt:1300:
+t/mailarc-1.txt:1273:
+t/mailarc-1.txt:1274:From aarone@sirius.com  Wed Sep 30 12:35:05 1998
+t/mailarc-1.txt:1275:Received: from aleve.media.mit.edu by hub.media.mit.edu; (5.65v4.0/1.1/06Jun95-8.2MPM)
+t/mailarc-1.txt:1276:	id AA09172; Wed, 30 Sep 1998 12:35:05 -0400
+t/mailarc-1.txt:1277:Received: from mail3.sirius.com (mail3.sirius.com [205.134.253.133])
+t/mailarc-1.txt:1278:	by aleve.media.mit.edu (8.8.7/ML970927) with ESMTP id KAA02849
+t/mailarc-1.txt:1279:	for <handyboard@media.mit.edu>; Wed, 30 Sep 1998 10:46:53 -0400 (EDT)
+t/mailarc-1.txt:1280:Received: from aarone (ppp-asfm03--129.sirius.net [205.134.240.129])
+t/mailarc-1.txt:1281:	by mail3.sirius.com (8.8.7/Sirius-8.8.7-97.08.12) with SMTP id HAA08635;
+t/mailarc-1.txt:1282:	Wed, 30 Sep 1998 07:46:49 -0700 (PDT)
+t/mailarc-1.txt:1283:Message-Id: <008901bdec9a$76f469d0$63f186cd@aarone.sirius.com>
+t/mailarc-1.txt:1284:From: "Aaron Edsinger" <aarone@sirius.com>
+t/mailarc-1.txt:1285:To: "Keith - Lui" <luikeith@egr.msu.edu>
+t/mailarc-1.txt:1286:Cc: "handy" <handyboard@media.mit.edu>
+t/mailarc-1.txt:1287:Subject: Re: output to file
+t/mailarc-1.txt:1288:Date: Wed, 30 Sep 1998 10:47:58 -0700
+t/mailarc-1.txt:1289:Mime-Version: 1.0
+t/mailarc-1.txt:1290:Content-Type: text/plain;
+t/mailarc-1.txt:1291:	charset="iso-8859-1"
+t/mailarc-1.txt:1292:Content-Transfer-Encoding: 7bit
+t/mailarc-1.txt:1293:X-Priority: 3
+t/mailarc-1.txt:1294:X-Msmail-Priority: Normal
+t/mailarc-1.txt:1295:X-Mailer: Microsoft Outlook Express 4.72.2106.4
+t/mailarc-1.txt:1296:X-Mimeole: Produced By Microsoft MimeOLE V4.72.2106.4
+t/mailarc-1.txt:1297:
+t/mailarc-1.txt:1298:Yes,
+t/mailarc-1.txt:1299:        Write a dos/windows client that reads the serial line and then
+t/mailarc-1.txt:1300:writes it to file using the C stdio library.
 t/mailarc-1.txt:1301:
-t/mailarc-1.txt:1302:-----Original Message-----
-t/mailarc-1.txt:1303:From: Keith - Lui <luikeith@egr.msu.edu>
-t/mailarc-1.txt:1304:To: handyboard@media.mit.edu <handyboard@media.mit.edu>
-t/mailarc-1.txt:1305:Date: Wednesday, September 30, 1998 6:55 AM
-t/mailarc-1.txt:1306:Subject: output to file
-t/mailarc-1.txt:1307:
+t/mailarc-1.txt:1302:
+t/mailarc-1.txt:1303:-----Original Message-----
+t/mailarc-1.txt:1304:From: Keith - Lui <luikeith@egr.msu.edu>
+t/mailarc-1.txt:1305:To: handyboard@media.mit.edu <handyboard@media.mit.edu>
+t/mailarc-1.txt:1306:Date: Wednesday, September 30, 1998 6:55 AM
+t/mailarc-1.txt:1307:Subject: output to file
 t/mailarc-1.txt:1308:
-t/mailarc-1.txt:1309:>Dear all,
-t/mailarc-1.txt:1310:>
-t/mailarc-1.txt:1311:>I would like to output some HB data to a file, is that possible?
-t/mailarc-1.txt:1312:>
-t/mailarc-1.txt:1313:>Keith
-t/mailarc-1.txt:1314:>
-t/mailarc-1.txt:1315:
+t/mailarc-1.txt:1309:
+t/mailarc-1.txt:1310:>Dear all,
+t/mailarc-1.txt:1311:>
+t/mailarc-1.txt:1312:>I would like to output some HB data to a file, is that possible?
+t/mailarc-1.txt:1313:>
+t/mailarc-1.txt:1314:>Keith
+t/mailarc-1.txt:1315:>
 t/mailarc-1.txt:1316:
 t/mailarc-1.txt:1317:
-t/mailarc-1.txt:1318:From aarone@sirius.com  Wed Aug 12 13:42:19 1998
-t/mailarc-1.txt:1319:Received: from aleve.media.mit.edu by hub.media.mit.edu; (5.65v3.2/1.1/06Jun95-8.2MPM)
-t/mailarc-1.txt:1320:	id AA13439; Wed, 12 Aug 1998 13:42:19 -0400
-t/mailarc-1.txt:1321:Received: from mail3.sirius.com (mail3.sirius.com [205.134.253.133])
-t/mailarc-1.txt:1322:	by aleve.media.mit.edu (8.8.7/ML970927) with ESMTP id MAA10630
-t/mailarc-1.txt:1323:	for <handyboard@media.mit.edu>; Wed, 12 Aug 1998 12:48:27 -0400 (EDT)
-t/mailarc-1.txt:1324:Received: from aarone (ppp-asfm05--041.sirius.net [205.134.241.41])
-t/mailarc-1.txt:1325:	by mail3.sirius.com (8.8.7/Sirius-8.8.7-97.08.12) with SMTP id JAA20821;
-t/mailarc-1.txt:1326:	Wed, 12 Aug 1998 09:48:24 -0700 (PDT)
-t/mailarc-1.txt:1327:Message-Id: <004401bdc62a$e8ecc8c0$70f086cd@aarone.sirius.com>
-t/mailarc-1.txt:1328:From: "Aaron Edsinger" <aarone@sirius.com>
-t/mailarc-1.txt:1329:To: "Mark Wallace" <mawalla3@vt.edu>
-t/mailarc-1.txt:1330:Cc: "handy" <handyboard@media.mit.edu>
-t/mailarc-1.txt:1331:Subject: Re: serial library for C++ 
-t/mailarc-1.txt:1332:Date: Wed, 12 Aug 1998 12:53:41 -0700
-t/mailarc-1.txt:1333:Mime-Version: 1.0
-t/mailarc-1.txt:1334:Content-Type: text/plain;
-t/mailarc-1.txt:1335:	charset="iso-8859-1"
-t/mailarc-1.txt:1336:Content-Transfer-Encoding: 7bit
-t/mailarc-1.txt:1337:X-Priority: 3
-t/mailarc-1.txt:1338:X-Msmail-Priority: Normal
-t/mailarc-1.txt:1339:X-Mailer: Microsoft Outlook Express 4.72.2106.4
-t/mailarc-1.txt:1340:X-Mimeole: Produced By Microsoft MimeOLE V4.72.2106.4
-t/mailarc-1.txt:1341:
+t/mailarc-1.txt:1318:
+t/mailarc-1.txt:1319:From aarone@sirius.com  Wed Aug 12 13:42:19 1998
+t/mailarc-1.txt:1320:Received: from aleve.media.mit.edu by hub.media.mit.edu; (5.65v3.2/1.1/06Jun95-8.2MPM)
+t/mailarc-1.txt:1321:	id AA13439; Wed, 12 Aug 1998 13:42:19 -0400
+t/mailarc-1.txt:1322:Received: from mail3.sirius.com (mail3.sirius.com [205.134.253.133])
+t/mailarc-1.txt:1323:	by aleve.media.mit.edu (8.8.7/ML970927) with ESMTP id MAA10630
+t/mailarc-1.txt:1324:	for <handyboard@media.mit.edu>; Wed, 12 Aug 1998 12:48:27 -0400 (EDT)
+t/mailarc-1.txt:1325:Received: from aarone (ppp-asfm05--041.sirius.net [205.134.241.41])
+t/mailarc-1.txt:1326:	by mail3.sirius.com (8.8.7/Sirius-8.8.7-97.08.12) with SMTP id JAA20821;
+t/mailarc-1.txt:1327:	Wed, 12 Aug 1998 09:48:24 -0700 (PDT)
+t/mailarc-1.txt:1328:Message-Id: <004401bdc62a$e8ecc8c0$70f086cd@aarone.sirius.com>
+t/mailarc-1.txt:1329:From: "Aaron Edsinger" <aarone@sirius.com>
+t/mailarc-1.txt:1330:To: "Mark Wallace" <mawalla3@vt.edu>
+t/mailarc-1.txt:1331:Cc: "handy" <handyboard@media.mit.edu>
+t/mailarc-1.txt:1332:Subject: Re: serial library for C++ 
+t/mailarc-1.txt:1333:Date: Wed, 12 Aug 1998 12:53:41 -0700
+t/mailarc-1.txt:1334:Mime-Version: 1.0
+t/mailarc-1.txt:1335:Content-Type: text/plain;
+t/mailarc-1.txt:1336:	charset="iso-8859-1"
+t/mailarc-1.txt:1337:Content-Transfer-Encoding: 7bit
+t/mailarc-1.txt:1338:X-Priority: 3
+t/mailarc-1.txt:1339:X-Msmail-Priority: Normal
+t/mailarc-1.txt:1340:X-Mailer: Microsoft Outlook Express 4.72.2106.4
+t/mailarc-1.txt:1341:X-Mimeole: Produced By Microsoft MimeOLE V4.72.2106.4
 t/mailarc-1.txt:1342:
-t/mailarc-1.txt:1343:  Check out this site.  It works well.  The only problem I had was timing
-t/mailarc-1.txt:1344:issues when trying to read and write to the port too quickly.
-t/mailarc-1.txt:1345:
-t/mailarc-1.txt:1346:http://www.codeguru.com/show.cgi?general=/misc/misc_toc.shtml
-t/mailarc-1.txt:1347:
+t/mailarc-1.txt:1343:
+t/mailarc-1.txt:1344:  Check out this site.  It works well.  The only problem I had was timing
+t/mailarc-1.txt:1345:issues when trying to read and write to the port too quickly.
+t/mailarc-1.txt:1346:
+t/mailarc-1.txt:1347:http://www.codeguru.com/show.cgi?general=/misc/misc_toc.shtml
 t/mailarc-1.txt:1348:
-t/mailarc-1.txt:1349:-----Original Message-----
-t/mailarc-1.txt:1350:From: Mark Wallace <mawalla3@vt.edu>
-t/mailarc-1.txt:1351:To: Handyboard@media.mit.edu <Handyboard@media.mit.edu>
-t/mailarc-1.txt:1352:Date: Wednesday, August 12, 1998 9:25 AM
-t/mailarc-1.txt:1353:Subject: serial library for C++
-t/mailarc-1.txt:1354:
+t/mailarc-1.txt:1349:
+t/mailarc-1.txt:1350:-----Original Message-----
+t/mailarc-1.txt:1351:From: Mark Wallace <mawalla3@vt.edu>
+t/mailarc-1.txt:1352:To: Handyboard@media.mit.edu <Handyboard@media.mit.edu>
+t/mailarc-1.txt:1353:Date: Wednesday, August 12, 1998 9:25 AM
+t/mailarc-1.txt:1354:Subject: serial library for C++
 t/mailarc-1.txt:1355:
-t/mailarc-1.txt:1356:>Hello,
-t/mailarc-1.txt:1357:> I have a handy board with poloroid transducers and I am trying use the
-t/mailarc-1.txt:1358:>results of my distance measurments in a C++ program on the computer.  I
-t/mailarc-1.txt:1359:>have found programs on the handyboard web page that should alow the
-t/mailarc-1.txt:1360:>handyboard to transmit information over the serial line.  What I am looking
-t/mailarc-1.txt:1361:>for is if anyone knows were I could find a serial library for Microsofts
-t/mailarc-1.txt:1362:>Visual C++ 5.0.  I would like to find one that is free or sharware but any
-t/mailarc-1.txt:1363:>information on any serial librarys that will work would be appreciated.
-t/mailarc-1.txt:1364:>Thanks.
-t/mailarc-1.txt:1365:>Mark Wallace
-t/mailarc-1.txt:1366:>
-t/mailarc-1.txt:1367:> e-mail  mawalla3@vt.edu
-t/mailarc-1.txt:1368:> mwallace@sps1.phys.vt.edu
-t/mailarc-1.txt:1369:>web page http://sps1.phys.vt.ede/~mwallace
-t/mailarc-1.txt:1370:>
-t/mailarc-1.txt:1371:>"What a waist it would be after 4 billion tortuous years of evolution if
-t/mailarc-1.txt:1372:>the dominant organism contrived its own self-distruction"
-t/mailarc-1.txt:1373:> Carl Sagan
-t/mailarc-1.txt:1374:>
-t/mailarc-1.txt:1375:
-t/mailarc-1.txt:1376:From Scott.Seaton@Aus.Sun.COM  Thu Jul 16 03:42:38 1998
-t/mailarc-1.txt:1377:Received: from aleve.media.mit.edu by hub.media.mit.edu; (5.65v3.2/1.1/06Jun95-8.2MPM)
-t/mailarc-1.txt:1378:	id AA24945; Thu, 16 Jul 1998 03:42:38 -0400
-t/mailarc-1.txt:1379:Received: from mercury.Sun.COM (mercury.Sun.COM [192.9.25.1])
-t/mailarc-1.txt:1380:	by aleve.media.mit.edu (8.8.7/ML970927) with SMTP id CAA07415
-t/mailarc-1.txt:1381:	for <handyboard@media.mit.edu>; Thu, 16 Jul 1998 02:44:58 -0400 (EDT)
-t/mailarc-1.txt:1382:Received: from Aus.Sun.COM ([129.158.80.6]) by mercury.Sun.COM (SMI-8.6/mail.byaddr) with SMTP id XAA29734; Wed, 15 Jul 1998 23:44:52 -0700
-t/mailarc-1.txt:1383:Received: from war.Aus.Sun.COM by Aus.Sun.COM id QAA03011
-t/mailarc-1.txt:1384:	(SMI-8.6/SMI-4.1 for <>); Thu, 16 Jul 1998 16:44:50 +1000
-t/mailarc-1.txt:1385:Received: from drone by war.Aus.Sun.COM (SMI-8.6/SMI-SVR4)
-t/mailarc-1.txt:1386:	id QAA10921; Thu, 16 Jul 1998 16:44:20 +1000
-t/mailarc-1.txt:1387:Message-Id: <199807160644.QAA10921@war.Aus.Sun.COM>
-t/mailarc-1.txt:1388:Date: Thu, 16 Jul 1998 16:41:56 +1000 (EST)
-t/mailarc-1.txt:1389:From: Scott Seaton - Systems Consultant - ESG <Scott.Seaton@Aus.Sun.COM>
-t/mailarc-1.txt:1390:Reply-To: Scott Seaton - Systems Consultant - ESG <Scott.Seaton@Aus.Sun.COM>
-t/mailarc-1.txt:1391:Subject: Re: Handyboard/RWP without p-code
-t/mailarc-1.txt:1392:To: handyboard@media.mit.edu, rye@mech.eng.usyd.edu.au
-t/mailarc-1.txt:1393:Mime-Version: 1.0
-t/mailarc-1.txt:1394:Content-Type: MULTIPART/mixed; BOUNDARY=Troop_of_Baboons_752_000
-t/mailarc-1.txt:1395:X-Mailer: dtmail 1.2.0 CDE Version 1.2 SunOS 5.6 sun4u sparc 
-t/mailarc-1.txt:1396:
-t/mailarc-1.txt:1397:--Troop_of_Baboons_752_000
-t/mailarc-1.txt:1398:Content-Type: TEXT/plain; charset=us-ascii
-t/mailarc-1.txt:1399:Content-MD5: i/HKSIa/Vk0mZT5ml+q21A==
-t/mailarc-1.txt:1400:
-t/mailarc-1.txt:1401:Hi
-t/mailarc-1.txt:1402:
-t/mailarc-1.txt:1403:I suggest that you contact ImageCraft.
-t/mailarc-1.txt:1404:http://www.imagecraft.com/software/index.html  or  info@imagecraft.com 
-t/mailarc-1.txt:1405:
-t/mailarc-1.txt:1406:They have a C compiler for 68HC11 CPU's that will do what you want, including a
-t/mailarc-1.txt:1407:library for the HandyBoard (see attached e-mail) !
-t/mailarc-1.txt:1408:
-t/mailarc-1.txt:1409:I have no affiliation with ImageCraft (other than as a satisfied customer).
-t/mailarc-1.txt:1410:
-t/mailarc-1.txt:1411:Hope this helps
-t/mailarc-1.txt:1412:Scott
-t/mailarc-1.txt:1413:============================================================================== 
-t/mailarc-1.txt:1414: ,-_|\       Scott Seaton - Sun Enterprise Services -  Systems Consultant      
-t/mailarc-1.txt:1415:/     \  Sun Microsystems Australia Pty Ltd  E-mail : scott.seaton@aus.sun.com 
-t/mailarc-1.txt:1416:\_,-\_+  828 Pacific Highway                  Phone : +61 2 9844 5381          
-t/mailarc-1.txt:1417:     v   Gordon, N.S.W., 2072, AUSTRALIA        Fax : +61 2 9844 5161          
-t/mailarc-1.txt:1418:============================================================================== 
-t/mailarc-1.txt:1419:
-t/mailarc-1.txt:1420:--Troop_of_Baboons_752_000
-t/mailarc-1.txt:1421:Content-Type: MESSAGE/rfc822; name=Mailbox
-t/mailarc-1.txt:1422:Content-Description: Mailbox
-t/mailarc-1.txt:1423:
-t/mailarc-1.txt:1424:From someone@imagecraft.com  Fri Jul 10 18:59:26 1998
-t/mailarc-1.txt:1425:Return-Path: <icc11-list-errors@lists.best.com>
-t/mailarc-1.txt:1426:Received: from Aus.Sun.COM by war.Aus.Sun.COM (SMI-8.6/SMI-SVR4)
-t/mailarc-1.txt:1427:	id SAA14426; Fri, 10 Jul 1998 18:59:26 +1000
-t/mailarc-1.txt:1428:Received: from earth.sun.com by Aus.Sun.COM id SAA24238
-t/mailarc-1.txt:1429:	(SMI-8.6/SMI-4.1 for <<scott.seaton@aus.sun.com>>); Fri, 10 Jul 1998 18:59:48 +1000
-t/mailarc-1.txt:1430:Received: from iisesun.iise.CSIRO.AU (iisesun.iise.csiro.au [130.155.5.44])
-t/mailarc-1.txt:1431:	by earth.sun.com (8.8.8/8.8.8) with SMTP id BAA18609
-t/mailarc-1.txt:1432:	for <scott.seaton@aus.sun.com>; Fri, 10 Jul 1998 01:59:44 -0700 (PDT)
-t/mailarc-1.txt:1433:Received: from lists1.best.com (lists1.best.com [206.86.8.15]) by iisesun.iise.CSIRO.AU (SMI-8.6/8.6.12-IISE-SWA) with ESMTP id SAA25847 for <sseaton@iise.csiro.au>; Fri, 10 Jul 1998 18:49:31 +1000
-t/mailarc-1.txt:1434:Received: (from daemon@localhost) by lists1.best.com (8.9.0/8.8.BEST) id BAA15320 for icc11-list-errors@lists.best.com; Fri, 10 Jul 1998 01:04:34 -0700 (PDT)
-t/mailarc-1.txt:1435:Message-Id: <199807100804.BAA15320@lists1.best.com>
-t/mailarc-1.txt:1436:From: Christina Willrich & Richard Man <someone@imagecraft.com>
-t/mailarc-1.txt:1437:Subject: icc11 Handyboard library available
-t/mailarc-1.txt:1438:Date: Fri, 10 Jul 1998 00:58:49 -0700
-t/mailarc-1.txt:1439:BestServHost: lists.best.com
-t/mailarc-1.txt:1440:MIME-Version: 1.0
-t/mailarc-1.txt:1441:Content-Type: text/plain; charset="us-ascii"
-t/mailarc-1.txt:1442:Sender: icc11-list-errors@lists.best.com
-t/mailarc-1.txt:1443:Errors-To: icc11-list-errors@lists.best.com
-t/mailarc-1.txt:1444:Reply-To: icc11-list@lists.best.com
-t/mailarc-1.txt:1445:To: icc11-list@lists.best.com
-t/mailarc-1.txt:1446:content-length: 399
-t/mailarc-1.txt:1447:Status: RO
-t/mailarc-1.txt:1448:X-Status: $$$$
-t/mailarc-1.txt:1449:X-UID: 0000000001
-t/mailarc-1.txt:1450:
-t/mailarc-1.txt:1451:At long last, I dusted off Chuck McManis Handyboard library and ported it
-t/mailarc-1.txt:1452:to V5. No reason why it can't work with V4.5 either ;-) Anyway, to try it
-t/mailarc-1.txt:1453:out, point your browser to
-t/mailarc-1.txt:1454:
-t/mailarc-1.txt:1455:ftp://ftp.imagecraft.com/pub/libhb.zip
-t/mailarc-1.txt:1456:
-t/mailarc-1.txt:1457:Chuck really did a great job with the LCD. There are commands to scroll,
-t/mailarc-1.txt:1458:move etc. Make sure you try the lcdtest2.c test.
-t/mailarc-1.txt:1459:
-t/mailarc-1.txt:1460:// richard
-t/mailarc-1.txt:1461:someone@imagecraft.com http://www.imagecraft.com
-t/mailarc-1.txt:1462:
+t/mailarc-1.txt:1356:
+t/mailarc-1.txt:1357:>Hello,
+t/mailarc-1.txt:1358:> I have a handy board with poloroid transducers and I am trying use the
+t/mailarc-1.txt:1359:>results of my distance measurments in a C++ program on the computer.  I
+t/mailarc-1.txt:1360:>have found programs on the handyboard web page that should alow the
+t/mailarc-1.txt:1361:>handyboard to transmit information over the serial line.  What I am looking
+t/mailarc-1.txt:1362:>for is if anyone knows were I could find a serial library for Microsofts
+t/mailarc-1.txt:1363:>Visual C++ 5.0.  I would like to find one that is free or sharware but any
+t/mailarc-1.txt:1364:>information on any serial librarys that will work would be appreciated.
+t/mailarc-1.txt:1365:>Thanks.
+t/mailarc-1.txt:1366:>Mark Wallace
+t/mailarc-1.txt:1367:>
+t/mailarc-1.txt:1368:> e-mail  mawalla3@vt.edu
+t/mailarc-1.txt:1369:> mwallace@sps1.phys.vt.edu
+t/mailarc-1.txt:1370:>web page http://sps1.phys.vt.ede/~mwallace
+t/mailarc-1.txt:1371:>
+t/mailarc-1.txt:1372:>"What a waist it would be after 4 billion tortuous years of evolution if
+t/mailarc-1.txt:1373:>the dominant organism contrived its own self-distruction"
+t/mailarc-1.txt:1374:> Carl Sagan
+t/mailarc-1.txt:1375:>
+t/mailarc-1.txt:1376:
+t/mailarc-1.txt:1377:From Scott.Seaton@Aus.Sun.COM  Thu Jul 16 03:42:38 1998
+t/mailarc-1.txt:1378:Received: from aleve.media.mit.edu by hub.media.mit.edu; (5.65v3.2/1.1/06Jun95-8.2MPM)
+t/mailarc-1.txt:1379:	id AA24945; Thu, 16 Jul 1998 03:42:38 -0400
+t/mailarc-1.txt:1380:Received: from mercury.Sun.COM (mercury.Sun.COM [192.9.25.1])
+t/mailarc-1.txt:1381:	by aleve.media.mit.edu (8.8.7/ML970927) with SMTP id CAA07415
+t/mailarc-1.txt:1382:	for <handyboard@media.mit.edu>; Thu, 16 Jul 1998 02:44:58 -0400 (EDT)
+t/mailarc-1.txt:1383:Received: from Aus.Sun.COM ([129.158.80.6]) by mercury.Sun.COM (SMI-8.6/mail.byaddr) with SMTP id XAA29734; Wed, 15 Jul 1998 23:44:52 -0700
+t/mailarc-1.txt:1384:Received: from war.Aus.Sun.COM by Aus.Sun.COM id QAA03011
+t/mailarc-1.txt:1385:	(SMI-8.6/SMI-4.1 for <>); Thu, 16 Jul 1998 16:44:50 +1000
+t/mailarc-1.txt:1386:Received: from drone by war.Aus.Sun.COM (SMI-8.6/SMI-SVR4)
+t/mailarc-1.txt:1387:	id QAA10921; Thu, 16 Jul 1998 16:44:20 +1000
+t/mailarc-1.txt:1388:Message-Id: <199807160644.QAA10921@war.Aus.Sun.COM>
+t/mailarc-1.txt:1389:Date: Thu, 16 Jul 1998 16:41:56 +1000 (EST)
+t/mailarc-1.txt:1390:From: Scott Seaton - Systems Consultant - ESG <Scott.Seaton@Aus.Sun.COM>
+t/mailarc-1.txt:1391:Reply-To: Scott Seaton - Systems Consultant - ESG <Scott.Seaton@Aus.Sun.COM>
+t/mailarc-1.txt:1392:Subject: Re: Handyboard/RWP without p-code
+t/mailarc-1.txt:1393:To: handyboard@media.mit.edu, rye@mech.eng.usyd.edu.au
+t/mailarc-1.txt:1394:Mime-Version: 1.0
+t/mailarc-1.txt:1395:Content-Type: MULTIPART/mixed; BOUNDARY=Troop_of_Baboons_752_000
+t/mailarc-1.txt:1396:X-Mailer: dtmail 1.2.0 CDE Version 1.2 SunOS 5.6 sun4u sparc 
+t/mailarc-1.txt:1397:
+t/mailarc-1.txt:1398:--Troop_of_Baboons_752_000
+t/mailarc-1.txt:1399:Content-Type: TEXT/plain; charset=us-ascii
+t/mailarc-1.txt:1400:Content-MD5: i/HKSIa/Vk0mZT5ml+q21A==
+t/mailarc-1.txt:1401:
+t/mailarc-1.txt:1402:Hi
+t/mailarc-1.txt:1403:
+t/mailarc-1.txt:1404:I suggest that you contact ImageCraft.
+t/mailarc-1.txt:1405:http://www.imagecraft.com/software/index.html  or  info@imagecraft.com 
+t/mailarc-1.txt:1406:
+t/mailarc-1.txt:1407:They have a C compiler for 68HC11 CPU's that will do what you want, including a
+t/mailarc-1.txt:1408:library for the HandyBoard (see attached e-mail) !
+t/mailarc-1.txt:1409:
+t/mailarc-1.txt:1410:I have no affiliation with ImageCraft (other than as a satisfied customer).
+t/mailarc-1.txt:1411:
+t/mailarc-1.txt:1412:Hope this helps
+t/mailarc-1.txt:1413:Scott
+t/mailarc-1.txt:1414:============================================================================== 
+t/mailarc-1.txt:1415: ,-_|\       Scott Seaton - Sun Enterprise Services -  Systems Consultant      
+t/mailarc-1.txt:1416:/     \  Sun Microsystems Australia Pty Ltd  E-mail : scott.seaton@aus.sun.com 
+t/mailarc-1.txt:1417:\_,-\_+  828 Pacific Highway                  Phone : +61 2 9844 5381          
+t/mailarc-1.txt:1418:     v   Gordon, N.S.W., 2072, AUSTRALIA        Fax : +61 2 9844 5161          
+t/mailarc-1.txt:1419:============================================================================== 
+t/mailarc-1.txt:1420:
+t/mailarc-1.txt:1421:--Troop_of_Baboons_752_000
+t/mailarc-1.txt:1422:Content-Type: MESSAGE/rfc822; name=Mailbox
+t/mailarc-1.txt:1423:Content-Description: Mailbox
+t/mailarc-1.txt:1424:
+t/mailarc-1.txt:1425:From someone@imagecraft.com  Fri Jul 10 18:59:26 1998
+t/mailarc-1.txt:1426:Return-Path: <icc11-list-errors@lists.best.com>
+t/mailarc-1.txt:1427:Received: from Aus.Sun.COM by war.Aus.Sun.COM (SMI-8.6/SMI-SVR4)
+t/mailarc-1.txt:1428:	id SAA14426; Fri, 10 Jul 1998 18:59:26 +1000
+t/mailarc-1.txt:1429:Received: from earth.sun.com by Aus.Sun.COM id SAA24238
+t/mailarc-1.txt:1430:	(SMI-8.6/SMI-4.1 for <<scott.seaton@aus.sun.com>>); Fri, 10 Jul 1998 18:59:48 +1000
+t/mailarc-1.txt:1431:Received: from iisesun.iise.CSIRO.AU (iisesun.iise.csiro.au [130.155.5.44])
+t/mailarc-1.txt:1432:	by earth.sun.com (8.8.8/8.8.8) with SMTP id BAA18609
+t/mailarc-1.txt:1433:	for <scott.seaton@aus.sun.com>; Fri, 10 Jul 1998 01:59:44 -0700 (PDT)
+t/mailarc-1.txt:1434:Received: from lists1.best.com (lists1.best.com [206.86.8.15]) by iisesun.iise.CSIRO.AU (SMI-8.6/8.6.12-IISE-SWA) with ESMTP id SAA25847 for <sseaton@iise.csiro.au>; Fri, 10 Jul 1998 18:49:31 +1000
+t/mailarc-1.txt:1435:Received: (from daemon@localhost) by lists1.best.com (8.9.0/8.8.BEST) id BAA15320 for icc11-list-errors@lists.best.com; Fri, 10 Jul 1998 01:04:34 -0700 (PDT)
+t/mailarc-1.txt:1436:Message-Id: <199807100804.BAA15320@lists1.best.com>
+t/mailarc-1.txt:1437:From: Christina Willrich & Richard Man <someone@imagecraft.com>
+t/mailarc-1.txt:1438:Subject: icc11 Handyboard library available
+t/mailarc-1.txt:1439:Date: Fri, 10 Jul 1998 00:58:49 -0700
+t/mailarc-1.txt:1440:BestServHost: lists.best.com
+t/mailarc-1.txt:1441:MIME-Version: 1.0
+t/mailarc-1.txt:1442:Content-Type: text/plain; charset="us-ascii"
+t/mailarc-1.txt:1443:Sender: icc11-list-errors@lists.best.com
+t/mailarc-1.txt:1444:Errors-To: icc11-list-errors@lists.best.com
+t/mailarc-1.txt:1445:Reply-To: icc11-list@lists.best.com
+t/mailarc-1.txt:1446:To: icc11-list@lists.best.com
+t/mailarc-1.txt:1447:content-length: 399
+t/mailarc-1.txt:1448:Status: RO
+t/mailarc-1.txt:1449:X-Status: $$$$
+t/mailarc-1.txt:1450:X-UID: 0000000001
+t/mailarc-1.txt:1451:
+t/mailarc-1.txt:1452:At long last, I dusted off Chuck McManis Handyboard library and ported it
+t/mailarc-1.txt:1453:to V5. No reason why it can't work with V4.5 either ;-) Anyway, to try it
+t/mailarc-1.txt:1454:out, point your browser to
+t/mailarc-1.txt:1455:
+t/mailarc-1.txt:1456:ftp://ftp.imagecraft.com/pub/libhb.zip
+t/mailarc-1.txt:1457:
+t/mailarc-1.txt:1458:Chuck really did a great job with the LCD. There are commands to scroll,
+t/mailarc-1.txt:1459:move etc. Make sure you try the lcdtest2.c test.
+t/mailarc-1.txt:1460:
+t/mailarc-1.txt:1461:// richard
+t/mailarc-1.txt:1462:someone@imagecraft.com http://www.imagecraft.com
 t/mailarc-1.txt:1463:
-t/mailarc-1.txt:1464:--Troop_of_Baboons_752_000--
-t/mailarc-1.txt:1465:
+t/mailarc-1.txt:1464:
+t/mailarc-1.txt:1465:--Troop_of_Baboons_752_000--
+t/mailarc-1.txt:1466:
 t/mailarc-2.txt:1:From jrh@jack.securepipe.com  Tue Jan 13 03:19:47 1998
 t/mailarc-2.txt:2:Received: from aleve.media.mit.edu by hub.media.mit.edu; (5.65v3.2/1.1/06Jun95-8.2MPM)
 t/mailarc-2.txt:3:	id AA08834; Tue, 13 Jan 1998 03:19:47 -0500
