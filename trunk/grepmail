@@ -302,6 +302,11 @@ if (eval "require Mail::Folder::FastReader;")
   undef &read_email;
   undef &reset_file;
   import Mail::Folder::FastReader 'reset_file', 'read_email';
+  dprint "Using Mail::Folder::FastReader";
+}
+else
+{
+  dprint "Not using Mail::Folder::FastReader";
 }
 
 ################################ MAIN PROGRAM #################################
@@ -935,6 +940,9 @@ sub GetFromLine
   my $header = $email;
   $header =~ s/\n\n.*/\n/s;
 
+  # Avoid perl 5.6 bug which causes spurious warning even though $header is
+  # defined.
+  local $^W = 0;
   if ($header =~ /^(From:\s.*)$/im)
   {
     return $1;
@@ -962,6 +970,9 @@ sub GetSubjectLine
   my $header = $email;
   $header =~ s/\n\n.*/\n/s;
 
+  # Avoid perl 5.6 bug which causes spurious warning even though $header is
+  # defined.
+  local $^W = 0;
   if ($header =~ /^(Subject:\s.*)$/im)
   {
     return $1;
