@@ -2,8 +2,8 @@
 
 use strict;
 
-use Test;
-use lib 'lib';
+use Test::More;
+use lib 't';
 use Test::Utils;
 use File::Spec::Functions qw( :ALL );
 
@@ -31,9 +31,12 @@ plan (tests => scalar (keys %tests) + 1);
 
 my %skip = SetSkip(\%tests);
 
-print "Checking Date::Manip::Date_TimeZone()\n";
-if(ModuleInstalled('Date::Manip'))
+SKIP:
 {
+  print "Checking Date::Manip::Date_TimeZone()\n";
+
+  skip("Date::Manip not installed",1) unless ModuleInstalled('Date::Manip');
+
   # Date::Manip prior to 5.39 nukes the PATH. Save and restore it to avoid
   # problems.
   my $path = $ENV{PATH};
@@ -56,19 +59,17 @@ EOF
     ok(0);
   }
 }
-else
-{
-  skip("Skip Date::Manip not installed",1);
-}
-
 
 foreach my $test (sort keys %tests) 
 {
   print "Running test:\n  $test\n";
 
-  skip("Skip $skip{$test}",1), next if exists $skip{$test};
+  SKIP:
+  {
+    skip("$skip{$test}",1) if exists $skip{$test};
 
-  TestIt($test, $tests{$test}, $expected_errors{$test});
+    TestIt($test, $tests{$test}, $expected_errors{$test});
+  }
 }
 
 # ---------------------------------------------------------------------------
@@ -109,16 +110,14 @@ sub TestIt
 
   if (!$? && defined $error_expected)
   {
-    print "Did not encounter an error executing the test when one was expected.\n\n";
-    ok(0);
+    ok(0,"Did not encounter an error executing the test when one was expected.\n\n");
     return;
   }
 
   if ($? && !defined $error_expected)
   {
-    print "Encountered an error executing the test when one was not expected.\n";
-    print "See $test_stdout and $test_stderr.\n\n";
-    ok(0);
+    ok(0, "Encountered an error executing the test when one was not expected.\n" .
+      "See $test_stdout and $test_stderr.\n\n");
     return;
   }
 

@@ -12,9 +12,9 @@ anonymize_mailbox
 grepmail
 grepmail.old
 
-# The module files
-lib/Test/Utils.pm
-lib/Test/ConfigureGrepmail.pm
+# The test module files
+t/Test/Utils.pm
+t/Test/ConfigureGrepmail.pm
 
 # Tests
 t/append_header.t
@@ -134,9 +134,10 @@ inc/Module/Install/Include.pm
 inc/Module/Install/Makefile.pm
 inc/Module/Install/Metadata.pm
 inc/Module/Install/PRIVATE/Update_Test_Version.pm
-inc/Module/Install/Skip.pm
 inc/Module/Install/Scripts.pm
 inc/Module/Install/Win32.pm
 inc/Module/Install/WriteAll.pm
+inc/Test/Builder.pm
+inc/Test/More.pm
 
 META.yml
