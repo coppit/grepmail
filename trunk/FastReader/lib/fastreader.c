@@ -21,6 +21,12 @@ static unsigned int EMAIL_BUFFER_SIZE_INCREMENT=1000000;
 /* The current size of the buffer */
 static unsigned int EMAIL_BUFFER_SIZE = 0;
 
+/* The amount to read at a time */
+static unsigned int CHUNK_READ_SIZE = 255;
+
+/* The end of the chunk that was last read */
+static char *END_OF_CHUNK = NULL;
+
 /* The current line count */
 static long LINE_NUMBER = 0;
 
@@ -50,7 +56,8 @@ int read_email(char **email,long *email_line)
    * before). */
   if (LINE_NUMBER == 0)
   {
-    fgets(EMAIL_BUFFER,255,FILE_HANDLE);
+    fgets(EMAIL_BUFFER,CHUNK_READ_SIZE,FILE_HANDLE);
+    END_OF_CHUNK = strchr(EMAIL_BUFFER,'\0');
     START_OF_EMAIL = EMAIL_BUFFER;
   }
   else
@@ -58,8 +65,6 @@ int read_email(char **email,long *email_line)
     *EMAIL_BOUNDARY = 'F';
     START_OF_EMAIL = EMAIL_BOUNDARY;
   }
-
-  EMAIL_BOUNDARY = strchr(START_OF_EMAIL,'\0');
 
   LINE_NUMBER++;
 
@@ -77,20 +82,20 @@ int read_email(char **email,long *email_line)
 
     /* If the buffer is full, move the email down to the beginning of
      * the buffer */
-    if (EMAIL_BUFFER + EMAIL_BUFFER_SIZE < EMAIL_BOUNDARY + 255)
+    if (EMAIL_BUFFER + EMAIL_BUFFER_SIZE < END_OF_CHUNK + CHUNK_READ_SIZE)
     {
 #if DEBUG==1
       fprintf(stderr,"Moving down email\n");
 #endif
-      strcpy(EMAIL_BUFFER,START_OF_EMAIL);
-      EMAIL_BOUNDARY = EMAIL_BOUNDARY - START_OF_EMAIL + EMAIL_BUFFER;
+      memmove(EMAIL_BUFFER,START_OF_EMAIL,END_OF_CHUNK - START_OF_EMAIL);
+      END_OF_CHUNK = END_OF_CHUNK - START_OF_EMAIL + EMAIL_BUFFER;
       START_OF_EMAIL = EMAIL_BUFFER;
       *email = START_OF_EMAIL;
     }
 
     /* Extend the size of the buffer if necessary to accommodate 1 more
      * line. */
-    if (EMAIL_BUFFER + EMAIL_BUFFER_SIZE < EMAIL_BOUNDARY + 255)
+    if (EMAIL_BUFFER + EMAIL_BUFFER_SIZE < EMAIL_BOUNDARY + CHUNK_READ_SIZE)
     {
 #if DEBUG==1
       fprintf(stderr,"extending email buffer %u\n",EMAIL_BUFFER_SIZE);
@@ -98,7 +103,7 @@ int read_email(char **email,long *email_line)
       EMAIL_BUFFER_SIZE += EMAIL_BUFFER_SIZE_INCREMENT;
       EMAIL_BUFFER =
         (char *)realloc(EMAIL_BUFFER,EMAIL_BUFFER_SIZE*sizeof(char));
-      EMAIL_BOUNDARY = EMAIL_BOUNDARY - START_OF_EMAIL + EMAIL_BUFFER;
+      END_OF_CHUNK = END_OF_CHUNK - START_OF_EMAIL + EMAIL_BUFFER;
       START_OF_EMAIL = EMAIL_BUFFER;
       *email = START_OF_EMAIL;
     }
@@ -106,7 +111,7 @@ int read_email(char **email,long *email_line)
     /* Read a line from the file and store it in the email buffer.  We
      * will replace the start of the line with a null if it turns out
      * to be the start of the next email. */
-    read_pointer = fgets(EMAIL_BOUNDARY,255,FILE_HANDLE);
+    read_pointer = fgets(END_OF_CHUNK,CHUNK_READ_SIZE,FILE_HANDLE);
 
     /* If we hit the end of the file, return the email */
     if (read_pointer == NULL)
@@ -117,6 +122,9 @@ int read_email(char **email,long *email_line)
 
       return 1;
     }
+
+    EMAIL_BOUNDARY = END_OF_CHUNK;
+    END_OF_CHUNK = strchr(END_OF_CHUNK,'\0');
 
     /* See if the line is the start of a new email, and the email
      * we've read so far doesn't end with an include message. */
@@ -134,7 +142,6 @@ int read_email(char **email,long *email_line)
     }
     else
     {
-      EMAIL_BOUNDARY = strchr(EMAIL_BOUNDARY,'\0');
       LINE_NUMBER++;
     }
   }
