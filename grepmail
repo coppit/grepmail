@@ -2,7 +2,7 @@
 
 # grepmail
 
-$VERSION = '4.43';
+$VERSION = '4.44';
 
 # Grepmail searches a normal, gzip'd, tzip'd, or bzip2'd mailbox for a given
 # regular expression and returns those emails that match the query. It also
@@ -610,7 +610,7 @@ sub PutBackString
 #-------------------------------------------------------------------------------
 
 # Detects whether an ASCII file is a mailbox, based on whether it has a 'From'
-# and 'Subject:' prefix on two lines of the first paragraph.
+# and 'Received:' prefix on two lines of the first paragraph.
 
 sub IsMailbox
 {
@@ -625,7 +625,7 @@ sub IsMailbox
   my $returnVal;
 
   # X-From-Line is used by Gnus, and From is used by normal Unix format
-  if ($buffer =~ /^(X-From-Line:|From)\s/im && $buffer =~ /^Subject:\s/im)
+  if ($buffer =~ /^(X-From-Line:|From)\s/im && $buffer =~ /^Received:\s/im)
   {
     $returnVal = 1;
   }
@@ -1682,6 +1682,16 @@ invoke the shell).
 In some special circumstances, grepmail will be confused by files whose names
 look like flags. In such cases, use the B<-e> flag to specify the search
 pattern.
+
+=item Error messages when searching compressed files are wrong
+
+grepmail decompresses compressed files and re-invokes itself on them.
+As a result, any errors that occur while processing the uncompressed
+file will result in messages that do not reference the original
+compressed file. For example:
+
+  grepmail foo text_file.gz
+  ** Skipping non-mailbox ASCII file: 'text_file'
 
 =back
 
