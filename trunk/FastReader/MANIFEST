@@ -4,7 +4,6 @@ FastReader.xs
 MANIFEST
 Makefile.PL
 lib/Makefile.PL
-#lib/fastreader.h
 lib/fastreader.c
 lib/main.c
 t/simple.t
