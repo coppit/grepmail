@@ -1,0 +1,1587 @@
+From dblank@comp.uark.edu  Wed Jul  1 13:17:17 1998
+Received: from aleve.media.mit.edu by hub.media.mit.edu; (5.65v3.2/1.1/06Jun95-8.2MPM)
+	id AA10324; Wed, 1 Jul 1998 13:17:17 -0400
+Received: from comp.uark.edu (root@comp.uark.edu [130.184.252.197])
+	by aleve.media.mit.edu (8.8.7/ML970927) with ESMTP id LAA00083
+	for <handyboard@media.mit.edu>; Wed, 1 Jul 1998 11:56:44 -0400 (EDT)
+Received: from comp.uark.edu (IDENT:dblank@dangermouse.uark.edu [130.184.201.233])
+	by comp.uark.edu (8.9.0/8.9.0) with ESMTP id KAA12202;
+	Wed, 1 Jul 1998 10:56:30 -0500 (CDT)
+Sender: dblank@comp.uark.edu
+Date: Wed, 01 Jul 1998 10:56:30 -0500
+From: Douglas Blank <dblank@comp.uark.edu>
+Organization: University of Arkansas, CS
+X-Mailer: Mozilla 4.04 [en] (X11; I; Linux 2.0.33 i686)
+Mime-Version: 1.0
+To: Aaron Edsinger <aarone@sirius.com>
+Cc: handy <handyboard@media.mit.edu>
+Subject: Re: Serial Interface
+References: <199807010601.XAA26862@mail3.sirius.com>
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+
+Aaron Edsinger wrote:
+ 
+> Hello,
+>         I've been having some problems using my HandyBoard to talk directly to my
+> PC via the serial interface.  I disable Interactive C and then Poke() and
+> Peek() as has been described on this list.  I  send short character strings
+> from my PC to the HandyBoard under Windows 95.  If I send strings longer
+> than 2 characters, it seems that some of the characters get lost. This
+> behavior seems to be affected by repositioning or slightly modifying the
+> code, suggesting perhaps a timing issue.
+
+Although there is the HEXMON program, I too, have been trying to do what
+you describe, and encountered the same problems. I found it to be a
+timing issue, and, through trial and error, have a found some settings
+that seem to work most of the time.
+
+My goal was to make C code that looked the same when compiled and run on
+the Host is the code that ran under IC. 
+
+I am including the host and HB programs here. If anyone knows of a
+better way of communicating, please let us know.
+
+-Doug Blank
+ 
+=====================================================================
+dblank@comp.uark.edu            Douglas Blank, University of Arkansas
+Assistant Professor                                  Computer Science
+==================== http://www.uark.edu/~dblank ====================
+
+This code was written for MS C++4.0 running on Win95.
+
+//************** BEGIN: serial_HOST.c
+
+/* VC++4.0 HandyBoard Host Programming System
+   Dr. Douglas S. Blank
+   University of Arkansas, Department of Computer Science
+   www.uark.edu/~dblank
+
+   This code runs on a host PC.
+*/
+
+#include <ctype.h>
+#include <conio.h>
+#include <stdlib.h>
+#include <stdio.h>
+
+#include "serial_HOST.h"
+
+void main(int argc, char *argv[])
+{
+        motor(0, 100);
+        motor(1, 100);
+        motor(2, 100);
+        motor(3, 100);
+        sleep(1000);
+        motor(0, -100); 
+        motor(1, -100);
+        motor(2, -100);
+        motor(3, -100);
+        sleep(1000); 
+        ao(); 
+        print("\nThis is a test");
+        printf("Knob is %d\n", knob() );
+        printf("Analog(0) is %d\n", analog(0));
+        printf("Digital(0) is %d\n", digital(0));
+        printf("Analog(1) is %d\n", analog(1));
+        printf("Digital(1) is %d\n", digital(1));
+        printf("Analog(2) is %d\n", analog(2));
+        printf("Digital(2) is %d\n", digital(2));
+        printf("Analog(3) is %d\n", analog(3));
+        printf("Digital(3) is %d\n", digital(3));
+        printf("Analog(4) is %d\n", analog(4));
+        printf("Digital(4) is %d\n", digital(4));
+        printf("Analog(5) is %d\n", analog(5));
+        printf("Digital(5) is %d\n", digital(5));
+        printf("Analog(6) is %d\n", analog(6));
+        printf("Digital(6) is %d\n", digital(6));
+        printf("Analog(7) is %d\n", analog(7));
+        printf("Digital(7) is %d\n", digital(7));
+        printf("Analog(8) is %d\n", analog(8));
+        printf("Digital(8) is %d\n", digital(8));
+        printf("Analog(9) is %d\n", analog(9));
+        printf("Digital(9) is %d\n", digital(9));
+        printf("Analog(10) is %d\n", analog(10));
+        printf("Digital(10) is %d\n", digital(10));
+        printf("Analog(11) is %d\n", analog(11));
+        printf("Digital(11) is %d\n", digital(11));
+        printf("Analog(12) is %d\n", analog(12));
+        printf("Digital(12) is %d\n", digital(12));
+        printf("Analog(13) is %d\n", analog(13));
+        printf("Digital(13) is %d\n", digital(13));
+        printf("Analog(14) is %d\n", analog(14));
+        printf("Digital(14) is %d\n", digital(14));
+        printf("Analog(15) is %d\n", analog(15));
+        printf("Digital(15) is %d\n", digital(15));
+        beep();
+        sleep(1000);
+        while (! stop_button() ) {
+                sprintf(buffer, "%d.0", (knob() * 10));
+                tone( buffer, "0.1");
+        }
+}
+
+//************** END: serial_HOST.c
+
+//************** BEGIN: serial_HOST.h
+
+/* VC++4.0 HandyBoard Host Programming System
+   Dr. Douglas S. Blank
+   University of Arkansas, Department of Computer Science
+   www.uark.edu/~dblank
+*/
+
+#define MOTOR     0
+#define AO        1
+#define ANALOG    2
+#define DIGITAL   3
+#define PRINTF    4
+#define KNOB      5
+#define BEEP      6
+#define TONE      7
+#define START_BUTTON 8
+#define STOP_BUTTON  9
+#define QUIT    113
+
+#define sleep(NUM) _sleep(NUM)
+#define SERIALWAIT  5
+
+unsigned short PORT = 0x3f8; // LPT1: 0x378 COM1: 0x3f8
+
+int send(int i) {
+        int retval;
+        retval = _outp( PORT, i);
+        _sleep(SERIALWAIT);
+        return retval;
+}
+
+int receive() {
+        int retval;
+        retval = _inp( PORT);
+        _sleep(SERIALWAIT);
+        retval = _inp( PORT);
+        return retval;
+}
+
+void hangup() {
+        send(QUIT);
+}
+
+void print(char buffer[]) {
+        int i;
+        send(PRINTF);
+        for (i = 0; buffer[i] != 0; i++)
+                send(buffer[i]);
+        send('\0');
+}
+
+void motor(int motornum, int power) {
+        send(MOTOR);
+        send(motornum);
+        send(power + 100); // taken off on the other end
+}
+
+int analog(int sensor) {
+        send(ANALOG);
+        send(sensor);
+        return receive();
+}
+
+int digital(int sensor) {
+        send(DIGITAL);
+        send(sensor);
+        return receive();
+}
+
+void ao() {
+        send(AO);
+}
+
+int knob() {
+        send(KNOB);
+        return receive();
+}
+
+void beep() {
+        send(BEEP);
+}
+
+void tone(char f1[], char f2[]) {
+        int i;
+        send(TONE);
+        for (i = 0; f1[i] != 0; i++)
+                send(f1[i]);
+        send('\0');
+        for (i = 0; f2[i] != 0; i++)
+                send(f2[i]);
+        send('\0');
+        _sleep((unsigned long) (atof(f2) * 1000)); // to keep from
+overflowing serial line
+}
+
+void interactive()
+{
+        char c;
+        char key = ' ';
+        while (key != 'q') {
+                key = getch();
+                send(key);
+                printf("Sent %c\n", key);
+                c = receive();
+                printf("Got %c as a return value\n", c);
+        }
+}
+
+int start_button() {
+        send(START_BUTTON);
+        return receive();
+}
+
+int stop_button() {
+        send(STOP_BUTTON);
+        return receive();
+}
+//************** END: serial_HOST.h
+
+//************** BEGIN: serial_HB.c
+
+/* VC++4.0 HandyBoard Programming System
+   (Parts taken from other HB programs)
+   Dr. Douglas S. Blank
+   University of Arkansas, Department of Computer Science
+   www.uark.edu/~dblank
+
+   This code runs on the HB
+*/
+
+#define MOTOR     0
+#define AO        1
+#define ANALOG    2
+#define DIGITAL   3
+#define PRINTF    4
+#define KNOB      5
+#define BEEP    6
+#define TONE    7
+#define START_BUTTON 8
+#define STOP_BUTTON  9
+#define QUIT    113
+
+int _isspace(int a)         /* returns 1 for space or tab, 0
+otherwise     */
+                            /* internal routine used by atof() and
+cgets() */
+
+{
+    return ((a == 32) || (a == 9));     /* 32 is space, 9 is tab */
+}
+
+/*****************************************************************************/
+
+int _isdigit(int a)         /* returns 1 if a digit 0-9, 0 otherwise */
+                            /* internal routine used by atof()       */
+
+{
+    return ((a >= 48) && (a <= 57));    /* 48 is '0', 57 is '9' */
+}
+
+float atof(char s[])    /* Convert a string containing a number in
+ASCII     */
+                        /* form (integer, float, or exponential float)
+to a  */
+                        /* float.  Strips whitespace characters (space
+and   */
+                        /* tab) from the front of the string, but
+stops      */
+                        /* parsing at the first (unexpected)
+non-numeric     */
+                        /* character if the string has garbage at the
+end.   */
+                        /* This means that "  34.3foo78" translates to
+34.3. */
+                        /* Modified from atof() function in the
+standard     */
+                        /* library of the Hi-Tec C compiler for
+CP/M.        */
+                        /* Note:  all string literals converted to
+decimal   */
+                        /* form because IC can't deal with string
+literals   */
+                        /* in math
+calculations.                             */
+                        /* Also note:  very ugly code because IC will
+not    */
+                        /* allow any math operations on pointers!  Thus,
+the */
+                        /* the number string has to be treated as an
+array!  */
+                        /* Also also note:  no error handling; assumes
+that  */
+                        /* the string is a valid representation of a
+number! */
+                        /* Valid range for exponential-format numbers
+is     */
+                        /* approximately 2.0e-38 to
+3.4e+38.                 */
+
+{
+    int     i=0;            /* index into string array */
+    int     sign=0;         /* mantissa sign flag:  0=positive,
+1=negative */
+    int     exp0=0;         /* mantissa exponent counter */
+    int     eexp=0;         /* E-form exponent counter */
+    int     expsign=0;      /* exponent sign flag:  0=positive,
+1=negative */
+    float   m=0.0;          /* mantissa accumulator */
+
+    /* skip any leading whitespace (space, tab) */
+    while (_isspace(s[i]))
+        i++;                                /* skip it */
+
+    /* check for mantissa sign */
+    if (s[i] == 45)                         /* 45 is '-' */
+    {
+        sign = 1;                           /* flag minus sign */
+        i++;                                /* point to next */
+    }
+    else if (s[i] == 43)                    /* 43 is '+' */
+        i++;                                /* point to next */
+
+    /* now get all digits up to either a decimal point or an e/E */
+    while (_isdigit(s[i]))
+    {
+        m = 10.0*m + (float)(s[i] - 48);    /* 48 is '0' */
+        i++;                                /* point to next */
+    }
+
+    /* no more digits, so check for decimal point */
+    if (s[i] == 46)                         /* 46 is '.' */
+    {
+        i++;                                /* point to next */
+        /* get all digits after decimal point */
+        while (_isdigit(s[i]))
+        {
+            exp0--;
+            m = 10.0*m + (float)(s[i] - 48);    /* 48 is '0' */
+            i++;                                /* point to next */
+        }
+    }
+
+    /* check for e/E exponential form */
+    if ((s[i] == 101) || (s[i] == 69))      /* 101 is 'e', 69 is 'E' */
+    {
+        i++;                                /* point to next */
+        /* check for exponent sign */
+        if (s[i] == 45)                     /* 45 is '-' */
+        {
+            expsign = 1;                    /* flag negative exponent */
+            i++;                            /* point to next */
+        }
+        else if (s[i] == 43)                /* 43 is '+' */
+            i++;                            /* point to next */
+
+        /* now get exponent */
+        while (_isdigit(s[i]))
+        {
+            eexp = eexp*10 + s[i] - 48;     /* 48 is '0' */
+            i++;                            /* point to next */
+        }
+
+        /* adjust exponent sign */
+        if (expsign)
+            eexp = -eexp;                   /* make it negative */
+    }
+
+    /* compute absolute value of final float */
+    exp0 += eexp;
+    while (exp0 < 0)                    /* for negative exponents */
+    {
+        m = m / 10.0;
+        exp0++;
+    }
+    while (exp0 > 0)                    /* for positive exponents */
+    {
+        m = m * 10.0;
+        exp0--;
+    }
+
+    /* adjust final float sign from mantissa */
+    if (sign)
+        return (-m);                    /* negative */
+    else
+        return (m);                     /* positive */
+}
+
+void disable_pcode_serial()
+/* necessary to receive characters using serial_getchar */
+{
+   poke(0x3c, 1);
+}
+
+void reenable_pcode_serial()
+/* necessary for IC to interact with board again */
+{
+   poke(0x3c, 0);
+}
+
+/*
+======================================================================
+For sending and receiving single bytes, you can use Randy's IC code:
+*/
+
+void serial_putchar(int c)
+{
+   while (!(peek(0x102e) & 0x80));  /* wait until serial transmit empty
+*/
+   poke(0x102f, c);  /* send character */
+}
+
+int serial_getchar()
+{
+   while (!(peek(0x102e) & 0x20)); /* wait for received character */
+   return peek(0x102f);
+}
+
+void main(void) {
+        int pos, c = ' ', var1, var2;
+        float f1, f2;
+        char buffer[80];
+        disable_pcode_serial();
+        beep();
+        printf("\nSerial IO Mode!");
+        printf("Listening...");
+        msleep(500L);
+        while (c != 'q') {
+                c = serial_getchar();
+/*              printf("[%d] ", c); */
+                if (c == MOTOR) {
+                        var1 = serial_getchar();
+                        var2 = serial_getchar() - 100;
+                        motor(var1, var2);
+                } else if (c == AO) {
+                        ao();
+                } else if (c == ANALOG) {
+                        var1 = serial_getchar();
+                        serial_putchar(analog(var1));
+                } else if (c == DIGITAL) {
+                        var1 = serial_getchar();
+                        serial_putchar(digital(var1));
+                } else if (c == PRINTF) {
+                        pos = 0;
+                        while (c != 0) {
+                                buffer[pos++] = c;
+                                c = serial_getchar();
+                        }
+                        buffer[pos] = '\0';
+                        printf(buffer);
+                } else if (c == TONE) {
+                        pos = 0;
+                        c = serial_getchar();
+                        while (c != 0) {
+                                buffer[pos++] = c;
+                                c = serial_getchar();
+                        }
+                        buffer[pos] = '\0';
+                        f1 = atof(buffer);
+                        pos = 0;
+                        c = serial_getchar();
+                        while (c != 0) {
+                                buffer[pos++] = c;
+                                c = serial_getchar();
+                        }
+                        buffer[pos] = '\0';
+                        f2 = atof(buffer);
+                        tone(f1, f2);
+                } else if (c == START_BUTTON) {
+                        serial_putchar(start_button());
+                } else if (c == STOP_BUTTON) {
+                        serial_putchar(stop_button());
+                } else if (c == BEEP) {
+                        beep();
+                } else if (c == KNOB) {
+                        serial_putchar(knob());
+                }
+      }
+        reenable_pcode_serial();
+        printf("\nHB Mode!");
+}
+
+//************** END: serial_HB.c
+
+From goldt@et.byu.edu  Tue Jul  7 20:33:03 1998
+Received: from aleve.media.mit.edu by hub.media.mit.edu; (5.65v3.2/1.1/06Jun95-8.2MPM)
+	id AA32480; Tue, 7 Jul 1998 20:33:03 -0400
+Received: from wormwood.ee.byu.edu (wormwood.ee.byu.edu [128.187.30.54])
+	by aleve.media.mit.edu (8.8.7/ML970927) with ESMTP id TAA30127
+	for <handyboard@media.mit.edu>; Tue, 7 Jul 1998 19:48:43 -0400 (EDT)
+Received: from wormwood (localhost [127.0.0.1]) by wormwood.ee.byu.edu with SMTP (8.7.6/8.7.1) id RAA26916 for <handyboard@media.mit.edu>; Tue, 7 Jul 1998 17:48:42 -0600 (MDT)
+Sender: goldt@ee.byu.edu
+Date: Tue, 07 Jul 1998 17:48:41 -0600
+From: "Timothy B. Gold" <goldt@et.byu.edu>
+X-Mailer: Mozilla 3.04Gold (X11; I; HP-UX B.10.20 9000/780)
+Mime-Version: 1.0
+To: handyboard@media.mit.edu
+Subject: Interrupt Handler for Serial communication
+Content-Type: multipart/mixed; boundary="------------18CC6AC44E2E"
+
+This is a multi-part message in MIME format.
+
+--------------18CC6AC44E2E
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+
+Here's a bit of code that will buffer incoming serial information so
+that no information will be lost when transmitting to the handy board. 
+There are two files: serial_isr.c and serial_isr.asm.  You'll need to
+assemble the .asm file using as11_ic, and then both the .c file and the
+.icb file need to be loaded onto the handy board.  I'm sure improvements
+could be made to the code to clean it up a little, but it's a start (and
+I haven't had any problems with it yet).  Enjoy!
+
+--------------18CC6AC44E2E
+Content-Type: text/plain; charset=us-ascii; name="serial_isr.c"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline; filename="serial_isr.c"
+
+/* C program to read serial port with interrupt service routine */
+/* First version:  Written by Anton Wirsch   20 Nov 1997 */
+
+/*
+
+   Second Version: Written by Tim Gold   27 May 1998
+                              BYU Robotics Lab
+			      goldt@et.byu.edu        
+
+     Really, the only thing left from the original code are a few
+     lines in the .asm file.  Everything else I pretty much had to
+     rewrite from scratch to get it to work the way I wanted to.
+     But the orignal code by Anton was a very helpful starting point.
+
+  Needed files:   serial_isr.c
+                  serial_isr.icb
+		  serial_isr.asm (needed to change the buffer size)
+
+  The buffer size here is 32 bytes (probably much larger than it needs
+  to be.)  To change the buffer size, do the following:
+              1. Change the BUFFER_SIZE constant below to the
+	         desired number of bytes.
+	      2. Edit the line(s) in the serial_isr.asm which contain
+	         the word "EDIT" in the comment so that the value
+		 matches that of BUFFER_SIZE.
+	      3. Recreate the serial_isr.icb file by typing the following:
+	         > as11_ic serial_isr.asm 
+
+ */
+
+
+
+
+#define BUFFER_SIZE 32  /* change buffer size here  -- see above */
+
+/* various constants used by the program... */
+#define BAUD 0x102b   /* baud rate set to 9600 */
+#define SCCR2 0x102d
+#define SCCR1 0x102c
+#define SCSR 0x102e
+#define SCDR 0x102f
+
+int buffer[BUFFER_SIZE]; /* this is the actual buffer */
+
+
+void initSerial()
+{
+  /* Call this routine to activate the serial interrupt handler. */
+  int i,temp;
+
+  /* clear out buffer */
+  for(i=0; i<BUFFER_SIZE; i++)
+    buffer[i] = 0;
+
+  /* clear vairous flags */
+  DATA_FLAG = 0;
+  INCOMING = 0;
+  CURRENT = 0;
+
+  /* pass address of buffer to interrupt routine */
+  buffer_ptr = (int) buffer; 
+  BASE_ADDR = (int) buffer;
+  
+  /* activate interrupt routine */
+  temp = peek(SCCR2);
+  temp |= 0x24;
+  poke(SCCR2, temp);
+  poke(0x3c, 1);
+}
+
+void closeSerial() 
+{
+  int temp;
+  
+  /* deactivate the interrupt routine */
+  temp = peek(SCCR2);
+  temp &= 0xdf;
+  poke(SCCR2, temp);
+  READ_SERIAL = 0x0000;
+  poke(0x3c, 0);
+
+}
+
+void serialPutChar(int c)
+{
+  /* call this function to write a character to the serial port */
+
+  while (!(peek(0x102e) & 0x80));
+  poke(0x102f, c);               
+
+}
+
+
+int dataAvailable()
+{
+  /* This function can be used to check to see if any data is available */
+  return DATA_FLAG;
+}
+
+
+int serialGetChar()
+{
+  /* Create blocking getchar for serial port... */
+  int return_char;
+  
+  /* loop until data is available */
+  while(!DATA_FLAG);
+
+  /* get the character to return */
+  return_char = buffer[CURRENT];
+
+  /* check for wrap around... */
+  CURRENT++;
+  if(CURRENT == BUFFER_SIZE)
+    CURRENT = 0;
+  if(CURRENT == INCOMING)
+    DATA_FLAG = 0;
+  return return_char;
+
+}
+
+
+
+
+
+--------------18CC6AC44E2E
+Content-Type: text/plain; charset=us-ascii; name="serial_isr.asm"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline; filename="serial_isr.asm"
+
+/* This sets up the serial interrupt service routine */
+/* First Version:	Written by Anton L. Wirsch  20 Nov 1997 */
+/* Second Version: Written by Tim Gold   27 May 1998
+                              BYU Robotics Lab
+		              goldt@et.byu.edu        
+
+     Really, the only thing left from the original code are a few
+     lines in the .asm file.  Everything else I pretty much had to
+     rewrite from scratch to get it to work the way I wanted to.
+     But the orignal code by Anton was a very helpful starting point.
+
+  Needed files:   serial_isr.c
+                  serial_isr.icb
+		  serial_isr.asm (needed to change the buffer size)
+
+  The buffer size here is 32 bytes (probably much larger than it needs
+  to be.)  To change the buffer size, do the following:
+              1. Change the BUFFER_SIZE constant in serial_isr.c to the
+	         desired number of bytes.
+	      2. Edit the line in this fils which contains
+	         the word "EDIT" in the comment so that the value
+		 matches that of BUFFER_SIZE.
+	      3. Recreate the serial_isr.icb file by typing the following:
+	         > as11_ic serial_isr.asm 
+*/
+
+
+/* change this line to match your library path... */
+#include "/usr/local/ic/libs/6811regs.asm"
+
+        ORG MAIN_START
+variable_CURRENT:
+	FDB    00        * ptr to next data to be read by user
+	
+variable_INCOMING:
+        FDB    00        * number of bytes received (circular count)
+
+variable_BASE_ADDR:
+	FDB    00        * base address of buffer (to be set by init routine)
+	
+variable_DATA_FLAG:
+        FDB    00        * flag set when data is available
+
+variable_buffer_ptr:     
+        FDB    00        * pointer to CURRENT buffer
+
+subroutine_initialize_module:
+/* change this line to match your library path... */
+#include "/usr/local/ic/libs/ldxibase.asm"
+
+        ldd     SCIINT,X
+        std     interrupt_code_exit+1
+        ldd     #interrupt_code_start
+        std     SCIINT,X
+        
+	rts
+
+interrupt_code_start:
+        ldad    variable_INCOMING       * store INCOMING into AB
+        cmpb    #00                     * compare B with 0
+        bhi     skip                    * goto "skip" if (B > 0)
+        ldx     variable_BASE_ADDR      * STORE ADDRESS OF ARRY IN X
+        inx                             * SKIP THE FIRST (?)
+        inx                             * TWO BYTES      (?)
+        inx                             * OFFSET TO THE HIGHER BYTE (?)
+        stx     variable_buffer_ptr     * SAVE PTR VALUE 
+        bra     cont
+
+skip:
+        ldx     variable_buffer_ptr     * load buffer pointer into x
+cont:
+        ldad    variable_INCOMING       * load INCOMING into AB
+        incb                            * increment INCOMING
+	cmpb    #32                     * compare B and 32   --EDIT TO CHANGE BUFFER SIZE--
+	beq     reset_count             * if a=32, goto reset_count
+	bra     cont1
+reset_count:
+	ldad    #00                     * set count to zero
+cont1:	
+        stad    variable_INCOMING       * store AB into INCOMING
+        
+        ldab    SCSR                    * load SCSR (SCI status register) into B (why?)
+        ldab    SCDR                    * load SCSR (SCI data register) into B
+
+        stab    ,X                      * store data in array
+        inx                             * increment by two bytes
+        inx                             
+        stx     variable_buffer_ptr     * save the pointer value
+	ldad    #01                     * load 1 into AB
+	stad    variable_DATA_FLAG      * store AB into DATA_FLAG (indicating data is available)
+interrupt_code_exit:
+        jmp     $0000
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+--------------18CC6AC44E2E--
+
+
+
+From aarone@sirius.com  Wed Jul  1 02:44:06 1998
+Received: from aleve.media.mit.edu by hub.media.mit.edu; (5.65v3.2/1.1/06Jun95-8.2MPM)
+	id AA22669; Wed, 1 Jul 1998 02:44:06 -0400
+Received: from mail3.sirius.com (mail3.sirius.com [205.134.253.133])
+	by aleve.media.mit.edu (8.8.7/ML970927) with ESMTP id CAA13214
+	for <handyboard@media.mit.edu>; Wed, 1 Jul 1998 02:01:55 -0400 (EDT)
+Received: from edsinger (ppp-asfm03--126.sirius.net [205.134.240.126])
+	by mail3.sirius.com (8.8.7/Sirius-8.8.7-97.08.12) with ESMTP id XAA26862
+	for <handyboard@media.mit.edu>; Tue, 30 Jun 1998 23:01:54 -0700 (PDT)
+From: "Aaron Edsinger" <aarone@sirius.com>
+To: "handy" <handyboard@media.mit.edu>
+Subject: Serial Interface
+Date: Wed, 1 Jul 1998 02:06:39 +0100
+X-Msmail-Priority: Normal
+X-Priority: 3
+X-Mailer: Microsoft Internet Mail 4.70.1162
+Mime-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+
+Hello,	
+	I've been having some problems using my HandyBoard to talk directly to my
+PC via the serial interface.  I disable Interactive C and then Poke() and
+Peek() as has been described on this list.  I  send short character strings
+from my PC to the HandyBoard under Windows 95.  If I send strings longer
+than 2 characters, it seems that some of the characters get lost. This
+behavior seems to be affected by repositioning or slightly modifying the
+code, suggesting perhaps a timing issue.
+ 
+Why might this be?  Is there any way to check for an error situation?
+
+Thanks for any help,
+		Aaron
+From cmcmanis@freegate.com  Thu Jul 16 03:13:49 1998
+Received: from aleve.media.mit.edu by hub.media.mit.edu; (5.65v3.2/1.1/06Jun95-8.2MPM)
+	id AA23518; Thu, 16 Jul 1998 03:13:49 -0400
+Received: from hq.freegate.com ([208.226.86.1])
+	by aleve.media.mit.edu (8.8.7/ML970927) with SMTP id CAA18991
+	for <handyboard@media.mit.edu>; Thu, 16 Jul 1998 02:17:47 -0400 (EDT)
+Received: (qmail+freegate 6968 invoked by alias); 16 Jul 1998 06:17:38 -0000
+Received: from dialip-04.hq.freegate.com (HELO freegate.com) (208.226.86.222)
+  by hq.freegate.com with SMTP; 16 Jul 1998 06:17:38 -0000
+Date: Wed, 15 Jul 1998 23:21:14 -0700
+From: Chuck McManis <cmcmanis@freegate.com>
+Reply-To: cmcmanis@freegate.com
+Organization: Freegate Corporation
+X-Mailer: Mozilla 4.04 [en] (Win95; I)
+Mime-Version: 1.0
+To: David Rye <rye@mech.eng.usyd.edu.au>
+Cc: handyboard@media.mit.edu
+Subject: Re: Handyboard/RWP without p-code
+References: <3.0.32.19980716151646.00809d20@nemo.mech.eng.usyd.edu.au>
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+
+Get a copy of icc11 v5.0 or later (from www.imagecraft.com) and use the
+handyboard library from their site. 
+
+--Chuck
+
+From Scott.Seaton@Aus.Sun.COM  Thu Jul 16 03:42:38 1998
+Received: from aleve.media.mit.edu by hub.media.mit.edu; (5.65v3.2/1.1/06Jun95-8.2MPM)
+	id AA24945; Thu, 16 Jul 1998 03:42:38 -0400
+Received: from mercury.Sun.COM (mercury.Sun.COM [192.9.25.1])
+	by aleve.media.mit.edu (8.8.7/ML970927) with SMTP id CAA07415
+	for <handyboard@media.mit.edu>; Thu, 16 Jul 1998 02:44:58 -0400 (EDT)
+Received: from Aus.Sun.COM ([129.158.80.6]) by mercury.Sun.COM (SMI-8.6/mail.byaddr) with SMTP id XAA29734; Wed, 15 Jul 1998 23:44:52 -0700
+Received: from war.Aus.Sun.COM by Aus.Sun.COM id QAA03011
+	(SMI-8.6/SMI-4.1 for <>); Thu, 16 Jul 1998 16:44:50 +1000
+Received: from drone by war.Aus.Sun.COM (SMI-8.6/SMI-SVR4)
+	id QAA10921; Thu, 16 Jul 1998 16:44:20 +1000
+Date: Thu, 16 Jul 1998 16:41:56 +1000 (EST)
+From: Scott Seaton - Systems Consultant - ESG <Scott.Seaton@Aus.Sun.COM>
+Reply-To: Scott Seaton - Systems Consultant - ESG <Scott.Seaton@Aus.Sun.COM>
+Subject: Re: Handyboard/RWP without p-code
+To: handyboard@media.mit.edu, rye@mech.eng.usyd.edu.au
+Mime-Version: 1.0
+Content-Type: MULTIPART/mixed; BOUNDARY=Troop_of_Baboons_752_000
+X-Mailer: dtmail 1.2.0 CDE Version 1.2 SunOS 5.6 sun4u sparc 
+
+--Troop_of_Baboons_752_000
+Content-Type: TEXT/plain; charset=us-ascii
+Content-MD5: i/HKSIa/Vk0mZT5ml+q21A==
+
+Hi
+
+I suggest that you contact ImageCraft.
+http://www.imagecraft.com/software/index.html  or  info@imagecraft.com 
+
+They have a C compiler for 68HC11 CPU's that will do what you want, including a
+library for the HandyBoard (see attached e-mail) !
+
+I have no affiliation with ImageCraft (other than as a satisfied customer).
+
+Hope this helps
+Scott
+============================================================================== 
+ ,-_|\       Scott Seaton - Sun Enterprise Services -  Systems Consultant      
+/     \  Sun Microsystems Australia Pty Ltd  E-mail : scott.seaton@aus.sun.com 
+\_,-\_+  828 Pacific Highway                  Phone : +61 2 9844 5381          
+     v   Gordon, N.S.W., 2072, AUSTRALIA        Fax : +61 2 9844 5161          
+============================================================================== 
+
+--Troop_of_Baboons_752_000
+Content-Type: MESSAGE/rfc822; name=Mailbox
+Content-Description: Mailbox
+
+From dakott@alpha.delta.edu  Wed Jul  1 05:33:51 1998
+Received: from aleve.media.mit.edu by hub.media.mit.edu; (5.65v3.2/1.1/06Jun95-8.2MPM)
+	id AA20653; Wed, 1 Jul 1998 05:33:51 -0400
+Received: from alpha.delta.edu (alpha.delta.edu [161.133.129.3])
+	by aleve.media.mit.edu (8.8.7/ML970927) with SMTP id EAA12514
+	for <handyboard@media.mit.edu>; Wed, 1 Jul 1998 04:41:22 -0400 (EDT)
+Received: from pm295-18.dialip.mich.net by alpha.delta.edu; (5.65v3.0/1.1.8.2/06Jan97-0932AM)
+	id AA31111; Wed, 1 Jul 1998 04:44:45 -0400
+Received: from kott.my.domain (dakott@kott.my.domain [192.168.0.1])
+	by kott.my.domain (8.8.8/8.8.5) with SMTP id WAA20239;
+	Tue, 30 Jun 1998 22:34:32 -0400 (EDT)
+Date: Tue, 30 Jun 1998 22:34:31 -0400 (EDT)
+From: David Kott <dakott@alpha.delta.edu>
+Sender: dakott@kott.my.domain
+To: brian-c@technologist.com
+Cc: handyboard@media.mit.edu
+Subject: Re: microcontroller
+In-Reply-To: <199806291430.KAA07909@web01.globecomm.net>
+Mime-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+
+On Mon, 29 Jun 1998 brian-c@technologist.com wrote:
+
+> -I'd like to say thanks to all the folks who replied
+> to my question on the microcontroller speeds.
+> 
+> Here's another general question about them though.
+> Should any unused pins be left open or should they 
+> be grounded?
+> 
+
+Eeeeeeeeeeek!  Outputs left floating, CMOS inputs taken to ground with a
+4.7K resistor... presuming, of course, that a Logic 0 on that input won't
+generate adverse effects, e.g. a grounded active low interrupt line
+might be a problem.  Such inputs should be taken to +5 with a 4.7K
+resistor.
+
+Floating CMOS inputs have a tendency to oscillate with the merest whisper
+of a voltage.
+
+TTL inputs may be left floating.
+
+Driving an output externally will just heat up your CPU.. or worse.
+
+							-d
+
+-- 
+ The box said "Requires Windows 95/NT or better"...
+                                                 So I got Unix.
+
+Free the Source.  Free your Computer... http://www.FreeBSD.org
+                                          http://www.NetBSD.org
+                                            http://www.OpenBSD.org
+
+From rshirk@sfgate.com  Sun Mar 22 01:52:45 1998
+Received: from aleve.media.mit.edu by hub.media.mit.edu; (5.65v3.2/1.1/06Jun95-8.2MPM)
+	id AA06355; Sun, 22 Mar 1998 01:52:45 -0500
+Received: from cyber.sfgate.com (cyber.sfgate.com [198.93.154.11])
+	by aleve.media.mit.edu (8.8.7/ML970927) with SMTP id BAA23676
+	for <handyboard@media.mit.edu>; Sun, 22 Mar 1998 01:08:09 -0500 (EST)
+Received: from localhost by cyber.sfgate.com  with smtp
+	(Smail3.2 #1) id m0yGduz-000Is1C; Sat, 21 Mar 1998 22:07:37 -0800 (PST)
+Date: Sat, 21 Mar 1998 22:07:37 -0800 (PST)
+From: Richard <rshirk@sfgate.com>
+X-Sender: rshirk@cyber
+To: handyboard@media.mit.edu
+Subject: Frob nobs and IR
+Mime-Version: 1.0
+Content-Type: MULTIPART/MIXED; BOUNDARY="-559023410-1804928587-890546857=:21628"
+
+  This message is in MIME format.  The first part should be readable text,
+  while the remaining parts are likely unreadable without MIME-aware tools.
+  Send mail to mime@docserver.cac.washington.edu for more info.
+
+---559023410-1804928587-890546857=:21628
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+
+OK...Im now pretty happy with states of things but I still have a few
+questions I hope you can help me answer. The code attached works and
+everything, but only when i take the bit about playing the songs out. 
+
+problem 1)
+ It
+keeps saying that play is undefined.  I saw that before and fixed it by
+changing the names of the labels of the songs.  I tried it this time and
+it didnt work...i was wondering if anyone out there knows why it does this
+and how to correct it....
+
+problem 2)
+
+I figured out (thanks to you guys) how to work the built in IR sensor to
+detect and act upon 4 signals. One is for behing hostile, 3 is for
+seeking, signal 5 is when it gets annoyed, and 7 it just beeps and ignores
+it. 
+The signal for being Hostile responds quickly and prints H on the screen
+but the others lag and  i was wondering if you knew why this was.
+
+-Richard
+
+---559023410-1804928587-890546857=:21628
+Content-Type: TEXT/PLAIN; charset=US-ASCII; name="xbump2.c"
+Content-Transfer-Encoding: BASE64
+Content-ID: <Pine.SOL.3.96.980321220737.21628D@cyber>
+Content-Description: 
+
+LyogVGhpcyBpcyAoc2xpZ2h0bHkgbW9kaWZpZWQpIGRlZmF1bHQgdG91Y2gg
+bmF2aWdhdGlvbiAqLw0gICAgICAgICBjaGFyIHBuX3NvbmdbXT0gIjEjZCA0
+ZTNyMSNmNGczcjEjZCAzZTEjZjNnMWMzYkQxZTNnMWIgOCZiMmIyYTJnMmUy
+ZDEwZSAgICAgIDdyMSNkIDRlM3IxI2Y0ZzNyMSNkIDNlMSNmM2cxYzNiMWcz
+YjFlIDI4JmUgRDNyMSNkIDRlM3IxI2Y0ZzNyMSNkICAgICAgM2UxI2YzZzFj
+M2JEMWUzZzFiIDgmYjJiMmEyZzJlMmQxMGUgMTJyIFUzZTFkM2IxYTNnMSNm
+ICAgICAgMSZiM2ExJmIzYTEmYjNhMSZiM2EgMmcyZTJkMjBlIjsNDSAgY2hh
+ciBsdHVuZV9zb25nW109ICJVM2UxZDJjMmQyZTJkMmUyYzJkMmQyZDZkMnIg
+M2QxYzJiMmMyZDIjYzJkMmIyYzJjMmM2YyI7DQ0Ndm9pZCBtYWluKCApDXsN
+ICAgLyogdGltaW5nIHBhcmFtZXRlcnMgKG1pbGxpc2Vjb25kcykgKi8NICAg
+bG9uZyByZXZlcnNlX3RpbWUgPSA1MDBMLCB0dXJuX3RpbWUgPSA1MDBMLCB0
+dXJuYXJvdW5kX3RpbWUgPSAxMDAwTDsNICAgIHNvbnlfaW5pdCAoMSk7DSAg
+ICBwcmludGYoIkF1dG9ub21vdXNcbiIpOw0gICAgbXNsZWVwKDUwMEwpOw0g
+ICAgcHJpbnRmKCJSb2JvdGljXG4iKTsNICAgIG1zbGVlcCg1MDBMKTsNICAg
+IHByaW50ZigiTmF2aWdhdGlvblxuIik7DSAgICBtc2xlZXAoNTAwTCk7DSAg
+ICB7DSAgICAgICAgIGlmICgoIGtub2IoICkgKSA9PSAyNTUpDSAgICAgICAg
+IHsNICAgICAgICAgICAgICAgcGxheSAocG5fc29uZyk7DSAgICAgICAgICB9
+DSAgICAgICAgICBlbHNlIGlmICgoIGtub2IoICkgKSA9PSAwKQ0gICAgICAg
+ICAgew0gICAgICAgICAgICAgICAgcGxheSAobHR1bmVfc29uZyk7DSAgICAg
+ICAgICB9DSAgICAgICAgICAgICAgICBlbHNlIGlmICgoIGtub2IoICkgKSA9
+PSAxMTYpDSAgICAgICAgICB7DSAgICAgICAgICAgICAgICBwcmludGYoIkhF
+TExPLCBKVURHRVMhXG4iKTsNICAgICAgICAgICAgICAgIG1zbGVlcCg1MDBM
+KTsNICAgICAgICAgIH0NICAgIH0NDSAgIHByaW50ZiggIlByZXNzIFNUQVJU
+XG4iICk7DSAgIHN0YXJ0X3ByZXNzKCk7ICAgLyogd2FpdCAndGlsIGJ1dHRv
+biBpcyBwcmVzc2VkICovDSAgIGJlZXAoKTsNICAgcHJpbnRmKCAiU3RhbmQg
+YmFjay4uLlxuIiApOw0gICBzbGVlcCggMS4wICk7IA0gICAvKiBpbml0aWF0
+ZSBmb3J3YXJkIG1vdGlvbiAqLw0gICBmZCggMiApOw0gICBmZCggMyApOw0g
+ICB3aGlsZSggMSApICAgLyogZmVlZGJhY2sgbG9vcCAqLw0gICB7DSAgICAg
+IGlmKCAhIGRpZ2l0YWwoIDcgKSApICAgLyogY2hlY2sgbGVmdCBidW1wZXIg
+Ki8NICAgICAgew0gICAgICAgICAvKiByZXZlcnNlICovDSAgICAgICAgIGJl
+ZXAoKTsNICAgICAgICAgYmsoIDIgKTsNICAgICAgICAgYmsoIDMgKTsNICAg
+ICAgICAgbXNsZWVwKCByZXZlcnNlX3RpbWUgKTsNDSAgICAgICAgIC8qIHR1
+cm4gcmlnaHQgKi8NICAgICAgICAgZmQoIDIgKTsNICAgICAgICAgYmsoIDMg
+KTsNICAgICAgICAgbXNsZWVwKCB0dXJuX3RpbWUgKTsNDSAgICAgICAgIC8q
+IHJlc2V0IGZvcndhcmQgbW90aW9uICovDSAgICAgICAgIHByaW50ZiggIjAi
+ICk7DSAgICAgICAgIGZkKCAyICk7DSAgICAgICAgIGZkKCAzICk7DQ0gICAg
+ICB9DQ0gICAgICBlbHNlIGlmKCAhIGRpZ2l0YWwoIDExICkgKSAgIC8qIGNo
+ZWNrIG1pZGRsZSBidW1wZXIgKi8NICAgICAgew0gICAgICAgICAvKiByZXZl
+cnNlICovDSAgICAgICAgIGJlZXAoKTsNICAgICAgICAgYmsoIDIgKTsNICAg
+ICAgICAgYmsoIDMgKTsNICAgICAgICAgbXNsZWVwKCByZXZlcnNlX3RpbWUg
+KTsNDSAgICAgICAgIC8qIHR1cm4gYXJvdW5kICovDSAgICAgICAgIGZkKCAy
+ICk7DSAgICAgICAgIGJrKCAzICk7DSAgICAgICAgIG1zbGVlcCggdHVybmFy
+b3VuZF90aW1lICk7DQ0gICAgICAgICAvKiByZXNldCBmb3J3YXJkIG1vdGlv
+biAqLw0gICAgICAgICBwcmludGYoICIxIiApOw0gICAgICAgICBmZCggMiAp
+Ow0gICAgICAgICBmZCggMyApOw0gICAgICB9DQ0gICAgICBlbHNlIGlmKCAh
+IGRpZ2l0YWwoIDE1ICkgKSAgIC8qIGNoZWNrIHJpZ2h0IGJ1bXBlciAqLw0g
+ICAgICB7DSAgICAgICAgIC8qIHJldmVyc2UgKi8NICAgICAgICAgYmVlcCgp
+Ow0gICAgICAgICBiayggMiApOw0gICAgICAgICBiayggMyApOw0gICAgICAg
+ICBtc2xlZXAoIHJldmVyc2VfdGltZSApOw0NICAgICAgICAgLyogdHVybiBs
+ZWZ0ICovDSAgICAgICAgIGJrKCAyICk7DSAgICAgICAgIGZkKCAzICk7DSAg
+ICAgICAgIG1zbGVlcCggdHVybl90aW1lICk7DQ0gICAgICAgICAvKiByZXNl
+dCBmb3J3YXJkIG1vdGlvbiAqLw0gICAgICAgICBwcmludGYoICIyIiApOw0g
+ICAgICAgICBmZCggMiApOw0gICAgICAgICBmZCggMyApOw0gICAgIH0NICAg
+ICBlbHNlIGlmKGlyX2RhdGEoIDAgKSA9PSAxMjggKSAvKkNoZWNrIElSIHJl
+Y2lldmVyKi8NICAgICAgew0gICAgICAgICAgcHJpbnRmKCJIIik7DSAgICAg
+ICAgIC8qIHR1cm4gcmlnaHQgKi8NICAgICAgICAgZmQoIDIgKTsNICAgICAg
+ICAgYmsoIDMgKTsNICAgICAgICAgbXNsZWVwKCB0dXJuX3RpbWUgKTsNICAg
+ICAgICAgIC8qQXR0YWNrLi4uUm9ib3QgaXMgSG9zdGlsZSAqLw0gICAgICAg
+ICAgYmVlcCgpOyANICAgICAgICAgIGZkKCAyICk7DSAgICAgICAgICBmZCgg
+MyApOw0gICAgICAgICAgYmVlcCgpOw0gICAgIH0NICAgICBlbHNlIGlmKGly
+X2RhdGEoIDAgKSA9PSAxMzAgKSAvKkNoZWNrIElSIHJlY2lldmVyKi8NICAg
+ICAgew0gICAgICAgICAgcHJpbnRmKCJTIik7DSAgICAgICAgIC8qIHR1cm4g
+cmlnaHQgKi8NICAgICAgICAgZmQoIDIgKTsNICAgICAgICAgYmsoIDMgKTsN
+ICAgICAgICAgbXNsZWVwKCB0dXJuX3RpbWUgKTsNICAgICAgICAgIC8qUm9i
+b3QgaXMgaW4gbG92ZSEgRG8gYSBsaWwgZGFuY2UhICovDSAgICAgICAgICBi
+ZWVwKCk7DSAgICAgICAgICBiZWVwKCk7IA0gICAgICAgICAgZmQoIDIgKTsN
+ICAgICAgICAgIGZkKCAzICk7DSAgICAgICAgICBtc2xlZXAoIHR1cm5fdGlt
+ZSApOw0gICAgICAgICAgYmsoIDIgKTsNICAgICAgICAgIGJrKCAzICk7DSAg
+ICAgICAgICBtc2xlZXAoIHJldmVyc2VfdGltZSApOyANICAgICAgICAgIC8q
+R28gZm9yd2FyZCEqLw0gICAgICAgICAgZmQoIDIgKTsNICAgICAgICAgIGZk
+KCAzICk7DSAgICAgICAgICBiZWVwKCk7DSAgICAgICAgICBiZWVwKCk7DSAg
+ICAgfQ0gICAgIGVsc2UgaWYoaXJfZGF0YSggMCApID09IDEzMiApIC8qQ2hl
+Y2sgSVIgcmVjaWV2ZXIqLw0gICAgICB7DSAgICAgICAgICBwcmludGYoIkEi
+KTsNICAgICAgICAvKiByZXZlcnNlICovDSAgICAgICAgIGJlZXAoKTsNICAg
+ICAgICAgYmsoIDIgKTsNICAgICAgICAgYmsoIDMgKTsNICAgICAgICAgbXNs
+ZWVwKCByZXZlcnNlX3RpbWUgKTsNICAgICAgICAgIC8qUm9ib3QgaXMgQW5u
+b3llZCEgVHVybnMgY29tcGxldGVseSBhcm91bmQgaW4gZGlndXN0Ki8gICAg
+ICAgDSAgICAgICAgIGJlZXAoKTsNICAgICAgICAgYmVlcCgpOyANICAgICAg
+ICAgYmVlcCgpOw0gICAgICAgICBmZCggMiApOw0gICAgICAgICBiayggMyAp
+Ow0gICAgICAgICBtc2xlZXAoIHR1cm5hcm91bmRfdGltZSApOw0gICAgICAg
+ICAgZmQoIDIgKTsNICAgICAgICAgIGZkKCAzICk7DSAgICAgICAgICBiZWVw
+KCk7DSAgICAgICAgICBiZWVwKCk7IA0gICAgICAgICAgYmVlcCgpOw0NICAg
+ICB9DSAgICAgZWxzZSBpZihpcl9kYXRhKCAwICkgPT0gMTM0ICkgLypDaGVj
+ayBJUiByZWNpZXZlciovDSAgICAgIHsNICAgICAgICAgIHByaW50ZigiSSIp
+Ow0gICAgICAgICAgLypSb2JvdCBkb2Vzbid0IGNhcmUgKi8NICAgICAgICAg
+IGJlZXAoKTsgDSAgICAgICAgICBiZWVwKCk7DSAgICAgICAgICBiZWVwKCk7
+IA0gICAgICAgICAgYmVlcCgpOw0gICAgICAgICAgZmQoIDIgKTsNICAgICAg
+ICAgIGZkKCAzICk7DSAgICAgICAgICBiZWVwKCk7DSAgICAgICAgICBiZWVw
+KCk7DSAgICAgICAgICBiZWVwKCk7IA0gICAgICAgICAgYmVlcCgpOw0gDSAg
+ICB9DQ0gICB9DX0N
+---559023410-1804928587-890546857=:21628--
+
+From wallace@theory.phys.vt.edu  Mon Jul 27 18:34:05 1998
+Received: from aleve.media.mit.edu by hub.media.mit.edu; (5.65v3.2/1.1/06Jun95-8.2MPM)
+	id AA00723; Mon, 27 Jul 1998 18:34:05 -0400
+Received: from theory.phys.vt.edu (theory.phys.vt.edu [128.173.176.33])
+	by aleve.media.mit.edu (8.8.7/ML970927) with ESMTP id RAA19984
+	for <handyboard@media.mit.edu>; Mon, 27 Jul 1998 17:22:26 -0400 (EDT)
+Received: from localhost (wallace@localhost)
+	by theory.phys.vt.edu (8.8.5/8.8.5) with SMTP id RAA00312
+	for <handyboard@media.mit.edu>; Mon, 27 Jul 1998 17:22:24 -0400 (EDT)
+Date: Mon, 27 Jul 1998 17:22:24 -0400 (EDT)
+From: Mark Wallace <wallace@theory.phys.vt.edu>
+To: handyboard@media.mit.edu
+Subject: sonar.c for the handyboard
+Mime-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+
+Hello,
+	I have a handyboard and 6500 series poloroid ultrasonic ranging
+system.  I have downloaded the sonar.c programs used to drive the
+transducer for distance measurements.  There appears to be a problem, or
+atleast I think there is, with it.  The sonar device is supposed to give
+distances of up to 35ft but the TCNC time register is 16 bit and in the
+program it says "if ((peekwork(0x100e)-start_time) < 0)" too much time has
+elapsed and it returns -1.  Therefore as soon as about 32700 counts goes
+by, that value will go negative. I believe hex goes from 0 to 32768 then
+-32768 to -1. In this case the difference will be < 0 if the object
+is greater then about 9 ft.  I have taken this out of the program and can
+get accurate measurements up to atleast 30 ft but I have to look at the
+value given and add multiples of 2^16 to it to figure out where it is.
+Taking this out of the program also can get you stuck if you really are
+out of range.
+	I have looked on the motorola web pages to see about this clock
+and it says that the clock goes till it reachs $ffff and then flags
+somewhere that there is an overflow and then starts over.  I don't know
+how to find out were in the chip this information might be stored.  I know
+the TCNT time register is at 0x100e from the notes on Simplified Sonar for
+the Handy Board but I don't know where that overflow flag is stored.  I
+thought that maybe by setting this flag and using it in the loop you might
+be about to get a greater distance out of you measurement.
+	Another question I have is about IC.  I would like to display
+numbers greater then 32000 and right now there are several int type
+variables and normal C comands don't seem to work to make a "long" or any
+other type that are larger then 32000.  How does IC handle larger numbers?
+	I am only a student and don't have much experience with this stuff
+so I would appreciate any feedback I can get on either of these problems.
+Thanks.
+
+Mark Wallace
+
+ e-mail  mawalla3@vt.edu
+         wallace@astro.phys.vt.edu
+Web page http://sps1.phys.vt.edu/~mwallace/index.html
+
+"What a waste it would be after 4 billion tortuous years of evolution if
+the dominant organism contrived its own self-destruction"
+                                        Carl Sagan
+
+
+From mwallace@sps1.phys.vt.edu  Mon Aug  3 12:05:51 1998
+Received: from aleve.media.mit.edu by hub.media.mit.edu; (5.65v3.2/1.1/06Jun95-8.2MPM)
+	id AA15988; Mon, 3 Aug 1998 12:05:51 -0400
+Received: from sps1.phys.vt.edu (sps1.phys.vt.edu [128.173.176.53])
+	by aleve.media.mit.edu (8.8.7/ML970927) with ESMTP id LAA12381
+	for <handyboard@media.mit.edu>; Mon, 3 Aug 1998 11:16:53 -0400 (EDT)
+Received: from localhost (mwallace@localhost)
+	by sps1.phys.vt.edu (8.8.7/8.8.7) with SMTP id LAA20283;
+	Mon, 3 Aug 1998 11:16:50 -0400
+Date: Mon, 3 Aug 1998 11:16:50 -0400 (EDT)
+From: Mark Wallace <mwallace@sps1.phys.vt.edu>
+To: alf.kuchenbuch@usa.net
+Cc: handyboard@media.mit.edu
+Subject: Re: Polaroid trouble again
+In-Reply-To: <35C5C521.446B@eikon.e-technik.tu-muenchen.de>
+Mime-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+
+	I had this same problem when I got mine a few weeks ago.  I ended up
+putting a capacitor from pin 1 to pin 3 on U2 of the sonar driver board.
+I also had to take out the 1k resistor from the BINH.  It kept
+BINH at 1 V instead of Zero and that seamed to cause problems.
+	As for the 6 ft problem,  it should be closer to 9 ft.  I think
+the problem there is the IC code you used.  If you used the code for
+SONAR.C from the HB web site then there is a problem with it.  What that
+program does is take the difference in time from the internal clock.  the
+problem is that in the code it says that if the difference between start
+time and currnet time is negative too much time has elapsed.  Well,  this
+has a 16 bit counter so when the difference is greater the about 32,700 it
+becomes negative.  If you do the math, that means at about 9 ft that
+happens so it tell you you are out of range.  
+	The way I fixed this was to slow the clock down.
+	
+I looked up information on the motorola web page and found where the
+prescalers were for the clock. 
+	If you want to slow it down by a factor of four you can just add
+this line to you program in sonar_init()
+
+	bit_set(0x1024, 1);
+
+I believe bit_set(0x1024, 2); will slow it down by a factor of 8 and
+bit_set(0x1024, 3); will slow it down by a factor of 16.  
+	There are better ways of fixing this problem but they appear much
+more complicated.  For example the motorola chip has an overflow flag that
+says when the internal clock flips.  You could incorporate that into your
+code instead of slowing the clock down.  Good luck and I hope this helps.
+
+Mark Wallace
+
+ e-mail  mawalla3@vt.edu
+         mwallace@sps1.phys.vt.edu
+Web page http://sps1.phys.vt.edu/~mwallace/index.html
+
+"What a waste it would be after 4 billion tortuous years of evolution if
+the dominant organism contrived its own self-destruction"
+                                        Carl Sagan
+
+On Mon, 3 Aug 1998, Alf Kuchenbuch wrote:
+
+> Hi!
+> I am having trouble with my Polaroid sonar: 
+> When I keep my HB hooked up
+> to external power, I will only get correct readings up to 20 inches. As
+> soon as I use battery power without hooking it up to external power, the
+> readings are correct up to 6 feet, not more! This sound like EMI, I
+> guess. I tried all the capacitor tricks from HB mailing list, but in
+> vain. Do you know a fix that works? 
+>  
+> Alf H. Kuchenbuch
+> 
+
+
+From mawalla3@vt.edu  Wed Aug 12 13:10:06 1998
+Received: from aleve.media.mit.edu by hub.media.mit.edu; (5.65v3.2/1.1/06Jun95-8.2MPM)
+	id AA07529; Wed, 12 Aug 1998 13:10:06 -0400
+Received: from quackerjack.cc.vt.edu (root@quackerjack.cc.vt.edu [198.82.160.250])
+	by aleve.media.mit.edu (8.8.7/ML970927) with ESMTP id MAA05729
+	for <Handyboard@media.mit.edu>; Wed, 12 Aug 1998 12:13:53 -0400 (EDT)
+Received: from sable.cc.vt.edu (sable.cc.vt.edu [128.173.16.30])
+	by quackerjack.cc.vt.edu (8.8.8/8.8.8) with ESMTP id MAA20678
+	for <Handyboard@media.mit.edu>; Wed, 12 Aug 1998 12:20:09 -0400 (EDT)
+Received: from research10.phys.vt.edu (dhcp9.phys.vt.edu [128.173.176.166])
+	by sable.cc.vt.edu (8.8.8/8.8.8) with SMTP id MAA05159
+	for <Handyboard@media.mit.edu>; Wed, 12 Aug 1998 12:13:51 -0400 (EDT)
+X-Sender: mawalla3@mail.vt.edu (Unverified)
+X-Mailer: QUALCOMM Windows Eudora Light Version 3.0.5 (32)
+Date: Wed, 12 Aug 1998 12:13:45 -0400
+To: Handyboard@media.mit.edu
+From: Mark Wallace <mawalla3@vt.edu>
+Subject: serial library for C++ 
+Mime-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+
+Hello,
+	I have a handy board with poloroid transducers and I am trying use the
+results of my distance measurments in a C++ program on the computer.  I
+have found programs on the handyboard web page that should alow the
+handyboard to transmit information over the serial line.  What I am looking
+for is if anyone knows were I could find a serial for Microsofts
+Visual C++ 5.0.  I would like to find one that is free or sharware but any
+information on any serial that will work would be appreciated.
+Thanks.
+Mark Wallace
+
+ e-mail  mawalla3@vt.edu
+	 mwallace@sps1.phys.vt.edu
+web page http://sps1.phys.vt.ede/~mwallace
+
+"What a waist it would be after 4 billion tortuous years of evolution if
+the dominant organism contrived its own self-distruction"
+			Carl Sagan
+
+
+From aarone@sirius.com  Wed Sep 30 12:35:05 1998
+Received: from aleve.media.mit.edu by hub.media.mit.edu; (5.65v4.0/1.1/06Jun95-8.2MPM)
+	id AA09172; Wed, 30 Sep 1998 12:35:05 -0400
+Received: from mail3.sirius.com (mail3.sirius.com [205.134.253.133])
+	by aleve.media.mit.edu (8.8.7/ML970927) with ESMTP id KAA02849
+	for <handyboard@media.mit.edu>; Wed, 30 Sep 1998 10:46:53 -0400 (EDT)
+Received: from aarone (ppp-asfm03--129.sirius.net [205.134.240.129])
+	by mail3.sirius.com (8.8.7/Sirius-8.8.7-97.08.12) with SMTP id HAA08635;
+	Wed, 30 Sep 1998 07:46:49 -0700 (PDT)
+From: "Aaron Edsinger" <aarone@sirius.com>
+To: "Keith - Lui" <luikeith@egr.msu.edu>
+Cc: "handy" <handyboard@media.mit.edu>
+Subject: Re: output to file
+Date: Wed, 30 Sep 1998 10:47:58 -0700
+Mime-Version: 1.0
+Content-Type: text/plain;
+	charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+X-Priority: 3
+X-Msmail-Priority: Normal
+X-Mailer: Microsoft Outlook Express 4.72.2106.4
+X-Mimeole: Produced By Microsoft MimeOLE V4.72.2106.4
+
+Yes,
+        Write a dos/windows client that reads the serial line and then
+writes it to file using the C stdio library.
+
+
+-----Original Message-----
+From: Keith - Lui <luikeith@egr.msu.edu>
+To: handyboard@media.mit.edu <handyboard@media.mit.edu>
+Date: Wednesday, September 30, 1998 6:55 AM
+Subject: output to file
+
+
+>Dear all,
+>
+>I would like to output some HB data to a file, is that possible?
+>
+>Keith
+>
+
+
+
+From aarone@sirius.com  Wed Aug 12 13:42:19 1998
+Received: from aleve.media.mit.edu by hub.media.mit.edu; (5.65v3.2/1.1/06Jun95-8.2MPM)
+	id AA13439; Wed, 12 Aug 1998 13:42:19 -0400
+Received: from mail3.sirius.com (mail3.sirius.com [205.134.253.133])
+	by aleve.media.mit.edu (8.8.7/ML970927) with ESMTP id MAA10630
+	for <handyboard@media.mit.edu>; Wed, 12 Aug 1998 12:48:27 -0400 (EDT)
+Received: from aarone (ppp-asfm05--041.sirius.net [205.134.241.41])
+	by mail3.sirius.com (8.8.7/Sirius-8.8.7-97.08.12) with SMTP id JAA20821;
+	Wed, 12 Aug 1998 09:48:24 -0700 (PDT)
+From: "Aaron Edsinger" <aarone@sirius.com>
+To: "Mark Wallace" <mawalla3@vt.edu>
+Cc: "handy" <handyboard@media.mit.edu>
+Subject: Re: serial library for C++ 
+Date: Wed, 12 Aug 1998 12:53:41 -0700
+Mime-Version: 1.0
+Content-Type: text/plain;
+	charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+X-Priority: 3
+X-Msmail-Priority: Normal
+X-Mailer: Microsoft Outlook Express 4.72.2106.4
+X-Mimeole: Produced By Microsoft MimeOLE V4.72.2106.4
+
+
+  Check out this site.  It works well.  The only problem I had was timing
+issues when trying to read and write to the port too quickly.
+
+http://www.codeguru.com/show.cgi?general=/misc/misc_toc.shtml
+
+
+-----Original Message-----
+From: Mark Wallace <mawalla3@vt.edu>
+To: Handyboard@media.mit.edu <Handyboard@media.mit.edu>
+Date: Wednesday, August 12, 1998 9:25 AM
+Subject: serial library for C++
+
+
+>Hello,
+> I have a handy board with poloroid transducers and I am trying use the
+>results of my distance measurments in a C++ program on the computer.  I
+>have found programs on the handyboard web page that should alow the
+>handyboard to transmit information over the serial line.  What I am looking
+>for is if anyone knows were I could find a serial library for Microsofts
+>Visual C++ 5.0.  I would like to find one that is free or sharware but any
+>information on any serial librarys that will work would be appreciated.
+>Thanks.
+>Mark Wallace
+>
+> e-mail  mawalla3@vt.edu
+> mwallace@sps1.phys.vt.edu
+>web page http://sps1.phys.vt.ede/~mwallace
+>
+>"What a waist it would be after 4 billion tortuous years of evolution if
+>the dominant organism contrived its own self-distruction"
+> Carl Sagan
+>
+
+From Scott.Seaton@Aus.Sun.COM  Thu Jul 16 03:42:38 1998
+Received: from aleve.media.mit.edu by hub.media.mit.edu; (5.65v3.2/1.1/06Jun95-8.2MPM)
+	id AA24945; Thu, 16 Jul 1998 03:42:38 -0400
+Received: from mercury.Sun.COM (mercury.Sun.COM [192.9.25.1])
+	by aleve.media.mit.edu (8.8.7/ML970927) with SMTP id CAA07415
+	for <handyboard@media.mit.edu>; Thu, 16 Jul 1998 02:44:58 -0400 (EDT)
+Received: from Aus.Sun.COM ([129.158.80.6]) by mercury.Sun.COM (SMI-8.6/mail.byaddr) with SMTP id XAA29734; Wed, 15 Jul 1998 23:44:52 -0700
+Received: from war.Aus.Sun.COM by Aus.Sun.COM id QAA03011
+	(SMI-8.6/SMI-4.1 for <>); Thu, 16 Jul 1998 16:44:50 +1000
+Received: from drone by war.Aus.Sun.COM (SMI-8.6/SMI-SVR4)
+	id QAA10921; Thu, 16 Jul 1998 16:44:20 +1000
+Date: Thu, 16 Jul 1998 16:41:56 +1000 (EST)
+From: Scott Seaton - Systems Consultant - ESG <Scott.Seaton@Aus.Sun.COM>
+Reply-To: Scott Seaton - Systems Consultant - ESG <Scott.Seaton@Aus.Sun.COM>
+Subject: Re: Handyboard/RWP without p-code
+To: handyboard@media.mit.edu, rye@mech.eng.usyd.edu.au
+Mime-Version: 1.0
+Content-Type: MULTIPART/mixed; BOUNDARY=Troop_of_Baboons_752_000
+X-Mailer: dtmail 1.2.0 CDE Version 1.2 SunOS 5.6 sun4u sparc 
+
+--Troop_of_Baboons_752_000
+Content-Type: TEXT/plain; charset=us-ascii
+Content-MD5: i/HKSIa/Vk0mZT5ml+q21A==
+
+Hi
+
+I suggest that you contact ImageCraft.
+http://www.imagecraft.com/software/index.html  or  info@imagecraft.com 
+
+They have a C compiler for 68HC11 CPU's that will do what you want, including a
+library for the HandyBoard (see attached e-mail) !
+
+I have no affiliation with ImageCraft (other than as a satisfied customer).
+
+Hope this helps
+Scott
+============================================================================== 
+ ,-_|\       Scott Seaton - Sun Enterprise Services -  Systems Consultant      
+/     \  Sun Microsystems Australia Pty Ltd  E-mail : scott.seaton@aus.sun.com 
+\_,-\_+  828 Pacific Highway                  Phone : +61 2 9844 5381          
+     v   Gordon, N.S.W., 2072, AUSTRALIA        Fax : +61 2 9844 5161          
+============================================================================== 
+
+--Troop_of_Baboons_752_000
+Content-Type: MESSAGE/rfc822; name=Mailbox
+Content-Description: Mailbox
+
+From someone@imagecraft.com  Fri Jul 10 18:59:26 1998
+Return-Path: <icc11-list-errors@lists.best.com>
+Received: from Aus.Sun.COM by war.Aus.Sun.COM (SMI-8.6/SMI-SVR4)
+	id SAA14426; Fri, 10 Jul 1998 18:59:26 +1000
+Received: from earth.sun.com by Aus.Sun.COM id SAA24238
+	(SMI-8.6/SMI-4.1 for <<scott.seaton@aus.sun.com>>); Fri, 10 Jul 1998 18:59:48 +1000
+Received: from iisesun.iise.CSIRO.AU (iisesun.iise.csiro.au [130.155.5.44])
+	by earth.sun.com (8.8.8/8.8.8) with SMTP id BAA18609
+	for <scott.seaton@aus.sun.com>; Fri, 10 Jul 1998 01:59:44 -0700 (PDT)
+Received: from lists1.best.com (lists1.best.com [206.86.8.15]) by iisesun.iise.CSIRO.AU (SMI-8.6/8.6.12-IISE-SWA) with ESMTP id SAA25847 for <sseaton@iise.csiro.au>; Fri, 10 Jul 1998 18:49:31 +1000
+Received: (from daemon@localhost) by lists1.best.com (8.9.0/8.8.BEST) id BAA15320 for icc11-list-errors@lists.best.com; Fri, 10 Jul 1998 01:04:34 -0700 (PDT)
+From: Christina Willrich & Richard Man <someone@imagecraft.com>
+Subject: icc11 Handyboard library available
+Date: Fri, 10 Jul 1998 00:58:49 -0700
+BestServHost: lists.best.com
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Sender: icc11-list-errors@lists.best.com
+Errors-To: icc11-list-errors@lists.best.com
+Reply-To: icc11-list@lists.best.com
+To: icc11-list@lists.best.com
+content-length: 399
+Status: RO
+X-Status: $$$$
+X-UID: 0000000001
+
+At long last, I dusted off Chuck McManis Handyboard library and ported it
+to V5. No reason why it can't work with V4.5 either ;-) Anyway, to try it
+out, point your browser to
+
+ftp://ftp.imagecraft.com/pub/libhb.zip
+
+Chuck really did a great job with the LCD. There are commands to scroll,
+move etc. Make sure you try the lcdtest2.c test.
+
+// richard
+someone@imagecraft.com http://www.imagecraft.com
+
+
+--Troop_of_Baboons_752_000--
+
+From brian-c@technologist.com  Mon Jul  6 11:54:19 1998
+Received: from aleve.media.mit.edu by hub.media.mit.edu; (5.65v3.2/1.1/06Jun95-8.2MPM)
+	id AA03667; Mon,  6 Jul 1998 11:54:19 -0400
+Received: from web04.globecomm.net (web04.globecomm.net [207.51.48.104])
+	by aleve.media.mit.edu (8.8.7/ML970927) with ESMTP id TAA30534
+	for <handyboard@media.mit.edu>; Mon, 6 Jul 1998 19:24:28 -0400 (EDT)
+From: brian-c@technologist.com
+Received: (from root@localhost) by web04.globecomm.net (8.8.8/8.8.0) id TAA03097; Mon, 6 Jul 1998 11:24:27 -0400 (EDT)
+Date: Mon, 6 Jul 1998 11:24:27 -0400 (EDT)
+Content-Type: multipart/mixed; boundary="0-0-0-0-0-0-0-0-____====$%&" 
+Mime-Version: 1.0
+To: Terri A Mortvedt <terrim@iastate.edu>, handyboard@media.mit.edu
+Subject: Re: Steppers
+
+--0-0-0-0-0-0-0-0-____====$%&
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
+X-MIME-Autoconverted: from 8bit to quoted-printable by aleve.media.mit.edu id TAA30534
+
+Dear Terri,
+
+If the motors turn sparatically, that means the coils
+are probably not hooked up in the correct order. Try
+swapping them around and see if anything improves.
+
+The motors you are using are the bipolar type. There=20
+is a decent way of hooking up unipolar steppers to
+the HB at http://www.cctc.demon.co.uk/stepper.htm
+A basic difference between bipolar and unipolar is
+that unipolar motors have additional wires are=20
+connected to the power supply. Bipolars also have more
+torque.
+
+Using fd(); and bk(); commands to power steppers is
+probably a lot to handle. I recommend trying the=20
+method found on that link. There's even sample coding.
+You will have to modify some variables for the turn
+functions because your turning radius varies according
+to your distance between motors.
+
+I modified the step(); function to produce a gradual=20
+increase in speed, and a gradual decrease in speed once
+the specified steps are almost complete.=20
+
+I will attach my motors.c file as is.
+
+
+
+_________________________________________________
+=AF=AF=AF=AF=AF=AF=AF=AF=AF=AF=AF=AF=AF=AF=AF=AF=AF=AF=AF=AF=AF=AF=AF=AF=AF=
+=AF=AF=AF=AF=AF=AF=AF=AF=AF=AF=AF=AF=AF=AF=AF=AF=AF=AF=AF=AF=AF=AF=AF=AF
+Brian Carvalho              [ brian-c@ieee.org ]
+DeVRY Institute
+New Jersey
+_________________________________________________
+=AF=AF=AF=AF=AF=AF=AF=AF=AF=AF=AF=AF=AF=AF=AF=AF=AF=AF=AF=AF=AF=AF=AF=AF=AF=
+=AF=AF=AF=AF=AF=AF=AF=AF=AF=AF=AF=AF=AF=AF=AF=AF=AF=AF=AF=AF=AF=AF=AF=AF
+---------------------------------------------------
+Get free personalized email at http://www.iname.com
+
+--0-0-0-0-0-0-0-0-____====$%&
+Content-Type: application/octet-stream
+Content-disposition: inline; filename=Motors.c 
+Content-Transfer-Encoding: base64
+
+
+
+LyogTW90b3JzLmMgKi8NCg0KLyoqKiBERUNMQVJBVElPTlMgKioqLw0KDQppbnQgRk9SV0FSRFMg
+PSAwOyAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAvKiB2YXJpYWJsZXMgZm9yIGRpcmVj
+dGlvbiAqLw0KaW50IEJBQ0tXQVJEUyA9IDE7DQogDQppbnQgSEFMRlRVUk4gPSA3MDsgICAgICAg
+ICAgICAgICAgICAgICAgICAgICAgIC8qIHZhcmlhYmxlcyBmb3IgdHVybmluZyAqLw0KaW50IFFV
+QVJURVJUVVJOID0gSEFMRlRVUk4gLyAyOw0KIA0KaW50IFJJR0hUID0gMjsgICAgICAgICAgICAg
+ICAgICAgICAgICAgICAgICAgICAgLyogdmFsdWVzIGZvciB0dXJucyAqLw0KaW50IExFRlQgPSA4
+Ow0KDQppbnQgcmlnaHRfbW90b3JfcG9pbnRlciA9IDA7ICAgICAgICAgICAgICAgICAgICAvKiBt
+b3RvciBjb250cm9sIHZhbHVlcyAqLw0KaW50IGxlZnRfbW90b3JfcG9pbnRlciA9IDA7DQogDQog
+DQppbnQgY3ljbGVfbGVuZ3RoID0gNDsgICAgICAgICAgICAgICAgICAgICAgICAgICAvKiBoYWxm
+IHN0ZXBwaW5nIHZhbHVlcyAqLw0KaW50IGxlZnRfc3RlcF90YWJsZVs0XSA9IHs0OCw0OSw1MSw1
+MH07DQppbnQgcmlnaHRfc3RlcF90YWJsZVs0XSA9IHsxOTIsMTk2LDIwNCwyMDB9Ow0KDQpsb25n
+IFNMT1cgPSAyNUw7ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgLyogbWlsbGlzZWNv
+bmQgcGF1c2VzICovDQpsb25nIEZBU1QgPSA4TDsNCg0KLyoqKiBGVU5DVElPTlMgKioqLw0KDQoN
+CnZvaWQgc2V0ZmFzdChsb25nIEYpDQp7DQoJCQlGQVNUID0gRjsNCn0NCg0Kdm9pZCBzZXRzbG93
+KGxvbmcgUykNCnsNCgkJCVNMT1cgPSBTOw0KfQ0KDQoNCnZvaWQgc3RlcHBlcnNfb3V0KHZvaWQp
+DQp7DQoJCQlpbnQgY29udHJvbF9ieXRlID0gMDsNCgkJCWNvbnRyb2xfYnl0ZSArPSBsZWZ0X3N0
+ZXBfdGFibGVbbGVmdF9tb3Rvcl9wb2ludGVyXTsNCgkJCWNvbnRyb2xfYnl0ZSArPSByaWdodF9z
+dGVwX3RhYmxlW3JpZ2h0X21vdG9yX3BvaW50ZXJdOw0KCQkJcG9rZSgweDBlLGNvbnRyb2xfYnl0
+ZSk7DQp9DQoNCnZvaWQgcmlnaHRfc3RlcChpbnQgZGlyZWN0aW9uKSAgICAgICAgICAgICAgICAg
+IC8qIHJpZ2h0IG1vdG9yIGNvbnRyb2wgKi8NCnsNCgkJCWlmIChkaXJlY3Rpb24gPT0gRk9SV0FS
+RFMpDQoJCQkJCSAgcmlnaHRfbW90b3JfcG9pbnRlciArPTE7DQoJCQllbHNlDQoJCQkJCSAgcmln
+aHRfbW90b3JfcG9pbnRlciArPSAoY3ljbGVfbGVuZ3RoIC0gMSk7DQoNCgkJCXJpZ2h0X21vdG9y
+X3BvaW50ZXIgJj0gKGN5Y2xlX2xlbmd0aCAtIDEpOw0KDQp9DQoNCnZvaWQgbGVmdF9zdGVwKGlu
+dCBkaXJlY3Rpb24pICAgICAgICAgICAgICAgICAgIC8qIGxlZnQgbW90b3IgY29udHJvbCovDQp7
+DQoJCQlpZiAoZGlyZWN0aW9uID09IEZPUldBUkRTKQ0KCQkJCQkgIGxlZnRfbW90b3JfcG9pbnRl
+ciArPSAxOw0KCQkJZWxzZQ0KCQkJCQkgIGxlZnRfbW90b3JfcG9pbnRlciArPSAoY3ljbGVfbGVu
+Z3RoIC0gMSk7DQoNCgkJCWxlZnRfbW90b3JfcG9pbnRlciAmPSAoY3ljbGVfbGVuZ3RoIC0gMSk7
+DQoNCn0NCg0Kdm9pZCBhYm91dF9mYWNlKGludCBkaXIpICAgICAgICAgICAgICAgIC8qIDE4MCBk
+ZWdyZWUgdHVybiBvbiBhIGRpbWUgKi8NCnsNCglpbnQgaTsNCg0KCWlmIChkaXIgPT0gUklHSFQp
+DQoJCWZvciAoaT0wO2k8PUhBTEZUVVJOO2krKykNCgkJew0KCQkJbGVmdF9zdGVwKEZPUldBUkRT
+KTsNCgkJCXJpZ2h0X3N0ZXAoQkFDS1dBUkRTKTsNCgkJCXN0ZXBwZXJzX291dCgpOw0KCQkJbXNs
+ZWVwKFNMT1cpOw0KCQkJYW8oKTsNCgkJIH0NCg0KCSBlbHNlDQoJCSBmb3IgKGk9MDtpPD1IQUxG
+VFVSTjtpKyspDQoJCSB7DQoJCQlsZWZ0X3N0ZXAoQkFDS1dBUkRTKTsNCgkJCXJpZ2h0X3N0ZXAo
+Rk9SV0FSRFMpOw0KCQkJc3RlcHBlcnNfb3V0KCk7DQoJCQltc2xlZXAoU0xPVyk7DQoJCQlhbygp
+Ow0KCQkgIH0NCn0NCg0Kdm9pZCByaWdodF90dXJuKCkgICAgICAgICAgICAgICAgICAgICAgIC8q
+IDkwIGRlZ3JlZSByaWdodCB0dXJuIG9uIGEgZGltZSAqLw0Kew0KCQkJaW50IGk7DQoNCgkJCWZv
+ciAoaT0wO2k8PVFVQVJURVJUVVJOO2krKykNCgkJCXsNCgkJCQkJICBsZWZ0X3N0ZXAoRk9SV0FS
+RFMpOw0KCQkJCQkgIHJpZ2h0X3N0ZXAoQkFDS1dBUkRTKTsNCgkJCQkJICBzdGVwcGVyc19vdXQo
+KTsNCgkJCQkJICBtc2xlZXAoU0xPVyk7DQoJCQkJCSAgYW8oKTsNCgkJCX0NCg0KfQ0KDQp2b2lk
+IGxlZnRfdHVybigpICAgICAgICAgICAgICAgICAgICAgICAgLyogOTAgZGVncmVlIGxlZnQgdHVy
+biBvbiBhIGRpbWUgKi8NCnsNCgkJCWludCBpOw0KDQoJCQlmb3IgKGk9MDtpPD1RVUFSVEVSVFVS
+TjtpKyspDQoJCQl7DQoJCQkJCSAgbGVmdF9zdGVwKEJBQ0tXQVJEUyk7DQoJCQkJCSAgcmlnaHRf
+c3RlcChGT1JXQVJEUyk7DQoJCQkJCSAgc3RlcHBlcnNfb3V0KCk7DQoJCQkJCSAgbXNsZWVwKFNM
+T1cpOw0KCQkJCQkgIGFvKCk7DQoJCQl9DQp9DQoNCnZvaWQgcmlnaHRfd2hlZWwoKSAgICAgICAg
+ICAgICAgICAgICAgICAvKiBncmFkdWFsIHJpZ2h0IHR1cm4gKi8NCnsNCgkJCWludCBpOw0KDQoJ
+CQlmb3IgKGk9MDtpPD1IQUxGVFVSTjtpKyspDQoJCQl7DQoJCQkJCSAgbGVmdF9zdGVwKEZPUldB
+UkRTKTsNCgkJCQkJICBzdGVwcGVyc19vdXQoKTsNCgkJCQkJICBtc2xlZXAoU0xPVyk7DQoJCQl9
+DQp9DQoNCnZvaWQgbGVmdF93aGVlbCgpICAgICAgICAgICAgICAgICAgICAgICAvKiBncmFkdWFs
+IGxlZnQgdHVybiAqLw0Kew0KCQkJaW50IGk7DQoNCgkJCWZvciAoaT0wO2k8PUhBTEZUVVJOO2kr
+KykNCgkJCXsNCgkJCQkJICByaWdodF9zdGVwKEZPUldBUkRTKTsNCgkJCQkJICBzdGVwcGVyc19v
+dXQoKTsNCgkJCQkJICBtc2xlZXAoU0xPVyk7DQoJCQl9DQp9DQoNCg0Kdm9pZCBzdGVwIChpbnQg
+ZGlyLCBpbnQgbnVtc3RlcHMsIGludCBkZWxheSkNCnsNCiAgICAgICAgaW50IHN0ZXAsc3RwOw0K
+ICAgICAgICBpbnQgYmVnaW49bnVtc3RlcHMvMTA7DQoJaW50IGNvbnRpbnVlOw0KICAgICAgICBs
+b25nIGdyYWQ9KGxvbmcpYmVnaW47DQoNCglzeXN0ZW1fcHdtX29mZigpOw0KDQoJZm9yIChzdGVw
+PTA7c3RlcDxiZWdpbjtzdGVwKyspDQoJew0KCQltc2xlZXAoZ3JhZCk7DQoJCWxlZnRfc3RlcChk
+aXIpOw0KCQlyaWdodF9zdGVwKGRpcik7DQoJCXN0ZXBwZXJzX291dCgpOw0KCQljb250aW51ZT1z
+dGVwOw0KICAgICAgICAgICAgICAgIGdyYWQ9Z3JhZC0xTDsNCg0KCX0NCiAgICAgICAgd2hpbGUo
+Y29udGludWU8YmVnaW4qOSkNCgl7DQoJCW1zbGVlcCgobG9uZylkZWxheSk7DQoJCWxlZnRfc3Rl
+cChkaXIpOw0KCQlyaWdodF9zdGVwKGRpcik7DQoJCXN0ZXBwZXJzX291dCgpOw0KCQljb250aW51
+ZSsrOw0KICAgICAgICAgICAgICAgIHN0cD1jb250aW51ZTsNCgkgfQ0KDQogICAgICAgICB3aGls
+ZShzdHA8bnVtc3RlcHMpDQogICAgICAgICB7DQogICAgICAgICAgICAgIGRlbGF5PWRlbGF5KzE7
+DQogICAgICAgICAgICAgIG1zbGVlcCgobG9uZylkZWxheSk7DQogICAgICAgICAgICAgIGxlZnRf
+c3RlcChkaXIpOw0KICAgICAgICAgICAgICByaWdodF9zdGVwKGRpcik7DQogICAgICAgICAgICAg
+IHN0ZXBwZXJzX291dCgpOw0KICAgICAgICAgICAgICBzdHArKzsNCiAgICAgICAgIH0NCglhbygp
+Ow0KDQp9ICAgICAgICAgICAgICAgICAgICAgICAgICAgICANCg0K
+
+
+--0-0-0-0-0-0-0-0-____====$%&--

@@ -1,0 +1,102 @@
+anonymize_mailbox                     A tool to anonymize mailboxes
+grepmail                              The main program
+grepmail.old                          The previous version, for speed testing
+README                                Read this first
+MANIFEST                              This file
+CHANGES                               A change history
+LICENSE                               A copy of the license
+Makefile.PL                           Makes the makefile
+lib/Benchmark/Timer.pm                A helper module used during testing
+lib/Test/Utils.pm                     A helper module used during testing
+lib/Test/ConfigureGrepmail.pm         A helper module used during testing
+t/append_header.t                     A test case
+t/auto_search.t                       A test case
+t/body.t                              A test case
+t/cache.t                             A test case
+t/complex_expression.t                A test case
+t/count.t                             A test case
+t/date_manip.t                        A test case
+t/date.t                              A test case
+t/header.t                            A test case
+t/help.t                              A test case
+t/ignore_signatures.t                 A test case
+t/invalid_mailbox.t                   A test case
+t/line_number.t                       A test case
+t/list.t                              A test case
+t/match_compressed.t                  A test case
+t/match_headers.t                     A test case
+t/match_words.t                       A test case
+t/nonexistent_mailbox.t               A test case
+t/not_match_compressed.t              A test case
+t/not_match_uncompressed.t            A test case
+t/pattern_file.t                      A test case
+t/pipe_compressed.t                   A test case
+t/pipe_uncompressed.t                 A test case
+t/received_date.t                     A test case
+t/recursive.t                         A test case
+t/size.t                              A test case
+t/status.t                            A test case
+t/unique.t                            A test case
+t/speed.pl                            A test of the script's speed
+t/no_patterns                         Some input patterns for testing
+t/patterns                            Some input patterns for testing
+t/mailboxes/gnus.txt                  Input file
+t/mailboxes/mailseparators.txt        Input file
+t/mailboxes/mailarc-1.txt             Input file
+t/mailboxes/mailarc-1.txt.bz2         Input file
+t/mailboxes/mailarc-1.txt.gz          Input file
+t/mailboxes/mailarc-1.txt.tz          Input file
+t/mailboxes/mailarc-2.txt             Input file
+t/mailboxes/mailarc-3.txt             Input file
+t/mailboxes/non-mailbox.txt.gz        Input file
+t/mailboxes/directory/mailarc-2.txt   Input file
+t/results/mailarc-2.txt               Output file
+t/results/all_driving                 Output file
+t/results/all_handy                   Output file
+t/results/all_handy_blank             Output file
+t/results/all_handy_buffer            Output file
+t/results/all_handy_imagecraft        Output file
+t/results/all_luikeith                Output file
+t/results/all_test                    Output file
+t/results/append_header               Output file
+t/results/body_handy                  Output file
+t/results/body_mime                   Output file
+t/results/count_all                   Output file
+t/results/count_handy                 Output file
+t/results/date_1                      Output file
+t/results/date_2                      Output file
+t/results/date_3                      Output file
+t/results/date_manip                  Output file
+t/results/header_aarone               Output file
+t/results/header_body_handy           Output file
+t/results/header_edsinger             Output file
+t/results/header_handy                Output file
+t/results/header_mozilla              Output file
+t/results/help                        Output file
+t/results/ignore_signatures           Output file
+t/results/invalid_date_1              Output file
+t/results/list_handy                  Output file
+t/results/match_word_let              Output file
+t/results/no_data                     Output file
+t/results/none                        Output file
+t/results/no_such_file                Output file
+t/results/not_a_mailbox_pipe          Output file
+t/results/not_body_handy              Output file
+t/results/not_handy                   Output file
+t/results/not_header_body_handy       Output file
+t/results/not_header_handy            Output file
+t/results/number_1                    Output file
+t/results/number_2                    Output file
+t/results/number_append_header        Output file
+t/results/recursive                   Output file
+t/results/ro_status                   Output file
+t/results/size_2                      Output file
+t/results/size_3                      Output file
+t/results/size_handy                  Output file
+t/results/two_handy                   Output file
+t/results/unique_all_1                Output file
+t/results/unique_all_2                Output file
+t/results/unique_body                 Output file
+t/results/unique_body_imagecraft      Output file
+t/results/unique_handy                Output file
+META.yml                                Module meta-data (added by MakeMaker)
