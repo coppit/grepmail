@@ -1,5 +1,7 @@
 #include <stdio.h>
-#include "fastreader.h"
+
+extern void reset_file(FILE *file_pointer);
+extern int read_email(char **email,long *email_line);
 
 int main(int argc, char**argv)
 {
@@ -23,9 +25,9 @@ int main(int argc, char**argv)
   /* Only need this if we're using multiple files and we don't read until the
    * end of each file.
    * */
-  reset_line();
+  reset_file(infile);
 
-  while (read_email(infile,&email,&line_number)) 
+  while (read_email(&email,&line_number)) 
   {
     printf("########\nLINE: %d\n%s########\n",line_number,email);
   }

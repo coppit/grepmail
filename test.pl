@@ -46,9 +46,8 @@ foreach $test (@timedtests)
   }
 
   print "$test\n";
-  local $" = " -I";
-  my $includes = "-I@INC";
-  $test =~ s/grepmail/perl $includes grepmail.old/;
+
+  $test =~ s/grepmail/$^X grepmail.old/;
 
   timethis(4,sub {system "$test > /dev/null"},'OLD');
 
@@ -58,7 +57,9 @@ foreach $test (@timedtests)
     exit(1);
   }
 
-  $test =~ s/grepmail.old/grepmail/;
+  local $" = " -I";
+  my $includes = "-I@INC";
+  $test =~ s/grepmail.old/$includes grepmail/;
   timethis(4,sub {system "$test >/dev/null"},'NEW');
 
   if ($?)

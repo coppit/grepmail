@@ -11,7 +11,7 @@ $^W = 1;
 
 BEGIN { $| = 1; print "1..4\n"; }
 
-use Mail::Folder::FastReader qw(reset_line read_email);
+use Mail::Folder::FastReader qw(reset_file read_email);
 
 my $loaded = 1;
 
@@ -32,11 +32,11 @@ no strict qw(subs);
 
 open EMAIL,"t/mailarc-1.txt" or die $!;
 
-reset_line();
+reset_file(EMAIL);
 $number_emails = 0;
 while(1)
 {
-  my ($status,$email,$line) = read_email(EMAIL);
+  my ($status,$email,$line) = read_email();
   last unless $status;
 print substr($email,0,40),"\n";
   $number_emails++ if $status == 1;
@@ -66,11 +66,11 @@ use FileHandle;
 my $EMAIL = new FileHandle;
 $EMAIL->open("t/mailarc-1.txt") or die $!;
 
-reset_line();
+reset_file($EMAIL);
 $number_emails = 0;
 while(1)
 {
-  my ($status,$email,$line) = read_email($EMAIL);
+  my ($status,$email,$line) = read_email();
   last unless $status;
   $number_emails++ if $status == 1;
 }
@@ -102,19 +102,19 @@ for (my $i = 0; $i < 10;$i++)
   my ($status,$email,$line);
 
   my $EMAIL1 = new FileHandle;
-  reset_line();
   $EMAIL1->open("t/mailarc-1.txt") or die $!;
+  reset_file($EMAIL1);
 
-  ($status,$email,$line) = read_email($EMAIL1);
-  ($status,$email,$line) = read_email($EMAIL1);
+  ($status,$email,$line) = read_email();
+  ($status,$email,$line) = read_email();
 
   $EMAIL1->close();
 
   my $EMAIL2 = new FileHandle;
-  reset_line();
   $EMAIL2->open("t/mailarc-1.txt") or die $!;
+  reset_file($EMAIL2);
 
-  ($status,$email,$line) = read_email($EMAIL2);
+  ($status,$email,$line) = read_email();
 
   $EMAIL2->close();
 

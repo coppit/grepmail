@@ -13,7 +13,7 @@ require AutoLoader;
 # names by default without a very good reason. Use EXPORT_OK instead.
 # Do not simply export all your public functions/methods/constants.
 @EXPORT = qw();
-@EXPORT_OK = qw( reset_line read_email );
+@EXPORT_OK = qw( reset_file read_email );
 	
 $VERSION = '0.01';
 
@@ -57,12 +57,13 @@ Mail::Folder::FastReader - A fast mailbox reader
 
 =head1 SYNOPSIS
 
-  use Mail::Folder::FastReader qw( read_email );
+  use Mail::Folder::FastReader qw( read_email reset_file );
 
   open MAILBOX,"saved-mail";
+  reset_file(MAILBOX);
   while (1)
   {
-    my ($status, $email, $line_number) = read_email(MAILBOX);
+    my ($status, $email, $line_number) = read_email();
     last unless $status
 
     print <<EOF;
@@ -83,16 +84,16 @@ doesn't follow a "----- Begin Included Message -----".
 
 =over 4
 
-=item ($status,$email,$line) = read_email(FILEHANDLE)
+=item ($status,$email,$line) = read_email()
 
-Read the next email from FILEHANDLE, storing the email in $email and the line
-number in $line. The status is 1 if successful, and 0 if not.
+Read the next email from the filehandle, storing the email in $email
+and the line number in $line. The status is 1 if successful, and 0 if
+not.
 
-=item reset_line()
+=item reset_file(FILEHANDLE)
 
-Reset the internal line counter. You don't need to do this if you are only
-reading from one file handle, or if you read to the end of one file handle
-before starting to read from the next.
+Reset the internal line counter and the reference to the filehandle.
+Call this before calling read_email().
 
 =head1 AUTHOR
 

@@ -1,7 +1,9 @@
 #include "EXTERN.h"
 #include "perl.h"
 #include "XSUB.h"
-#include "lib/fastreader.h"
+
+extern void reset_file(FILE *file_pointer);
+extern int read_email(char **email,long *email_line);
 
 static int
 not_here(char *s)
@@ -35,14 +37,13 @@ constant(name,arg)
 	int		arg
 
 void
-read_email(file_handle)
-    FILE *file_handle
+read_email()
   INIT:
     char *email_arg;
     long email_line_arg;
     int result_arg;
   PPCODE:
-    result_arg = read_email(file_handle,&email_arg,&email_line_arg);
+    result_arg = read_email(&email_arg,&email_line_arg);
 
     # If the read was ok, return the status, email, and line as an array. See
     # EXAMPLE 5 of perlxstut (Perl 5.6 or later)
@@ -59,4 +60,5 @@ read_email(file_handle)
     }
 
 void
-reset_line()
+reset_file(file_handle)
+    FILE *file_handle

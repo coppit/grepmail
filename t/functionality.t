@@ -111,31 +111,41 @@ print "\n";
 my $testNumber = 1;
 foreach my $test (@tests)
 {
-  ok(1),next if defined $ARGV[0] && $testNumber < $ARGV[0];
+  if (defined $ARGV[0])
+  {
+    next if ($ARGV[0] =~ /^\d+$/ && $testNumber != $ARGV[0]);
+    next if ($ARGV[0] =~ /^(\d+)-$/ && $testNumber < $1);
+    next if ($ARGV[0] =~ /^(\d+)-(\d+)$/ &&
+      ($testNumber < $1 || $testNumber > $2));
+  }
 
   local $" = " -I";
   my $includes = "-I@INC";
 
-  $test =~ s#grepmail#perl $includes blib/script/grepmail#sg;
+  $test =~ s#grepmail#$^X $includes blib/script/grepmail#sg;
   print "$test\n";
 
-  next if CheckSkip($testNumber);
+  if (CheckSkip($testNumber))
+  {
+    print "\n";
+    next;
+  }
 
   system "$test 1>t/results/test$testNumber.stdout " .
     "2>t/results/test$testNumber.stderr";
 
   if ($? && (!grep {$_ == $testNumber} @error_cases))
   {
-    print "Error executing test.\n";
+    print "Error executing test.\n\n";
     ok(0);
     next;
   }
 
   CheckDiffs($testNumber);
+  print "\n";
 }
 continue
 {
-  print "\n";
   $testNumber++;
 }
 

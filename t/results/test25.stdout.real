@@ -1,4 +1,4 @@
-grepmail 4.44
+grepmail 4.45
 
 usage: grepmail [-abDhilmrRuv] [-s size] [-d "datespec"] [[-e] <expr>] <files...>
 
@@ -19,6 +19,7 @@ compressed ASCII input is taken from STDIN.
 -M Do not search non-text mime attachments
 -m Append "X-Mailfolder: <folder>" to all headers to indicate in which folder
    the match occurred
+-n Print the line number info (and filename if necessary) for the emails
 -q Quiet mode -- don't output warnings
 -r Output the names of the files and the number of emails matching the
    expression
@@ -26,6 +27,7 @@ compressed ASCII input is taken from STDIN.
 -s Restrict results to emails less than a certain size (in bytes)
 -u Ensure that no duplicate emails are output
 -v Output emails that don't match the expression
+-V Display the version number
 
 Date specifications must be of the form of:
 a date like "today", "1st thursday in June 1992" (requires Date::Manip),
