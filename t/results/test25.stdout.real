@@ -6,19 +6,24 @@ usage:
     [-X <signature-pattern>] [-Y <header-pattern>] <files...>
 
   grepmail [--help] [-abBDhHilmrRuv] [-s size] [-d <date-specification>]
-    [-X <signature-pattern>] [-Y <header-pattern>] [[-e] <expr>] <files...>
+    [-X <signature-pattern>] [-Y <header-pattern>] [[-e] <pattern>] <files...>
 
-At least one of -s, -d, -u, and -e must be specified, and can appear in any
-relative order following the other flags. The -e flag is optional if expr
-appears immediately before -s or -d. Files can be plain ASCII or ASCII files
-compressed with gzip, tzip, or bzip2. If no file is provided, normal or
+  grepmail [--help] [-abBDhHilmrRuv] [-s size] [-d <date-specification>]
+    [-X <signature-pattern>] [-Y <header-pattern>] [-E <expr>] <files...>
+
+At least one of -s, -d, -u, -e, and -E must be specified, and can appear in
+any relative order following the other flags. The -e flag is optional if
+pattern appears immediately before -s or -d. Files can be plain ASCII or ASCII
+files compressed with gzip, tzip, or bzip2. -E allows for complex pattern
+matches involving logical operators. If no file is provided, normal or
 compressed ASCII input is taken from STDIN.
 
 -a Use received date instead of sent date for -d matching
 -b Search must match body
 -d Specify a date range (see below)
 -D Debug mode
--e Explicitly name expr (when searching for strings beginning with "-")
+-e Explicitly name pattern (when searching for strings beginning with "-")
+-E Specify a complex search expression
 -h Search must match header
 -H Print headers but not bodies of matching emails
 -i Ignore case in the search expression
