@@ -1585,6 +1585,13 @@ positives resulting from binaries encoded as ASCII attachments.
 Append "X-Mailfolder: <folder>" to all email headers, indicating which folder
 contained the matched email.
 
+=item B<-n>
+
+Prefix each line with line number information. If multiple files are
+specified, the filename will precede the line number. NOTE: When used
+in conjunction with -m, the X-Mailfolder header has the same line
+number as the next (blank) line.
+
 =item B<-q>
 
 Quiet mode. Suppress the output of warning messages about non-mailbox files,
