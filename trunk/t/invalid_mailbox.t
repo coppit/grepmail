@@ -112,7 +112,7 @@ sub TestIt
 
   if (defined $localization->{'stderr'})
   {
-    LocalizeTestOutput($localization->{'stderr'}, $real_stderr, $modified_stderr)
+    LocalizeTestOutput($localization->{'stderr'}, $real_stderr, $modified_stderr);
   }
   else
   {
@@ -163,6 +163,7 @@ sub LocalizeTestOutput
   $new =~ s/\Q$search_replace->{'search'}\E/$search_replace->{'replace'}/gx;
 
   open REAL, ">$new_file";
+  binmode REAL;
   print REAL $new;
   close REAL;
 }

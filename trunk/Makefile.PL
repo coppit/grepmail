@@ -79,8 +79,6 @@ sub UpdateTestVersion
   my $file_with_version = shift;
   my $test_case_file = shift;
 
-  print "Updating version number in test case 25.\n";
-
   open SOURCE, $file_with_version
     or die "Couldn't open grepmail file: $!";
 
