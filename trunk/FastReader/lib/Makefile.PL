@@ -3,12 +3,15 @@ $Verbose = 1;
 
 WriteMakefile(
    NAME      => 'libemailreader',
-   SKIP      => [qw(all static static_lib dynamic dynamic_lib)],                   clean     => {'FILES' => 'libemailreader$(LIB_EXT)'},
+   SKIP      => [qw(all static static_lib dynamic dynamic_lib)],
+   clean     => {'FILES' => 'libemailreader$(LIB_EXT)'},
 );
 
 sub MY::top_targets {
 '
 all :: static
+
+pure_all :: static
 
 static :: libemailreader$(LIB_EXT)
 
