@@ -1,6 +1,0 @@
-Changes                                  Change log
-FastReader.pm                            Mail::Folder::FastReader module
-MANIFEST                                 This file
-Makefile.PL                              Make script
-t/simple.t                               A perl test script
-t/mailarc-1.txt                          Data file for the test script
