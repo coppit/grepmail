@@ -2,7 +2,7 @@
 
 # grepmail
 
-$VERSION = '4.42';
+$VERSION = '4.41';
 
 # Grepmail searches a normal, gzip'd, tzip'd, or bzip2'd mailbox for a given
 # regular expression and returns those emails that match the query. It also
@@ -181,7 +181,7 @@ dprint "  $commandLine";
 
 # getopts stops as soon as it sees a non-flag, so $ARGV[0] may contain the
 # pattern with more flags after it.
-if (!$opts{'e'})
+unless ($opts{'e'})
 {
   my $missing_flags = '';
 
@@ -201,7 +201,7 @@ if (!$opts{'e'})
   }
   # If we've seen a -d, -s, or -u flag, and it doesn't look like there are
   # flags following $ARGV[0], then look at the value in $ARGV[0]
-  elsif ( ( $opts{'d'} ||  $opts{'s'} ||  $opts{'u'} ) &&
+  elsif ( ( defined $opts{'d'} || $opts{'s'} || $opts{'u'} ) &&
        ( $#ARGV <= 0 ||
          ( $#ARGV > 0 && $ARGV[1] !~ /^-$missing_flags$/ )
        )
@@ -221,7 +221,7 @@ if (!$opts{'e'})
   }
   # If we still don't have a pattern or any -d, -s, or -u flag, we assume
   # that $ARGV[0] is the pattern
-  elsif (!$opts{'d'} && !$opts{'s'} && !$opts{'u'})
+  elsif (!defined $opts{'d'} && !$opts{'s'} && !$opts{'u'})
   {
     $pattern = shift @ARGV;
   }
@@ -252,7 +252,8 @@ elsif (!defined $pattern)
   # The only times you don't have to specify the pattern is when -d, -s, or -u
   # is being used. This should catch people who do "grepmail -h" thinking
   # it's help.
-  print usage() and exit unless $opts{'d'} || $opts{'s'} || $opts{'u'};
+  print usage() and exit
+    unless defined $opts{'d'} || $opts{'s'} || $opts{'u'};
 
   $pattern = ".";
 }
@@ -267,7 +268,7 @@ $pattern = "(?i)$pattern" if ($opts{'i'});
 
 my ($dateRestriction, $date1, $date2);
 
-if ($opts{'d'})
+if (defined $opts{'d'})
 {
   ($dateRestriction,$date1,$date2) = ProcessDate($opts{'d'});
 }
@@ -279,6 +280,8 @@ else
 dprint "PATTERN: $pattern\n";
 dprint "FILES: @ARGV\n";
 dprint "DATE RESTRICTION: $dateRestriction\n";
+dprint "FIRST DATE: $date1\n" if $dateRestriction ne 'none';
+dprint "SECOND DATE: $date2\n" if $dateRestriction ne 'none';
 dprint "SIZE RESTRICTION: $opts{'s'}\n";
 
 # Catch everything I can... We have to localize these to prevent odd bugs from
@@ -365,7 +368,7 @@ sub HandleInputFiles
     # ...and also ignore directories.
     if (-d $file)
     {
-      warn "** Skipping directory: '$file' **\n" unless $opts{'q'};
+      warn "** Skipping directory: '$file'\n" unless $opts{'q'};
       next;
     }
 
@@ -377,13 +380,13 @@ sub HandleInputFiles
     {
       if (-B $file)
       {
-        warn "** Skipping binary file: '$file' **\n" unless $opts{'q'};
+        warn "** Skipping binary file: '$file'\n" unless $opts{'q'};
         next;
       }
 
       unless ($fileHandle->open($file))
       {
-        warn "** Can't open $file: $!, skipping **\n" unless $opts{'q'};
+        warn "** Can't open $file: $!, skipping\n" unless $opts{'q'};
         next;
       }
     }
@@ -418,7 +421,7 @@ sub HandleInputFiles
       open STDERR,">/dev/null"
         or die "Can't redirect STDERR to /dev/null: $!\n";
 
-      unless ($fileHandle->open("gunzip -c '$file'|"))
+      unless ($fileHandle->open("gzip -dc '$file'|"))
       {
         $filterError = $!;
       }
@@ -448,7 +451,7 @@ sub HandleInputFiles
     if ($filterError)
     {
       warn "** Can't execute \"$filter\" for file \"$file\": $filterError, ".
-           "skipping **\n" unless $opts{'q'};
+           "skipping\n" unless $opts{'q'};
       next;
     }
 
@@ -457,14 +460,14 @@ sub HandleInputFiles
       unless ($fileHandle->close())
       {
         warn "** Can't execute \"$filter\" for file \"$file\": ".
-             "skipping **\n" unless $opts{'q'};
+             "skipping\n" unless $opts{'q'};
       }
       next;
     }
 
     if (!IsMailbox($fileHandle))
     {
-      warn "** Skipping non-mailbox ASCII file: '$file' **\n" unless $opts{'q'};
+      warn "** Skipping non-mailbox ASCII file: '$file'\n" unless $opts{'q'};
       next;
     }
 
@@ -499,9 +502,15 @@ sub HandleStandardInput
 
   cleanExit "No data on standard input" if $isEmpty;
 
-  # This isn't the "real" way to do -B, but it should work okay.
-  $isBinary = 1 if !$isEmpty &&
-                    ($testChars =~ /\000/ || $testChars =~ /[\200-\377]/);
+  use diagnostics;
+  # Do -B on the data stream
+  unless ($isEmpty)
+  {
+    my $data_length = length $testChars;
+    my $bin_length = $testChars =~ tr/[\0x00-\0x1F\0x80-\0xff]//;
+    my $non_bin_length = $data_length - $bin_length;
+    $isBinary = ($non_bin_length / $data_length) > .70 ? 0 : 1;
+  }
 
   PutBackString($fileHandle,$testChars);
 
@@ -537,7 +546,7 @@ sub HandleStandardInput
 
     my $newGrepmail = new FileHandle;
     $newGrepmail->open("|$filter|$commandLine")
-      or warn "** Can't execute \"$filter\" on STDIN: $! **\n"
+      or warn "** Can't execute \"$filter\" on STDIN: $!\n"
         unless $opts{'q'};
 
     open STDERR,">&OLDSTDERR" or die "Can't restore STDERR: $!\n";
@@ -549,7 +558,7 @@ sub HandleStandardInput
     }
 
     $newGrepmail->close()
-      or warn "** Can't execute \"$filter\" on STDIN: $! **\n"
+      or warn "** Can't execute \"$filter\" on STDIN: $!\n"
         unless $opts{'q'};
   }
   # Otherwise process it directly
@@ -557,7 +566,7 @@ sub HandleStandardInput
   {
     if (!IsMailbox($fileHandle))
     {
-      warn "** Skipping non-mailbox standard input **\n" unless $opts{'q'};
+      warn "** Skipping non-mailbox standard input\n" unless $opts{'q'};
       return;
     }
 
@@ -601,7 +610,7 @@ sub PutBackString
 #-------------------------------------------------------------------------------
 
 # Detects whether an ASCII file is a mailbox, based on whether it has a 'From'
-# and 'Date:' prefix on two lines of the first paragraph.
+# and 'Subject:' prefix on two lines of the first paragraph.
 
 sub IsMailbox
 {
@@ -616,7 +625,7 @@ sub IsMailbox
   my $returnVal;
 
   # X-From-Line is used by Gnus, and From is used by normal Unix format
-  if ($buffer =~ /^(X-From-Line:|From) /im && $buffer =~ /^Date: /im)
+  if ($buffer =~ /^(X-From-Line:|From) /im && $buffer =~ /^Subject: /im)
   {
     $returnVal = 1;
   }
@@ -799,12 +808,12 @@ sub ProcessMailFile ($$)
     
     {
       my $matchesDate = CheckDate(\$header_buffer);
-      $isMatch = 0 if $opts{'d'} && !$matchesDate;
+      $isMatch = 0 if defined $opts{'d'} && !$matchesDate;
 
       dprint "Email matches date constraint\n"
-        if $opts{'d'} && $matchesDate;
+        if defined $opts{'d'} && $matchesDate;
       dprint "Email doesn't match date constraint\n"
-        if $opts{'d'} && !$matchesDate;
+        if defined $opts{'d'} && !$matchesDate;
     }
 
     $isMatch = !$isMatch if $opts{'v'};
@@ -873,6 +882,52 @@ sub NotADuplicate
 
 #-------------------------------------------------------------------------------
 
+# Get the email author from the header or email. Return undef if it can't be
+# found
+sub GetFromLine
+{
+  my $header = shift;
+
+  # Remove the body if there is one. (Make it really a header)
+  $header =~ s/\n\n.*/\n/s;
+
+  if ($header =~ /^(From:.*)$/im)
+  {
+    return $1;
+  }
+  elsif ($header =~ /^(From.*)$/im)
+  {
+    return $1;
+  }
+  else
+  {
+    return undef;
+  }
+}
+
+#-------------------------------------------------------------------------------
+
+# Get the email subject from the header or email. Return undef if it can't be
+# found
+sub GetSubjectLine
+{
+  my $header = shift;
+
+  # Remove the body if there is one. (Make it really a header)
+  $header =~ s/\n\n.*/\n/s;
+
+  if ($header =~ /^(Subject:.*)$/im)
+  {
+    return $1;
+  }
+  else
+  {
+    return undef;
+  }
+}
+
+#-------------------------------------------------------------------------------
+
 # Print the email author and subject.
 
 sub PrintEmailStatistics
@@ -882,22 +937,22 @@ sub PrintEmailStatistics
   dprint '-'x70;
   dprint "Processing email:";
 
-  if ($header =~ /^(From:.*)$/im)
+  my $author = GetFromLine($header);
+
+  if (defined $author)
   {
-    dprint "  $1";
-  }
-  elsif ($header =~ /^(From.*)$/im)
-  {
-    dprint "  $1";
+    dprint "  $author";
   }
   else
   {
     dprint "  [No from line found]";
   }
 
-  if ($header =~ /^(Subject:.*)$/im)
+  my $subject = GetFromLine($header);
+
+  if (defined $subject)
   {
-    dprint "  $1";
+    dprint "  $subject";
   }
   else
   {
@@ -939,38 +994,38 @@ sub AnalyzeHeader(\$$\$$)
   
   # First handle the situations where a date constraint isn't a factor.
   return ('print',1) if (
-      (!$opts{'b'} &&  $opts{'h'} && !$opts{'s'} && !$opts{'d'} &&
+      (!$opts{'b'} &&  $opts{'h'} && !$opts{'s'} && !defined $opts{'d'} &&
        !$opts{'v'} && $matchesHeader) ||
-      (                $opts{'h'} &&  $opts{'s'} && !$opts{'d'} &&
+      (                $opts{'h'} &&  $opts{'s'} && !defined $opts{'d'} &&
         $opts{'v'} && (!$matchesHeader || !$matchesSize)) ||
-      (                !$opts{'h'} &&  $opts{'s'} && !$opts{'d'} &&
+      (                !$opts{'h'} &&  $opts{'s'} && !defined $opts{'d'} &&
         $opts{'v'} && (!$matchesSize)) ||
-      (                $opts{'h'} && !$opts{'s'} && !$opts{'d'} &&
+      (                $opts{'h'} && !$opts{'s'} && !defined $opts{'d'} &&
         $opts{'v'} && (!$matchesHeader)) ||
 
-      (                $opts{'h'} &&  $opts{'s'} &&  $opts{'d'} &&
+      (                $opts{'h'} &&  $opts{'s'} &&  defined $opts{'d'} &&
         $opts{'v'} && (!$matchesHeader || !$matchesSize)) ||
-      (               !$opts{'h'} &&  $opts{'s'} &&  $opts{'d'} &&
+      (               !$opts{'h'} &&  $opts{'s'} &&  defined $opts{'d'} &&
         $opts{'v'} && (!$matchesSize)) ||
-      (                $opts{'h'} && !$opts{'s'} &&  $opts{'d'} &&
+      (                $opts{'h'} && !$opts{'s'} &&  defined $opts{'d'} &&
         $opts{'v'} && (!$matchesHeader))
     );
 
   return ('skip',0) if (
-      (                $opts{'h'} &&  $opts{'s'} && !$opts{'d'} &&
+      (                $opts{'h'} &&  $opts{'s'} && !defined $opts{'d'} &&
        !$opts{'v'} && (!$matchesHeader || !$matchesSize)) ||
-      (               !$opts{'h'} &&  $opts{'s'} && !$opts{'d'} &&
+      (               !$opts{'h'} &&  $opts{'s'} && !defined $opts{'d'} &&
        !$opts{'v'} && (!$matchesSize)) ||
-      (                $opts{'h'} && !$opts{'s'} && !$opts{'d'} &&
+      (                $opts{'h'} && !$opts{'s'} && !defined $opts{'d'} &&
        !$opts{'v'} && (!$matchesHeader)) ||
-      (!$opts{'b'} &&  $opts{'h'} && !$opts{'s'} && !$opts{'d'} &&
+      (!$opts{'b'} &&  $opts{'h'} && !$opts{'s'} && !defined $opts{'d'} &&
         $opts{'v'} && ($matchesHeader)) ||
 
-      (                $opts{'h'} &&  $opts{'s'} &&  $opts{'d'} &&
+      (                $opts{'h'} &&  $opts{'s'} &&  defined $opts{'d'} &&
        !$opts{'v'} && (!$matchesHeader || !$matchesSize)) ||
-      (               !$opts{'h'} &&  $opts{'s'} &&  $opts{'d'} &&
+      (               !$opts{'h'} &&  $opts{'s'} &&  defined $opts{'d'} &&
        !$opts{'v'} && (!$matchesSize)) ||
-      (                $opts{'h'} && !$opts{'s'} &&  $opts{'d'} &&
+      (                $opts{'h'} && !$opts{'s'} &&  defined $opts{'d'} &&
        !$opts{'v'} && (!$matchesHeader))
     );
 
@@ -1067,6 +1122,10 @@ sub PrintEmail($$$\$)
 
 #-------------------------------------------------------------------------------
 
+# Checks to see if the date in the header matches the date specification. The
+# date specification can include "nodate", meaning that the email doesn't have
+# a Date: line.
+
 sub CheckDate($)
 {
   my $header = ${shift @_};
@@ -1078,7 +1137,7 @@ sub CheckDate($)
   # they must be preceded by whitespace. Let's remove the continuations.
   $header =~ s/\n\s+/ /gs;
 
-  if ($opts{'d'})
+  if (defined $opts{'d'})
   {
     # The email might not have a date. In this case, print it out anyway.
     if ($header =~ /^Date:\s*(.*)$/im)
@@ -1094,15 +1153,28 @@ sub CheckDate($)
       else
       {
         warn "** Couldn't parse date \"$1\". Assuming it doesn't match the " .
-             "date constraint **\n" if $opts{'d'};
+             "date constraint:\n";
+        warn "  " . GetFromLine($header) . "\n";
+        warn "  " . GetSubjectLine($header) . "\n";
+
         $isInDate = 0;
       }
     }
     else
     {
-      dprint "No date found in email.";
+      if ($dateRestriction eq 'nodate')
+      {
+        $isInDate = 1;
+      }
+      else
+      {
+        warn "** Couldn't find a date. Assuming email doesn't match the " .
+             "date constraint:\n";
+        warn "  " . GetFromLine($header) . "\n";
+        warn "  " . GetSubjectLine($header) . "\n";
 
-      $isInDate = 1;
+        $isInDate = 0;
+      }
     }
   }
   else
@@ -1161,14 +1233,15 @@ sub ParseDate
 #-------------------------------------------------------------------------------
 
 # Figure out what kind of date restriction they want, and what the dates in
-# question are.
+# question are. An empty date string results in the type of date restriction
+# being "nodate".
 sub ProcessDate($)
 {
   my $datestring = shift;
 
-  if(!defined($datestring))
+  if($datestring eq '')
   {
-    return ("none","","");
+    return ("nodate","","");
   }
 
   if ($datestring =~ /^before (.*)/i)
@@ -1210,6 +1283,7 @@ sub ProcessDate($)
   {
     $dateRestriction = "on";
     $date1 = ParseDate($datestring);
+    $date2 = "";
   }
   else
   {
@@ -1395,7 +1469,8 @@ Date specifications must be of the form of:
 
 Simple date expressions will first be parsed by Date::Parse. If this fails,
 grepmail will attempt to parse the date with Date::Manip, if the module is
-installed on the system.
+installed on the system. Use an empty pattern (i.e. -d "") to find emails
+without a "Date: ..." line in the header.
 
 =item B<-e>
 
