@@ -2,7 +2,7 @@
 
 # grepmail
 
-$VERSION = '5.23';
+$VERSION = '5.30';
 
 # Grepmail searches a normal, gzip'd, tzip'd, or bzip2'd mailbox for a given
 # regular expression and returns those emails that match the query. It also
@@ -26,7 +26,7 @@ $VERSION = '5.23';
 
 require 5.00396;
 
-use vars qw( %opts $pattern $commandLine $VERSION %message_ids_seen
+use vars qw( %opts $commandLine $VERSION %message_ids_seen
              $USE_CACHING $USE_GREP );
 
 use Getopt::Std;
@@ -50,7 +50,6 @@ my $CONTINUE              = 3;
 my $NONE                  = 4;
 my $BEFORE                = 5;
 my $AFTER                 = 6;
-my $ON                    = 7;
 my $NODATE                = 8;
 my $BETWEEN               = 9;
 my $LESS_THAN             = 10;
@@ -141,82 +140,90 @@ local @SIG{keys %signals_and_messages} =
 binmode STDOUT;
 binmode STDERR;
 
-# PROCESS ARGUMENTS
-my ($opts_ref,@remaining_arguments) = Get_Options(@ARGV);
-%opts = %$opts_ref;
-
-# Initialize seen messages data structure to empty.
-%message_ids_seen = ();
-
-# Save the command line for later when we try to decompress standard input
-{
-  # Need to quote arguments with spaces
-  my @args = @ARGV;
-  grep { $_ = "'$_'" if index($_, ' ') != -1; $_ } @args;
-
-  $commandLine = "$0 @args";
-}
-
-Print_Debug_Information($commandLine);
-
-sub ProcessDate($);
-sub ProcessSize($);
-sub GetFiles(@);
-
-# Make the pattern insensitive if we need to
-$pattern = "(?i)$pattern" if ($opts{'i'}) && $pattern ne $NO_PATTERN;
-
-# Make the pattern match word boundaries if we need to
-$pattern = "\\b$pattern\\b" if ($opts{'w'}) && $pattern ne $NO_PATTERN;
-
 my ($dateRestriction, $date1, $date2);
-
-if (defined $opts{'d'})
-{
-  ($dateRestriction,$date1,$date2) = ProcessDate($opts{'d'});
-}
-else
-{
-  $dateRestriction = $NONE;
-}
-
 my ($sizeRestriction, $size1, $size2);
 
-if (defined $opts{'s'})
 {
-  ($sizeRestriction,$size1,$size2) = ProcessSize($opts{'s'});
+  # PROCESS ARGUMENTS
+  my (@remaining_arguments,$pattern);
+
+  {
+    my ($opts_ref,$remaining_arguments_ref);
+    ($opts_ref,$remaining_arguments_ref,$pattern) = Get_Options(@ARGV);
+
+    %opts = %$opts_ref;
+    @remaining_arguments = @$remaining_arguments_ref;
+  }
+
+  # Initialize seen messages data structure to empty.
+  %message_ids_seen = ();
+
+  # Save the command line for later when we try to decompress standard input
+  {
+    # Need to quote arguments with spaces
+    my @args = @ARGV;
+    grep { $_ = "'$_'" if index($_, ' ') != -1; $_ } @args;
+
+    $commandLine = "$0 @args";
+  }
+
+  Print_Debug_Information($commandLine);
+
+  sub ProcessDate($);
+  sub ProcessSize($);
+  sub GetFiles(@);
+
+  # Make the pattern insensitive if we need to
+  $pattern = "(?i)$pattern" if ($opts{'i'}) && $pattern ne $NO_PATTERN;
+
+  # Make the pattern match word boundaries if we need to
+  $pattern = "\\b$pattern\\b" if ($opts{'w'}) && $pattern ne $NO_PATTERN;
+
+  if (defined $opts{'d'})
+  {
+    ($dateRestriction,$date1,$date2) = ProcessDate($opts{'d'});
+  }
+  else
+  {
+    $dateRestriction = $NONE;
+  }
+
+  if (defined $opts{'s'})
+  {
+    ($sizeRestriction,$size1,$size2) = ProcessSize($opts{'s'});
+  }
+  else
+  {
+    $sizeRestriction = $NONE;
+  }
+
+  dprint "PATTERN: $pattern\n" unless $pattern eq $NO_PATTERN;
+  dprint "PATTERN: <NO PATTERN>\n" if $pattern eq $NO_PATTERN;
+  dprint "FILES: @remaining_arguments\n";
+  dprint "DATE RESTRICTION: $dateRestriction\n";
+  dprint "FIRST DATE: $date1\n" unless $dateRestriction == $NONE;
+  dprint "SECOND DATE: $date2\n" unless $dateRestriction == $NONE;
+  dprint "SIZE RESTRICTION: $sizeRestriction\n";
+  dprint "FIRST SIZE: $size1\n" unless $sizeRestriction == $NONE;
+  dprint "SECOND SIZE: $size2\n" unless $sizeRestriction == $NONE;
+
+  ValidatePattern($pattern);
+
+  my @files = GetFiles(@remaining_arguments);
+
+  # If the user provided input files...
+  if (@files)
+  {
+    HandleInputFiles(@files,$pattern);
+  }
+  # Using STDIN
+  else
+  {
+    HandleStandardInput($pattern);
+  }
+
+  exit 0;
 }
-else
-{
-  $sizeRestriction = $NONE;
-}
-
-dprint "PATTERN: $pattern\n" unless $pattern eq $NO_PATTERN;
-dprint "PATTERN: <NO PATTERN>\n" if $pattern eq $NO_PATTERN;
-dprint "FILES: @remaining_arguments\n";
-dprint "DATE RESTRICTION: $dateRestriction\n";
-dprint "FIRST DATE: $date1\n" unless $dateRestriction == $NONE;
-dprint "SECOND DATE: $date2\n" unless $dateRestriction == $NONE;
-dprint "SIZE RESTRICTION: $sizeRestriction\n";
-dprint "FIRST SIZE: $size1\n" unless $sizeRestriction == $NONE;
-dprint "SECOND SIZE: $size2\n" unless $sizeRestriction == $NONE;
-
-ValidatePattern($pattern);
-
-my @files = GetFiles(@remaining_arguments);
-
-# If the user provided input files...
-if (@files)
-{
-  HandleInputFiles(@files);
-}
-# Using STDIN
-else
-{
-  HandleStandardInput();
-}
-
-exit 0;
 
 #-------------------------------------------------------------------------------
 
@@ -237,6 +244,7 @@ sub Get_Options
     qw( a b B C d D e E f F i j h H l M m n q r R s S t T u v V w X Y Z );
 
   my %opts;
+  my $pattern;
 
   # Initialize all options to zero.
   map { $opts{$_} = 0; } @valid_options;
@@ -375,6 +383,22 @@ sub Get_Options
       reportAndExit('You specified -d, but do not have Date::Parse. ' .
         "Get it from CPAN.\n");
     }
+
+    if (eval 'require Time::Local;')
+    {
+      import Time::Local;
+    }
+    else
+    {
+      reportAndExit('You specified -d, but do not have Time::Local. ' .
+        "Get it from CPAN.\n");
+    }
+
+    if (eval 'require Date::Manip')
+    {
+      my ($version_number) = $Date::Manip::VERSION =~ /^(\d+\.\d+)/;
+      Date::Manip::Date_Init("TodayIsMidnight=1") if $version_number >= 5.43;
+    }
   }
 
   $opts{'h'} = 1 if $opts{'Y'};
@@ -449,7 +473,7 @@ sub Get_Options
 
   $pattern = $NO_PATTERN if $pattern eq '()';
 
-  return (\%opts, @ARGV);
+  return (\%opts, \@ARGV, $pattern);
 }
 
 #-------------------------------------------------------------------------------
@@ -559,6 +583,7 @@ sub GetFiles(@)
 
 sub HandleInputFiles
 {
+  my $pattern = pop @_;
   my @files = @_;
 
   # For each input file...
@@ -579,7 +604,7 @@ sub HandleInputFiles
 
     $file = Search_Mailbox_Directories($file) unless -f $file;
 
-    ProcessMailFile(undef,$file,$#files+1);
+    ProcessMailFile(undef,$file,$#files+1,$pattern);
   }
 }
 
@@ -616,6 +641,8 @@ sub Search_Mailbox_Directories
 
 sub HandleStandardInput
 {
+  my $pattern = shift;
+
   dprint "Handling STDIN";
 
   # We have to implement our own -B and -s, because STDIN gets eaten by them
@@ -624,7 +651,7 @@ sub HandleStandardInput
   my $fileHandle = new FileHandle;
   $fileHandle->open('-');
 
-  ProcessMailFile($fileHandle,undef,1);
+  ProcessMailFile($fileHandle,undef,1,$pattern);
 }
 
 #-------------------------------------------------------------------------------
@@ -643,6 +670,8 @@ sub Do_Simple_Pattern_Matching
   my $number_files = shift;
   my $numberOfMatches = shift;
   my $line = shift;
+  my $endline = shift;
+  my $pattern = shift;
 
   die unless ref $email_header && ref $email_body;
 
@@ -652,7 +681,7 @@ sub Do_Simple_Pattern_Matching
     if $opts{'D'};
 
   my ($result,$matchesHeader) =
-    AnalyzeHeader($email_header,$email_body,$fileHandle,$pattern,1);
+    AnalyzeHeader($email_header,$email_body,$fileHandle,$pattern,1,$endline);
 
   if ($result == $SKIP)
   {
@@ -678,7 +707,7 @@ sub Do_Simple_Pattern_Matching
     else
     {
       ConvertEmailToMboxAndPrintIt($fileName,$email_header,
-        $email_body,$number_files,$line)
+        $email_body,$number_files,$line,$endline)
           if $opts{'u'} && NotADuplicate($email_header) || !$opts{'u'};
 
       return ($CONTINUE,$numberOfMatches);
@@ -691,15 +720,23 @@ sub Do_Simple_Pattern_Matching
 
   my $signature_offset = undef;
 
-  if ($opts{'S'} && $$email_body =~ m/($opts{'X'})/mg)
+  if ($opts{'S'})
   {
-    $signature_offset = pos($$email_body) - length($1);
-    pos($$email_body) = 0;
+    my $signature_pattern = $opts{'X'};
+    $signature_pattern =~ s#\$#$/#;
+
+    if ($$email_body =~ m/($signature_pattern)/mg)
+    {
+      $signature_offset = pos($$email_body) - length($1);
+      pos($$email_body) = 0;
+
+      dprint "Signature offset: $signature_offset";
+    }
   }
 
   # Ignore the MIME attachments if -M was specified
   if ($opts{'M'} &&
-     ($$email_header =~ /^Content-Type:.*?boundary=(?:"([^"]*)"|([^\n]*))/ism))
+     ($$email_header =~ /^Content-Type:.*?boundary=(?:"([^"]*)"|([^\r\n]*))/ism))
   {
     my $boundary;
     $boundary = $1 if defined $1;
@@ -710,7 +747,7 @@ sub Do_Simple_Pattern_Matching
     my @attachment_positions;
 
     # Get each of the binary attachment beginnings and endings.
-    while ($$email_body =~ m/\n((?:--)?\Q$boundary\E(?:--)?\n(?:(.*?)\n\n)?)/sg)
+    while ($$email_body =~ m/\n((?:--)?\Q$boundary\E(?:--)?$endline(?:(.*?)$endline$endline)?)/sg)
     {
       my $position = pos($$email_body) - length($1);
       my $header = $2;
@@ -816,7 +853,7 @@ sub Do_Simple_Pattern_Matching
     else
     {
       ConvertEmailToMboxAndPrintIt($fileName,$email_header,
-        $email_body,$number_files,$line)
+        $email_body,$number_files,$line,$endline)
           if $opts{'u'} && NotADuplicate($email_header) || !$opts{'u'};
 
       return ($CONTINUE,$numberOfMatches);
@@ -830,7 +867,7 @@ sub Do_Simple_Pattern_Matching
   $isMatch = 1;
 
   {
-    my $matchesDate = Email_Matches_Date($email_header);
+    my $matchesDate = Email_Matches_Date($email_header,$endline);
     $isMatch = 0 if defined $opts{'d'} && !$matchesDate;
 
     dprint "Email matches date constraint\n"
@@ -860,7 +897,7 @@ sub Do_Simple_Pattern_Matching
     else
     {
       ConvertEmailToMboxAndPrintIt($fileName,$email_header,
-        $email_body,$number_files,$line)
+        $email_body,$number_files,$line,$endline)
           if $opts{'u'} && NotADuplicate($email_header) || !$opts{'u'};
     }
   }
@@ -888,6 +925,8 @@ sub Do_Complex_Pattern_Matching
   my $number_files = shift;
   my $numberOfMatches = shift;
   my $line = shift;
+  my $endline = shift;
+  my $pattern = shift;
 
   die unless ref $email_header && ref $email_body;
 
@@ -897,7 +936,7 @@ sub Do_Complex_Pattern_Matching
     if $opts{'D'};
 
   my ($result,$matchesHeader) =
-    AnalyzeHeader($email_header,$email_body,$fileHandle,$pattern,0);
+    AnalyzeHeader($email_header,$email_body,$fileHandle,$pattern,0,$endline);
 
   if ($result == $SKIP)
   {
@@ -923,7 +962,7 @@ sub Do_Complex_Pattern_Matching
     else
     {
       ConvertEmailToMboxAndPrintIt($fileName,$email_header,
-        $email_body,$number_files,$line)
+        $email_body,$number_files,$line,$endline)
           if $opts{'u'} && NotADuplicate($email_header) || !$opts{'u'};
 
       return ($CONTINUE,$numberOfMatches);
@@ -988,7 +1027,7 @@ sub Do_Complex_Pattern_Matching
     else
     {
       ConvertEmailToMboxAndPrintIt($fileName,$email_header,
-        $email_body,$number_files,$line)
+        $email_body,$number_files,$line,$endline)
           if $opts{'u'} && NotADuplicate($email_header) || !$opts{'u'};
 
       return ($CONTINUE,$numberOfMatches);
@@ -1002,7 +1041,7 @@ sub Do_Complex_Pattern_Matching
   $isMatch = 1;
 
   {
-    my $matchesDate = Email_Matches_Date($email_header);
+    my $matchesDate = Email_Matches_Date($email_header,$endline);
     $isMatch = 0 if defined $opts{'d'} && !$matchesDate;
 
     dprint "Email matches date constraint\n"
@@ -1032,7 +1071,7 @@ sub Do_Complex_Pattern_Matching
     else
     {
       ConvertEmailToMboxAndPrintIt($fileName,$email_header,
-        $email_body,$number_files,$line)
+        $email_body,$number_files,$line,$endline)
           if $opts{'u'} && NotADuplicate($email_header) || !$opts{'u'};
     }
   }
@@ -1051,6 +1090,7 @@ sub ProcessMailFile
   my $fileHandle = shift @_;
   my $fileName = shift @_;
   my $number_files = shift @_;
+  my $pattern = shift @_;
 
   my $setup_result = Mail::Mbox::MessageParser::SETUP_CACHE(
     { 'file_name' => $opts{'C'} } )
@@ -1064,7 +1104,7 @@ sub ProcessMailFile
       'file_handle' => $fileHandle,
       'enable_cache' => $USE_CACHING,
       'enable_grep' => $USE_GREP,
-      'ignore_binary' => $opts{'F'},
+      'force_processing' => $opts{'F'},
       'debug' => $opts{'D'},
     } );
 
@@ -1101,6 +1141,13 @@ sub ProcessMailFile
 
   my $numberOfMatches = 0;
 
+  my $endline = $folder_reader->endline();
+
+  local $/ = $endline;
+
+  my $modified_pattern = $pattern;
+  $modified_pattern =~ s#\$([^\w]|$)#$/$1#;
+
   # This is the main loop. It's executed once for each email
   # Direct access for performance reasons
   #while($folder_reader->end_of_file())
@@ -1116,24 +1163,25 @@ sub ProcessMailFile
 
     my ($email_header,$email_body);
     {
-      my $newlines_position = index($$email,"\n\n");
-
       my $end_of_header;
-      if ($newlines_position == -1)
+      my $newlines_position = index($$email,"$endline$endline");
+
+      if ($newlines_position != -1)
       {
-        $end_of_header = length($$email);
+        $end_of_header = $newlines_position+length("$endline$endline");
       }
       else
       {
-        $end_of_header = $newlines_position+2;
+        $end_of_header = length($$email);
       }
+
       $$email_header = substr($$email,0,$end_of_header);
 
       $email_body = $email;
       substr($$email_body,0,$end_of_header) = '';
     }
 
-    PrintEmailStatistics($email_header,$email_body) if $opts{'D'};
+    PrintEmailStatistics($email_header,$email_body,$endline) if $opts{'D'};
 
     #----------------------------------------------------------------
 
@@ -1142,7 +1190,8 @@ sub ProcessMailFile
       my $result;
       ($result, $numberOfMatches) = 
         Do_Complex_Pattern_Matching($email_header, $email_body,
-          $fileHandle, $fileName, $number_files, $numberOfMatches, $line);
+          $fileHandle, $fileName, $number_files, $numberOfMatches, $line,
+          $endline, $modified_pattern);
 
       return if $result == $DONE;
     }
@@ -1151,7 +1200,8 @@ sub ProcessMailFile
       my $result;
       ($result, $numberOfMatches) = 
         Do_Simple_Pattern_Matching($email_header, $email_body,
-          $fileHandle, $fileName, $number_files, $numberOfMatches, $line);
+          $fileHandle, $fileName, $number_files, $numberOfMatches, $line,
+          $endline, $modified_pattern);
 
       return if $result == $DONE;
     }
@@ -1247,6 +1297,7 @@ sub GetHeaderField
 {
   my $email_header = shift;
   my $header_name = shift;
+  my $endline = shift;
 
   die unless ref $email_header;
 
@@ -1255,12 +1306,12 @@ sub GetHeaderField
   local $^W = 0 if $] >= 5.006 && $] < 5.8;
 
   if ($header_name =~ /^From$/i &&
-    $$email_header =~ /^((?:From\s|X-From-Line:|X-Draft-From:).*\n(\s.*\n)*)/im)
+    $$email_header =~ /^((?:From\s|X-From-Line:|X-Draft-From:).*$endline(\s.*$endline)*)/im)
   {
     return wantarray ? ($1) : $1;
   }
 
-  my @matches = $$email_header =~ /^($header_name\s.*\n(?:\s.*\n)*)/igm;
+  my @matches = $$email_header =~ /^($header_name\s.*$endline(?:\s.*$endline)*)/igm;
 
   if (@matches)
   {
@@ -1268,7 +1319,7 @@ sub GetHeaderField
   }
 
   if (lc $header_name eq 'from ' &&
-    $$email_header =~ /^(From\s.*\n(\s.*\n)*)/im)
+    $$email_header =~ /^(From\s.*$endline(\s.*$endline)*)/im)
   {
     return wantarray ? ($1) : $1;
   }
@@ -1284,13 +1335,14 @@ sub PrintEmailStatistics
 {
   my $email_header = shift;
   my $email_body = shift;
+  my $endline = shift;
 
   die unless ref $email_header && ref $email_body;
 
   dprint '-'x70;
   dprint "Processing email:";
 
-  my $message_id = GetHeaderField($email_header,'Message-Id:');
+  my $message_id = GetHeaderField($email_header,'Message-Id:',$endline);
 
   if (defined $message_id)
   {
@@ -1301,8 +1353,8 @@ sub PrintEmailStatistics
     dprint "  [No message id line found]";
   }
 
-  my $author = GetHeaderField($email_header,'From:');
-  $author = GetHeaderField($email_header,'From ')
+  my $author = GetHeaderField($email_header,'From:',$endline);
+  $author = GetHeaderField($email_header,'From ',$endline)
     unless defined $author;
 
   if (defined $author)
@@ -1314,7 +1366,7 @@ sub PrintEmailStatistics
     dprint "  [No from line found]";
   }
 
-  my $subject = GetHeaderField($email_header,'Subject:');
+  my $subject = GetHeaderField($email_header,'Subject:',$endline);
 
   if (defined $subject)
   {
@@ -1325,7 +1377,7 @@ sub PrintEmailStatistics
     dprint "  [No subject line found]";
   }
 
-  my $date = GetHeaderField($email_header,'Date:');
+  my $date = GetHeaderField($email_header,'Date:',$endline);
 
   if (defined $date)
   {
@@ -1365,6 +1417,7 @@ sub AnalyzeHeader
   my $fileHandle = shift;
   my $pattern = shift;
   my $doHeaderMatch = shift;
+  my $endline = shift;
 
   die unless ref $email_header && ref $email_body;
 
@@ -1411,7 +1464,7 @@ sub AnalyzeHeader
     # Avoid perl 5.6 bug which causes spurious warning even though $pattern is
     # defined.
     local $^W = 0 if $] >= 5.006 && $] < 5.8;
-    my $matchesHeader = Header_Matches_Pattern($email_header,$pattern);
+    my $matchesHeader = Header_Matches_Pattern($email_header,$pattern,$endline);
 
     if ($opts{'h'})
     {
@@ -1443,6 +1496,7 @@ sub Header_Matches_Pattern
 {
   my $email_header = ${shift @_};
   my $pattern = shift;
+  my $endline = shift;
 
   return ($email_header =~ /$pattern/om) || 0 unless $opts{'Y'};
 
@@ -1464,7 +1518,7 @@ sub Header_Matches_Pattern
     $header_pattern = "(?i)$header_pattern" if ($opts{'i'});
   }
 
-  for my $header (split(/\n/, $email_header))
+  for my $header (split(/$endline/, $email_header))
   {
     if ($header =~ /$header_pattern/)
     {
@@ -1485,9 +1539,11 @@ sub ConvertEmailToMboxAndPrintIt
   my $email_body = shift;
   my $number_files = shift;
   my $line_number = shift;
+  my $endline = shift;
 
   ($email_header,$email_body) = ConvertEmailToMbox($email_header,$email_body);
-  PrintEmail($fileName,$email_header,$email_body,$number_files,$line_number);
+  PrintEmail($fileName,$email_header,$email_body,$number_files,$line_number,
+    $endline);
 }
 
 #-------------------------------------------------------------------------------
@@ -1530,29 +1586,30 @@ sub PrintEmail
   my $email_body = shift;
   my $number_files = shift;
   my $line_number = shift;
+  my $endline = shift;
 
   dprint "Printing email.";
 
   if ($opts{'n'})
   {
     # Print header-by-header
-    my @headers = $$email_header =~ /^(.*\n(?:\s.*\n)*)/gm;
+    my @headers = $$email_header =~ /^(.*$endline(?:\s.*$endline)*)/gm;
 
     foreach my $header (@headers)
     {
       # Add the mailfolder to the headers if -m was given. Careful
       # about line numbers!
-      if ($opts{'m'} && $header eq "\n")
+      if ($opts{'m'} && $header eq $endline)
       {
         print GetFileName($fileName).":" if $number_files > 1;
 
         print " " x length $line_number,
-          ":X-Mailfolder: ", GetFileName($fileName), "\n";
+          ":X-Mailfolder: ", GetFileName($fileName), $endline;
       }
 
       # Print only 3-line header if -B
       if ($opts{'B'} &&
-        $header !~ /^(From\s|X-From-Line:|X-Draft-From:|From:|Date:|Subject:|\n)/i)
+        $header !~ /^(From\s|X-From-Line:|X-Draft-From:|From:|Date:|Subject:|$endline)/i)
       {
         $line_number += ($header =~ tr/\n//);
       }
@@ -1573,7 +1630,7 @@ sub PrintEmail
       return;
     }
 
-    while ($$email_body =~ /([^\n]*\n)/g)
+    while ($$email_body =~ /([^\r\n]*$endline)/g)
     {
       my $line = $1;
 
@@ -1587,20 +1644,19 @@ sub PrintEmail
     # print short headers if -B is specified
     if ($opts{'B'})
     {
-      print GetHeaderField($email_header,'From ');
-      print GetHeaderField($email_header,'Date:');
-      print GetHeaderField($email_header,'From:');
-      print GetHeaderField($email_header,'Subject:');
-      print "X-Mailfolder: ".GetFileName($fileName)."\n\n" if $opts{'m'};
+      print GetHeaderField($email_header,'From ',$endline);
+      print GetHeaderField($email_header,'Date:',$endline);
+      print GetHeaderField($email_header,'From:',$endline);
+      print GetHeaderField($email_header,'Subject:',$endline);
+      print "X-Mailfolder: ".GetFileName($fileName)."$endline$endline" if $opts{'m'};
     }
     else
     {
-      # Had better be a newline!
-      chop $$email_header;
+      chomp $$email_header;
       print $$email_header;
-      print "X-Mailfolder: ".GetFileName($fileName)."\n" if $opts{'m'};
-      print "\n";
-      $$email_header .= "\n";
+      print "X-Mailfolder: ".GetFileName($fileName).$endline if $opts{'m'};
+      print $endline;
+      $$email_header .= $endline;
     }
 
     # Don't print the body if -H is specified
@@ -1620,6 +1676,7 @@ sub PrintEmail
 sub Email_Matches_Date
 {
   my $email_header = shift @_;
+  my $endline = shift;
 
   die unless ref $email_header;
 
@@ -1627,10 +1684,10 @@ sub Email_Matches_Date
 
   return 1 unless defined $opts{'d'};
 
-  my $received_header = GetHeaderField($email_header, 'Received:');
-  my $date_header = GetHeaderField($email_header, 'Date:');
-  my $subject_header = GetHeaderField($email_header, 'Subject:');
-  my $from_header = GetHeaderField($email_header, 'From ');
+  my $received_header = GetHeaderField($email_header, 'Received:',$endline);
+  my $date_header = GetHeaderField($email_header, 'Date:',$endline);
+  my $subject_header = GetHeaderField($email_header, 'Subject:',$endline);
+  my $from_header = GetHeaderField($email_header, 'From ',$endline);
 
   if ( ($opts{'a'} && (defined $received_header &&
       $received_header =~ /.*\;\s*(.*?)$/s)) ||
@@ -1672,14 +1729,9 @@ sub Email_Matches_Date
 
 # This function tries to parse a date first with Date::Parse. If Date::Parse
 # can't parse the date, then the function tries to use Date::Manip to parse
-# it. Returns '' if the date can't be parsed.
+# it. Returns the parsed date in unix time format, or undef if it can't be
+# parsed.
 
-{
-my $loaded_date_manip = undef;
-
-# Returns:
-# - the parsed date in unix time format
-# - a boolean indicating whether a time was inferred
 sub ParseDate
 {
   my $date = shift;
@@ -1687,36 +1739,17 @@ sub ParseDate
   # First try to parse the date with Date::Parse;
   {
     my $parsedDate = str2time($date);
-    return ($parsedDate,0) if defined $parsedDate;
+    return $parsedDate if defined $parsedDate;
   }
 
+  # Then try Date::Manip, if it is installed
+  if (defined $Date::Manip::VERSION)
   {
-    # Try to load Date::Manip if we haven't already
-    unless (defined $loaded_date_manip)
-    {
-      if (eval "require Date::Manip")
-      {
-        $loaded_date_manip = 1;
-
-        my ($version_number) = $Date::Manip::VERSION =~ /^(\d+\.\d+)/;
-        Date::Manip::Date_Init("TodayIsMidnight=1") if $version_number >= 5.43;
-        # To prevent warning about variable being used only once
-        my $dummy = $Date::Manip::VERSION;
-      }
-      else
-      {
-        $loaded_date_manip = 0;
-      }
-    }
-
-    return '' unless $loaded_date_manip;
-
     my $parsedDate = Date::Manip::UnixDate(Date::Manip::ParseDate($date),'%s');
-    return ($parsedDate,0) if defined $parsedDate;
+    return $parsedDate if defined $parsedDate;
   }
 
-  return ('',undef);
-}
+  return undef;
 }
 
 #-------------------------------------------------------------------------------
@@ -1733,23 +1766,18 @@ sub ProcessDate($)
   if ($datestring =~ /^before (.*)/i)
   {
     $dateRestriction = $BEFORE;
-    $date1 = (ParseDate($1))[0];
+    $date1 = ParseDate($1);
     $date2 = '';
 
-    reportAndExit "\"$1\" is not a valid date" unless $date1;
+    reportAndExit "\"$1\" is not a valid date" unless defined $date1;
   }
   elsif ($datestring =~ /^(after|since)\s(.*)/i)
   {
     $dateRestriction = $AFTER;
 
-    my $time_inferred;
-    ($date1,$time_inferred) = ParseDate($2);
+    $date1 = ParseDate($2);
 
-    reportAndExit "\"$2\" is not a valid date" unless $date1;
-
-    # The time is inferred as midnight of the specified day, so we need to add
-    # 24 hours to get a time which starts on the next day
-    $date1 += 24*60*60 if $time_inferred;
+    reportAndExit "\"$2\" is not a valid date" unless defined $date1;
 
     $date2 = '';
   }
@@ -1757,11 +1785,11 @@ sub ProcessDate($)
   {
     $dateRestriction = $BETWEEN;
 
-    $date1 = (ParseDate($1))[0];
-    $date2 = (ParseDate($2))[0];
+    $date1 = ParseDate($1);
+    $date2 = ParseDate($2);
 
-    reportAndExit "\"$1\" is not a valid date" unless $date1;
-    reportAndExit "\"$2\" is not a valid date" unless $date2;
+    reportAndExit "\"$1\" is not a valid date" unless defined $date1;
+    reportAndExit "\"$2\" is not a valid date" unless defined $date2;
 
     # Swap the dates if the user gave them backwards.
     if ($date1 > $date2)
@@ -1773,18 +1801,115 @@ sub ProcessDate($)
     }
 
   }
-  elsif ((ParseDate($datestring))[0] ne '')
-  {
-    $dateRestriction = $ON;
-    $date1 = (ParseDate($datestring))[0];
-    $date2 = '';
-  }
   else
   {
-    reportAndExit "\"$datestring\" is an invalid date specification. Use \"$0 -h\" for help";
+    $dateRestriction = $BETWEEN;
+
+    ($date1,$date2) = ParseDateSpan($datestring);
+
+    reportAndExit "\"$datestring\" is an invalid date specification. Use \"$0 --help\" for help"
+      unless defined $date1;
   }
 
   return ($dateRestriction,$date1,$date2);
+}
+
+#-------------------------------------------------------------------------------
+
+sub ParseDateSpan
+{
+  my $datestring = shift;
+
+  # @parsed_time == ($ss,$mm,$hh,$day,$month,$year,$zone)
+  my @parsed_time = strptime($datestring);
+
+  # For "jan 2004"
+  if (defined $parsed_time[3] && $parsed_time[3] > 31 && !defined $parsed_time[5])
+  {
+    $parsed_time[5] = $parsed_time[3] - 1900;
+    $parsed_time[3] = undef;
+  }
+
+  return (undef,undef)
+    unless grep { defined } @parsed_time;
+
+  # @current_time == ($ss,$mm,$hh,$day,$month,$year,$zone)
+  my @current_time = ((localtime(time))[0..5],$parsed_time[-1]);
+
+  # Starting from the largest time unit, set it to the current value as long
+  # as it's undefined.
+  for (my $i = -1; !defined($parsed_time[$i]); $i--)
+  {
+    $parsed_time[$i] = $current_time[$i];
+  }
+
+  my @date1 = @parsed_time;
+  my $increment_unit = 1;
+
+  # Set the low date and the increment unit. Starting from the smallest time
+  # unit, set it to the smallest value as long as it's undefined.
+  unless (defined $date1[0])
+  {
+    $date1[0] = 0;
+
+    $increment_unit *= 60;
+
+    unless (defined $date1[1])
+    {
+      $date1[1] = 0;
+
+      $increment_unit *= 60;
+
+      unless (defined $date1[2])
+      {
+        $date1[2] = 0;
+
+        $increment_unit *= 24;
+
+        unless (defined $date1[3])
+        {
+          $date1[3] = 1;
+
+          if (defined $date1[4])
+          {
+            $increment_unit *= Number_Of_Days_In_Month($date1[4],$date1[5]);
+          }
+          else
+          {
+            $date1[4] = 0;
+
+            $increment_unit *= Number_Of_Days_In_Year($date1[5]);
+          }
+        }
+      }
+    }
+  }
+
+  my $date1 = timelocal(@date1);
+  my $date2 = timelocal(@date1)+$increment_unit;
+
+  return ($date1,$date2);
+}
+
+#-------------------------------------------------------------------------------
+
+# http://groups.google.com/groups?selm=8FA9D001darkononenet%40206.112.192.118
+# $month: 0..11; $year: CCYY
+sub Number_Of_Days_In_Month
+{
+  my ($month, $year) = @_;
+
+  ( qw(31 0 31 30 31 30 31 31 30 31 30 31) )[$month] ||
+    28 + (($year % 100 && !($year % 4))|| !($year % 400));
+}
+
+#-------------------------------------------------------------------------------
+
+sub Number_Of_Days_In_Year
+{
+  my $year = @_;
+
+  365 + (($year % 100 && !($year % 4))|| !($year % 400));
 }
 
 #-------------------------------------------------------------------------------
@@ -1840,7 +1965,7 @@ sub ProcessSize($)
   }
   else
   {
-    reportAndExit "\"$sizestring\" is an invalid size specification. Use \"$0 -h\" for help";
+    reportAndExit "\"$sizestring\" is an invalid size specification. Use \"$0 --help\" for help";
   }
 
   return ($sizeRestriction,$size1,$size2);
@@ -1857,13 +1982,12 @@ sub IsInDate($$$$)
 
   # Now we do the date checking.
   return 1 if $dateRestriction == $NONE;
-  return $emailDate < $date1 if $dateRestriction == $BEFORE;
-  return $emailDate > $date1 if $dateRestriction == $AFTER;
-
-  # Since these values are in seconds, we have to make sure that $emailDate
-  # is within 24 hours after $date1
-  return $emailDate > $date1 && $emailDate-$date1 < 24*60*60 if $dateRestriction == $ON;
-  return $emailDate > $date1 && $emailDate < $date2 if $dateRestriction == $BETWEEN;
+  return $emailDate < $date1
+    if $dateRestriction == $BEFORE;
+  return $emailDate > $date1
+    if $dateRestriction == $AFTER;
+  return $emailDate > $date1 && $emailDate < $date2
+    if $dateRestriction == $BETWEEN;
 
   return 0;
 }
@@ -2369,6 +2493,12 @@ its cache file.
 =head1 BUGS AND LIMITATIONS
 
 =over 2
+
+=item Patterns containing "$" may cause problems
+
+Currently I look for "$" followed by a non-word character and replace it with 
+the line ending for the current file (either "\n" or "\r\n"). This may cause
+problems with complex patterns specified with -E, but I'm not aware of any.
 
 =item Mails without bodies cause problems
 

@@ -108,7 +108,6 @@ sub DoDiff
   {
     print "Output $output_filename looks good.\n";
 
-    unlink "$output_filename";
     unlink "$output_filename.diff";
     return (1,1);
   }

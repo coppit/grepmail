@@ -23,6 +23,8 @@ my %tests = (
 # Unimplemented
 "grepmail -X $single_quote\={75,}$single_quote -S -E $single_quote\$email =~ /61 2 9844 5381/$single_quote t/mailboxes/mailarc-1.txt"
   => ['none','none'],
+'grepmail -ibS Free t/mailboxes/mailarc-1-dos.txt'
+  => ['ignore_signatures_dos','none'],
 );
 
 my %expected_errors = (

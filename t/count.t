@@ -14,6 +14,8 @@ my %tests = (
   => ['count_handy','none'],
 'grepmail -br Handy t/mailboxes/mailarc-1.txt t/mailboxes/mailarc-2.txt'
   => ['count_handy','none'],
+'grepmail -br Handy t/mailboxes/mailarc-1-dos.txt t/mailboxes/mailarc-2.txt'
+  => ['count_handy_dos','none'],
 );
 
 my %expected_errors = (

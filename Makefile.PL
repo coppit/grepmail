@@ -64,7 +64,7 @@ sub Compute_Makefile_Attributes
     'PM' => {},
     'PREREQ_PM' => {
       'Date::Parse' => 0,
-      'Mail::Mbox::MessageParser' => 1.10,
+      'Mail::Mbox::MessageParser' => 1.20,
     },
     'DIR' => [],
   );

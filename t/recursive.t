@@ -6,11 +6,12 @@ use Test;
 use lib 'lib';
 use Test::Utils;
 use File::Spec::Functions qw( :ALL );
+use ExtUtils::Command;
 
 my %tests = (
-'grepmail -Rq Handy t/mailboxes/directory'
+'grepmail -Rq Handy t/temp/directory'
   => ['recursive','none'],
-"grepmail -Rq -E $single_quote\$email =~ /Handy/$single_quote t/mailboxes/directory"
+"grepmail -Rq -E $single_quote\$email =~ /Handy/$single_quote t/temp/directory"
   => ['recursive','none'],
 );
 
@@ -18,6 +19,17 @@ my %expected_errors = (
 );
 
 mkdir 't/temp', 0700;
+
+# Copy over the files so that there are no version control directories in our
+# search directory. I could use File::Copy, but it doesn't support globbing
+# and multiple-file copying. :(
+{
+  mkdir 't/temp/directory', 0700;
+  my @old_argv = @ARGV;
+  @ARGV = ('t/mailboxes/directory/*txt*', 't/temp/directory');
+  cp();
+  @ARGV = @old_argv;
+}
 
 plan (tests => scalar (keys %tests));
 

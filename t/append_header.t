@@ -16,6 +16,8 @@ my %tests = (
   => ['number_append_header','none'],
 "grepmail -mn -E $single_quote\$email =~ /Handy/$single_quote t/mailboxes/mailarc-1.txt t/mailboxes/mailarc-2.txt"
   => ['number_append_header','none'],
+'grepmail -m Handy t/mailboxes/mailarc-1-dos.txt'
+    => ['append_header_dos','none'],
 );
 
 my %expected_errors = (
