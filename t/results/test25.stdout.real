@@ -1,15 +1,18 @@
-grepmail 4.80
+grepmail 4.82
 
 usage:
 
-  grepmail [--help] [-abBDhHilmrRuv] [-s size] [-d <date-specification>]
-    [-X <signature-pattern>] [-Y <header-pattern>] <files...>
+  grepmail [--help|--version] [-abBDFhHilmrRuvV] [-f status] [-s size]
+    [-d <date-specification>] [-X <signature-pattern>] [-Y <header-pattern>]
+    <files...>
 
-  grepmail [--help] [-abBDhHilmrRuv] [-s size] [-d <date-specification>]
-    [-X <signature-pattern>] [-Y <header-pattern>] [[-e] <pattern>] <files...>
+  grepmail [--help|--version] [-abBDFhHilmrRuvV] [-f status] [-s size]
+    [-d <date-specification>] [-X <signature-pattern>] [-Y <header-pattern>]
+    [[-e] <pattern>] <files...>
 
-  grepmail [--help] [-abBDhHilmrRuv] [-s size] [-d <date-specification>]
-    [-X <signature-pattern>] [-Y <header-pattern>] [-E <expr>] <files...>
+  grepmail [--help|--version] [-abBDFhHilmrRuvV] [-f status] [-s size]
+    [-d <date-specification>] [-X <signature-pattern>] [-Y <header-pattern>]
+    [-E <expr>] <files...>
 
 At least one of -s, -d, -u, -e, and -E must be specified, and can appear in
 any relative order following the other flags. The -e flag is optional if
@@ -24,6 +27,8 @@ compressed ASCII input is taken from STDIN.
 -D Debug mode
 -e Explicitly name pattern (when searching for strings beginning with "-")
 -E Specify a complex search expression
+-f Search must match status (A=answered, R=read, D=deleted, O=old, F=flagged)
+-F Force processing of mailboxes which appear to be binary
 -h Search must match header
 -H Print headers but not bodies of matching emails
 -i Ignore case in the search expression
@@ -43,7 +48,6 @@ compressed ASCII input is taken from STDIN.
 -V Display the version number
 -X Specify a regular expression for the signature separator
 -Y Specify a header to search (implies -h)
--Z Not use Mail::Folder::FastReader even if it is on the system
 --help Print a help message
 
 Date specifications must be of the form of:

@@ -251,6 +251,7 @@ my @date_manip = (33);
 my @bzip2 = (20,21,79,80);
 my @gzip = (15,16,17,19,23,74,75,81,107);
 my @tzip = (25,82);
+my @broken_pipe = (58,107);
 my @error_cases = (27, 28, 84, 85);
 my @unimplemented =
   ( 88, 94, 97, 98, 99, 100, 101, 102, 103, 104, 105, 106);
@@ -268,7 +269,6 @@ my $bzip2 = 0;
 my $gzip = 0;
 my $tzip = 0;
 my $date_manip = 0;
-my $mail_folder_fastreader = 0;
 
 {
   my $temp;
@@ -300,38 +300,13 @@ my $mail_folder_fastreader = 0;
   {
     $date_manip = 0;
   }
-
-  if (ModuleInstalled("Mail::Folder::FastReader"))
-  {
-    $mail_folder_fastreader = 1;
-  }
-  else
-  {
-    $mail_folder_fastreader = 0;
-  }
 }
 
-if ($mail_folder_fastreader)
-{
-  plan (tests => ($#tests + 1) * 2);
-}
-else
-{
-  plan (tests => $#tests + 1);
-}
+plan (tests => $#tests + 1);
 
 print "Testing $version version of grepmail.\n\n";
 
-if ($mail_folder_fastreader)
-{
-  print "Testing Mail::Folder::FastReader-based folder reader implementation.\n\n";
-
-  DoTests($ARGV[0],1);
-}
-
-print "Testing perl-based folder reader implementation.\n\n";
-
-DoTests($ARGV[0],0);
+DoTests($ARGV[0]);
 
 # ---------------------------------------------------------------------------
 
@@ -485,7 +460,6 @@ my $testNumber;
 sub DoTests
 {
   my $test_constraint = shift;
-  my $mail_folder_fastreader = shift;
 
   $testNumber = 1 unless defined $testNumber;
 
@@ -502,11 +476,18 @@ sub DoTests
         ($testNumber < $1 || $testNumber > $2));
     }
 
+    my @newinc;
+    foreach my $inc (@INC)
+    {
+      push (@newinc, split(/ +/,$inc));
+    }
+
+    @INC = @newinc;
+
     local $" = " -I";
     my $includes = "-I@INC";
 
     $test =~ s#\bgrepmail\s#$^X $includes blib/script/grepmail #sg;
-    $test =~ s#\bgrepmail\s#grepmail -Z #sg unless $mail_folder_fastreader;
 
     print "$test\n";
 
@@ -535,7 +516,7 @@ sub DoTests
       next;
     }
 
-    CheckDiffs($testNumber,$testID+1);
+    CheckDiffs($testNumber,$testID);
     print "\n";
   }
   continue
@@ -551,10 +532,21 @@ sub DoTests
 sub CheckDiffs
 {
   my $testNumber = shift;
-  my $testID1 = shift;
+  my $testID = shift;
 
-  my ($stdout_diff,$stdout_result) = DoDiff($testNumber,$testID1,'stdout');
-  my ($stderr_diff,$stderr_result) = DoDiff($testNumber,$testID1,'stderr');
+  # Some operating systems (shells?) print "Broken Pipe", and others
+  # don't. Normalize the STDERR output in this case
+  if (grep {$_ == $testID} @broken_pipe)
+  {
+    my $filtered =
+      `grep -vi '^broken pipe\$' t/results/test$testNumber.stderr`;
+    open FILTERED, ">t/results/test$testNumber.stderr";
+    print FILTERED $filtered;
+    close FILTERED;
+  }
+
+  my ($stdout_diff,$stdout_result) = DoDiff($testNumber,$testID,'stdout');
+  my ($stderr_diff,$stderr_result) = DoDiff($testNumber,$testID,'stderr');
 
   ok(0), return if $stdout_diff == 0 || $stderr_diff == 0;
   ok(0), return if $stdout_result == 0 || $stderr_result == 0;
@@ -571,8 +563,10 @@ sub DoDiff
   my $testID = shift;
   my $resultType = shift;
 
+  my $fileNumber = $testID+1;
+
   my $diffstring = "diff t/results/test$testNumber.$resultType " .
-    "t/results/test$testID.$resultType.real";
+    "t/results/test$fileNumber.$resultType.real";
 
   system "echo $diffstring > t/results/test$testNumber.$resultType.diff ".
     "2>t/results/test$testNumber.$resultType.diff.error";
