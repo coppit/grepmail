@@ -12,6 +12,7 @@
 $oldGrepmailLocation = "$ENV{HOME}/bin";
 
 @timedtests = (
+'grepmail -M library big-1.txt big-2.txt big-3.txt big-4.txt',
 'grepmail library big-1.txt big-2.txt big-3.txt big-4.txt',
 'grepmail library -d "before oct 15 1998" big-1.txt big-2.txt big-3.txt big-4.txt',
 'grepmail library big-3.txt.gz big-3.txt.bz2',
