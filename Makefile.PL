@@ -20,7 +20,7 @@ my %makefile_attributes = Compute_Makefile_Attributes(@ARGV);
 
 WriteMakefile( %makefile_attributes );
 
-UpdateTestVersion('grepmail','t/results/test25.stdout.real');
+UpdateTestVersion('grepmail','t/results/help');
 
 exit;
 
@@ -114,7 +114,7 @@ sub Compute_Makefile_Attributes
     'PM' => {},
     'PREREQ_PM' => {
       'Date::Parse' => 0,
-      'Mail::Mbox::MessageParser' => 0,
+      'Mail::Mbox::MessageParser' => 1.10,
     },
     'DIR' => [],
   );

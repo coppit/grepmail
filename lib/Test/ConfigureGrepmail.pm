@@ -25,8 +25,6 @@ sub Set_Cache_File
 
   my $code = _Read_Code($filename);
 
-# Pre-5.10 versions of grepmail don't use MessageParser
-=for nobody
   if ($code =~ /(Mail::Mbox::MessageParser::SETUP_CACHE\( {.*?} *\))/s)
   {
     my $original_cache_setup = $1;
@@ -36,8 +34,6 @@ sub Set_Cache_File
 
     $code =~ s/\Q$original_cache_setup\E/$new_cache_setup/;
   }
-=cut
-  $code =~ s/('file_name'\s*=>\s*)".*?grepmail-cache"/$1"$cache_file"/;
 
   _Write_Code($filename, $code);
 }

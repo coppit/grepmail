@@ -14,10 +14,7 @@ use FileHandle;
 use Test::ConfigureGrepmail;
 use File::Copy;
 
-my $NUMBER_ITERATIONS = -3;
 my $MAILBOX_SIZE = 10_000_000;
-my $LARGE_MESSAGE_SIZE = 1_000_000;
-my $NUMBER_OF_LARGE_MESSAGES = 10;
 my $TEMP_MAILBOX = 't/temp/bigmailbox.txt';
 
 my @IMPLEMENTATIONS_TO_TEST = (
@@ -84,7 +81,9 @@ sub CreateInputFiles
 {
   my $filename = shift;
 
-  unless(-e $filename && abs((-s $filename) - $MAILBOX_SIZE) <= 200_000)
+  my @mailboxes;
+
+  unless(-e $filename && abs((-s $filename) - $MAILBOX_SIZE) <= $MAILBOX_SIZE*.1)
   {
     print "Making input file ($MAILBOX_SIZE bytes).\n";
 
@@ -148,6 +147,8 @@ EOF
   print "Making compressed input file.\n";
 
   system "gzip -c --force --best $filename > $filename.gz";
+
+  return ($filename, "$filename.gz");
 }
 
 ################################################################################
@@ -237,6 +238,8 @@ sub DoHeadToHeadComparison
 
   foreach my $label (@labels)
   {
+    next unless exists $data->{"Old $label"} && exists $data->{"New $label"};
+
     print "-----------------------------------------\n"
       unless $first;
 
