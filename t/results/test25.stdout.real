@@ -1,6 +1,6 @@
-grepmail 4.50
+grepmail 4.51
 
-usage: grepmail [-abBDhHilmrRuv] [-s size] [-d "datespec"] [[-e] <expr>] <files...>
+usage: grepmail [--help] [-abBDhHilmrRuv] [-s size] [-d "datespec"] [[-e] <expr>] <files...>
 
 At least one of -s, -d, -u, and -e must be specified, and can appear in any
 relative order following the other flags. The -e flag is optional if expr
@@ -31,6 +31,7 @@ compressed ASCII input is taken from STDIN.
 -v Output emails that don't match the expression
 -V Display the version number
 -Z Not use Mail::Folder::FastReader even if it is on the system
+--help Print a help message
 
 Date specifications must be of the form of:
 a date like "today", "1st thursday in June 1992" (requires Date::Manip),

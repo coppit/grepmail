@@ -64,6 +64,7 @@ my @tests = (
 'grepmail -mn library t/mailarc-1.txt t/mailarc-2.txt',
 'grepmail . t/gnus.txt',
 'grepmail -iB Free t/mailarc-1.txt',
+'grepmail Driving t/mailarc-1.txt',
 );
 
 # Tests for certain supported options.
