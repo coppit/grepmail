@@ -1,8 +1,8 @@
-#!/users/dwc3q/bin/perl -w
+#!/usr/bin/perl -w
 
 # grepmail
 
-$VERSION = '4.40';
+$VERSION = '4.41';
 
 # Grepmail searches a normal, gzip'd, tzip'd, or bzip2'd mailbox for a given
 # regular expression and returns those emails that match the query. It also
@@ -614,7 +614,9 @@ sub IsMailbox
   my $buffer = <$fileHandle>;
 
   my $returnVal;
-  if ($buffer =~ /^From /im && $buffer =~ /^Date: /im)
+
+  # X-From-Line is used by Gnus, and From is used by normal Unix format
+  if ($buffer =~ /^(X-From-Line:|From) /im && $buffer =~ /^Date: /im)
   {
     $returnVal = 1;
   }
