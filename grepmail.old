@@ -2,7 +2,7 @@
 
 # grepmail
 
-$VERSION = '5.10';
+$VERSION = '5.20';
 
 # Grepmail searches a normal, gzip'd, tzip'd, or bzip2'd mailbox for a given
 # regular expression and returns those emails that match the query. It also
@@ -32,7 +32,6 @@ use vars qw( %opts $pattern $commandLine $VERSION %message_ids_seen
 use Getopt::Std;
 
 use strict;
-use warnings 'all';
 use Mail::Mbox::MessageParser;
 use FileHandle;
 use Carp;
@@ -59,6 +58,7 @@ my $LESS_THAN_OR_EQUAL    = 11;
 my $GREATER_THAN          = 12;
 my $GREATER_THAN_OR_EQUAL = 13;
 my $EQUAL                 = 14;
+my $NO_PATTERN            = '\127\235NO PATTERN\725\125';
 
 my %HEADER_PATTERNS = (
 '^TO:' =>
@@ -161,7 +161,7 @@ sub ProcessSize($);
 sub GetFiles(@);
 
 # Make the pattern insensitive if we need to
-$pattern = "(?i)$pattern" if ($opts{'i'});
+$pattern = "(?i)$pattern" if ($opts{'i'}) && $pattern ne $NO_PATTERN;
 
 my ($dateRestriction, $date1, $date2);
 
@@ -185,7 +185,8 @@ else
   $sizeRestriction = $NONE;
 }
 
-dprint "PATTERN: $pattern\n";
+dprint "PATTERN: $pattern\n" unless $pattern eq $NO_PATTERN;
+dprint "PATTERN: <NO PATTERN>\n" if $pattern eq $NO_PATTERN;
 dprint "FILES: @remaining_arguments\n";
 dprint "DATE RESTRICTION: $dateRestriction\n";
 dprint "FIRST DATE: $date1\n" unless $dateRestriction == $NONE;
@@ -220,14 +221,14 @@ sub Get_Options
   my @argv = @ARGV;
 
   # Print usage error if no arguments given
-  reportAndExit("No arguments given.\n\n" . usage()) unless @ARGV;
+  reportAndExit("No arguments given.\n\n" . help()) unless @ARGV;
 
   # Check for --help, the standard usage command, or --version.
   print help() and exit(0) if grep { /^--help$/ } @ARGV;
   print "$VERSION\n" and exit(0) if grep { /^--version$/ } @ARGV;
 
   my @valid_options =
-    qw( D e E f F i j q h b v l r R a M m s t T u n Z H S d V X Y );
+    qw( a b C d D e E f F i j h H l M m n q r R s S t T u v V X Y Z );
 
   my %opts;
 
@@ -237,9 +238,10 @@ sub Get_Options
   # And some to non-zero.
   $opts{'d'} = $opts{'V'} = undef;
   $opts{'X'} = '^-- $';
+  $opts{'C'} = "$ENV{'HOME'}/.grepmail-cache";
 
   # Ensure valid options. ALSO UPDATE 2ND GETOPT CALL BELOW
-  getopt("deEfjsXY",\%opts);
+  getopt("CdeEfjsXY",\%opts);
 
   # Here we have to deal with the possibility that the user specified the
   # search pattern without the -e flag.
@@ -264,7 +266,7 @@ sub Get_Options
       if ( $#ARGV > 0 && $ARGV[1] =~ /^-$missing_flags$/)
       {
         $pattern = shift @ARGV;
-        getopt("fdjsXY",\%opts);
+        getopt("CdfjsXY",\%opts);
       }
 
       # If we've seen a -d, -j, -s, or -u flag, and it doesn't look like there
@@ -277,7 +279,7 @@ sub Get_Options
       {
         # If $ARGV[0] looks like a file we assume there was no pattern and
         # set a default pattern of "." to match everything.
-        if ($#ARGV != -1 && -f $ARGV[0])
+        if ($#ARGV != -1 && -f Search_Mailbox_Directories($ARGV[0]))
         {
           $pattern = '.';
         }
@@ -350,7 +352,7 @@ sub Get_Options
     # The only times you don't have to specify the pattern is when -d, -j, -s, or -u
     # is being used. This should catch people who do "grepmail -h" thinking
     # it's help.
-    reportAndExit("Invalid arguments.\n\n" . usage())
+    reportAndExit("Invalid arguments.\n\n" . help())
       unless defined $opts{'d'} || $opts{'j'} || $opts{'s'} || $opts{'u'};
 
     $pattern = '.';
@@ -376,7 +378,7 @@ sub Get_Options
   {
     unless (grep {/^$option$/} @valid_options)
     {
-      reportAndExit("Invalid argument: \"$option\".\n\n" . usage());
+      reportAndExit("Invalid argument: \"$option\".\n\n" . help());
     }
   }
 
@@ -422,6 +424,8 @@ sub Get_Options
       }
     }
   }
+
+  $pattern = $NO_PATTERN if $pattern eq '()';
 
   return (\%opts, @ARGV);
 }
@@ -478,7 +482,7 @@ sub ValidatePattern
     eval {if ($pattern) {}};
     reportAndExit "The match condition \"$pattern\" is invalid.\n" if $@;
   }
-  else
+  elsif ($pattern ne $NO_PATTERN)
   {
     eval {'string' =~ /$pattern/};
     reportAndExit "The pattern \"$pattern\" is invalid.\n" if $@;
@@ -551,110 +555,9 @@ sub HandleInputFiles
       next;
     }
 
-    $file = Search_Mailbox_Directories($file) unless -e $file;
+    $file = Search_Mailbox_Directories($file) unless -f $file;
 
-    my $fileHandle = new FileHandle;
-    my ($filter,$filterError);
-
-    # If it's not a compressed file
-    if ($file !~ /\.(gz|Z|bz2|tz)$/)
-    {
-      if (-B $file)
-      {
-        warn "grepmail: Skipping binary file: '$file'\n" unless $opts{'q'};
-        next;
-      }
-
-      unless ($fileHandle->open($file))
-      {
-        warn "grepmail: Can't open $file: $!, skipping\n" unless $opts{'q'};
-        next;
-      }
-    }
-    # If it is a tzipped file
-    elsif ($file =~ /\.tz$/)
-    {
-      dprint "Calling tzip to decompress file.";
-
-      $filter = 'tzip';
-
-      use vars qw(*OLDSTDERR);
-      open OLDSTDERR,">&STDERR" or reportAndExit "Can't save STDERR: $!\n";
-      open STDERR,">/dev/null"
-        or reportAndExit "Can't redirect STDERR to /dev/null: $!\n";
-
-      unless ($fileHandle->open("tzip -cd '$file'|"))
-      {
-        $filterError = $!;
-      }
-
-      open STDERR,">&OLDSTDERR" or reportAndExit "Can't restore STDERR: $!\n";
-    }
-    # If it is a gzipped file
-    elsif ($file =~ /\.(gz|Z)$/)
-    {
-      dprint "Calling gunzip to decompress file.";
-
-      $filter = 'gunzip';
-
-      use vars qw(*OLDSTDERR);
-      open OLDSTDERR,">&STDERR" or reportAndExit "Can't save STDERR: $!\n";
-      open STDERR,">/dev/null"
-        or reportAndExit "Can't redirect STDERR to /dev/null: $!\n";
-
-      unless ($fileHandle->open("gzip -dc '$file'|"))
-      {
-        $filterError = $!;
-      }
-
-      open STDERR,">&OLDSTDERR" or reportAndExit "Can't restore STDERR: $!\n";
-    }
-    # If it is a bzipped file
-    elsif ($file =~ /\.bz2$/)
-    {
-      dprint "Calling bzip2 to decompress file.";
-
-      $filter = 'bzip2';
-
-      use vars qw(*OLDSTDERR);
-      open OLDSTDERR,">&STDERR" or reportAndExit "Can't save STDERR: $!\n";
-      open STDERR,">/dev/null"
-        or reportAndExit "Can't redirect STDERR to /dev/null: $!\n";
-
-      unless ($fileHandle->open("bzip2 -dc '$file'|"))
-      {
-        $filterError = $!;
-      }
-
-      open STDERR,">&OLDSTDERR" or reportAndExit "Can't restore STDERR: $!\n";
-    }
-
-    if ($filterError)
-    {
-      warn "grepmail: Can't execute \"$filter\" for file \"$file\": $filterError, ".
-           "skipping\n" unless $opts{'q'};
-      next;
-    }
-
-    unless (DataOnFileHandle($fileHandle))
-    {
-      unless ($fileHandle->close())
-      {
-        warn "grepmail: Can't execute \"$filter\" for file \"$file\": ".
-             "skipping\n" unless $opts{'q'};
-      }
-      next;
-    }
-
-    if (!$opts{'F'} && !IsMailbox($fileHandle))
-    {
-      warn "grepmail: Skipping non-mailbox ASCII file: '$file'\n" unless $opts{'q'};
-      next;
-    }
-
-    ProcessMailFile($fileHandle,$file,$#files+1,$filter);
-
-    $fileHandle->close();
+    ProcessMailFile(undef,$file,$#files+1);
   }
 }
 
@@ -664,12 +567,23 @@ sub Search_Mailbox_Directories
 {
   my $file = shift;
 
-  return $file unless exists $ENV{'MAIL'};
+  my @maildirs;
 
-  my $mail_folder = $ENV{'MAIL'};
+  push @maildirs, $ENV{'MAILDIR'}
+    if defined $ENV{'MAILDIR'} && -d $ENV{'MAILDIR'};
 
-  for ('', 'mail/', 'Mail/', 'Mailbox/'){
-    my $path_and_file = "$mail_folder/${_}$file";
+  push @maildirs, "$ENV{HOME}/mail"
+    if defined $ENV{'HOME'} && -d "$ENV{HOME}/mail";
+
+  push @maildirs, "$ENV{HOME}/Mail"
+    if defined $ENV{'HOME'} && -d "$ENV{HOME}/Mail";
+
+  push @maildirs, "$ENV{HOME}/Mailbox"
+    if defined $ENV{'HOME'} && -d "$ENV{HOME}/Mailbox";
+
+  foreach my $mail_folder (@maildirs)
+  {
+    my $path_and_file = "$mail_folder/$file";
     return $path_and_file if -e $path_and_file;
   }
 
@@ -685,194 +599,10 @@ sub HandleStandardInput
   # We have to implement our own -B and -s, because STDIN gets eaten by them
   binmode STDIN;
 
-  my ($testChars,$isEmpty,$isBinary);
-
   my $fileHandle = new FileHandle;
   $fileHandle->open('-');
 
-  $isEmpty = 0;
-  $isBinary = 0;
-
-  my $readResult = read($fileHandle,$testChars,200);
-
-  reportAndExit "Can't read from standard input" unless defined $readResult;
-
-  $isEmpty = 1 if $readResult == 0;
-
-  reportAndExit "No data on standard input" if $isEmpty;
-
-  # Do -B on the data stream
-  unless ($isEmpty)
-  {
-    my $data_length = length $testChars;
-    my $bin_length = $testChars =~ tr/[\t\n\x20-\x7e]//c;
-    my $non_bin_length = $data_length - $bin_length;
-    $isBinary = ($non_bin_length / $data_length) > .70 ? 0 : 1;
-  }
-
-  PutBackString($fileHandle,$testChars);
-
-  # If it looks binary and is non-empty, try to uncompress it. Here we're
-  # calling another copy of grepmail through the open command.
-  if ($isBinary)
-  {
-    my $filter;
-
-    # This seems to work. I'm not sure what the "proper" way to distinguish
-    # between gzip'd and bzip2'd and tzip'd files is.
-    if (substr($testChars, 0, 2) eq 'TZ')
-    {
-      dprint 'Trying to decompress using tzip.';
-      $filter = 'tzip -dc';
-    }
-    elsif (substr($testChars, 0, 2) eq 'BZ')
-    {
-      dprint 'Trying to decompress using bzip2.';
-      $filter = 'bzip2 -d';
-    }
-    else
-    {
-      dprint 'Trying to decompress using gunzip2.';
-      $filter = 'gzip -dc';
-    }
-
-    # Implicit fork
-    my $decompressedFileHandle = new FileHandle;
-    my $pid = $decompressedFileHandle->open('-|');
-
-    unless (defined($pid))
-    {
-      warn "grepmail: Can't fork to decompress standard input, stopping\n"
-        unless $opts{'q'};
-      return;
-    }
-
-    # In child. Write to the parent, giving it all the data to decompress.
-    # We have to do it this way because other methods (e.g. open2) require us
-    # to feed the filter as we use the filtered data. This method allows us to
-    # keep the remainder of the code the same for both compressed and
-    # uncompressed input.
-    unless ($pid)
-    {
-      open(FRONT_OF_PIPE, "|$filter 2>/dev/null")
-        or warn "grepmail: Can't execute \"$filter\" on STDIN: $!\n"
-          unless $opts{'q'};
-
-      while (!eof $fileHandle)
-      {
-        my $temp = <$fileHandle>;
-        print FRONT_OF_PIPE $temp;
-      }
-
-      $fileHandle->close()
-        or warn "grepmail: Can't execute \"$filter\" on STDIN: $!\n"
-          unless $opts{'q'};
-      # We intentionally don't check for error here. This is because the
-      # parent may have aborted, in which case we let it take care of
-      # error messages. (e.g. Non-mailbox standard input.)
-      close FRONT_OF_PIPE;
-
-      return;
-    }
-
-    # In parent
-    if (!$opts{'F'} && !IsMailbox($decompressedFileHandle))
-    {
-      warn "grepmail: Skipping non-mailbox standard input\n" unless $opts{'q'};
-
-      $decompressedFileHandle->close()
-        or warn "grepmail: Can't execute \"$filter\" on STDIN: $!\n"
-          unless $opts{'q'};
-
-      return;
-    }
-
-    ProcessMailFile($decompressedFileHandle,"Standard input",1,$filter);
-
-    $decompressedFileHandle->close()
-      or warn "grepmail: Can't execute \"$filter\" on STDIN: $!\n"
-        unless $opts{'q'};
-  }
-  # Otherwise process it directly
-  else
-  {
-    if (!$opts{'F'} && !IsMailbox($fileHandle))
-    {
-      warn "grepmail: Skipping non-mailbox standard input\n" unless $opts{'q'};
-      return;
-    }
-
-    ProcessMailFile($fileHandle,"Standard input",1,undef);
-
-    $fileHandle->close()
-      or warn "grepmail: Can't process STDIN: $!\n"
-        unless $opts{'q'};
-  }
-}
-
-#-------------------------------------------------------------------------------
-
-# Checks to see if there is data on a filehandle, without reading that data.
-
-sub DataOnFileHandle
-{
-  my $fileHandle = shift;
-
-  my $buffer = <$fileHandle>;
-
-  return 0 unless defined $buffer;
-
-  PutBackString($fileHandle,$buffer);
-
-  return $buffer ? 1 : 0;
-}
-
-#-------------------------------------------------------------------------------
-
-# Puts a string back on a file handle
-
-sub PutBackString
-{
-  my $fileHandle = shift;
-  my $string = shift;
-
-  for (my $char_position=length($string)-1;$char_position >=0; $char_position--)
-  {
-    $fileHandle->ungetc(ord(substr($string,$char_position,1)));
-  }
-}
-
-#-------------------------------------------------------------------------------
-
-# Detects whether an ASCII file is a mailbox, based on whether it has
-# a line whose prefix is 'From' or 'X-From-Line:' or 'X-Draft-From:',
-# and another line whose prefix is 'Received ', 'Date:', 'Subject:',
-# 'X-Status:', 'Status:', or 'To:'.
-
-sub IsMailbox
-{
-  my $fileHandle = shift @_;
-
-  # Read whole paragraphs
-  local $/ = "\n\n";
-
-  # Read a paragraph to get the header.
-  my $buffer = <$fileHandle>;
-  PutBackString($fileHandle,$buffer);
-  
-  # X-From-Line is used by Gnus, and From is used by normal Unix
-  # format. Newer versions of Gnus use X-Draft-From
-#  if ($buffer =~ /^(X-Draft-From:|X-From-Line:|From)\s/im &&
-#      $buffer =~ /^(Date|Subject|X-Status|Status|To):\s/im)
-  if ($buffer =~ /^(X-Draft-From:|X-From-Line:|From:?)\s/im &&
-      $buffer =~ /^(Date|To|Bcc):\s/im)
-  {
-    return 1;
-  }
-  else
-  {
-    return 0;
-  }
+  ProcessMailFile($fileHandle,undef,1);
 }
 
 #-------------------------------------------------------------------------------
@@ -888,6 +618,8 @@ sub Do_Simple_Pattern_Matching
   my $line = shift;
 
   die unless ref $email_header && ref $email_body;
+
+  return ($CONTINUE,$numberOfMatches) if $pattern eq $NO_PATTERN;
 
   dprint "Checking for early match or abort based on header information."
     if $opts{'D'};
@@ -1127,6 +859,8 @@ sub Do_Complex_Pattern_Matching
 
   die unless ref $email_header && ref $email_body;
 
+  return ($CONTINUE,$numberOfMatches) if $pattern eq $NO_PATTERN;
+
   dprint "Checking for early match or abort based on header information."
     if $opts{'D'};
 
@@ -1290,30 +1024,55 @@ sub ProcessMailFile
   my $fileHandle = shift @_;
   my $fileName = shift @_;
   my $number_files = shift @_;
-  my $compression_filter = shift @_;
 
-  $fileName = undef if $fileName eq 'Standard input';
-
-  my $numberOfMatches = 0;
-
-  my $folder_reader;
-
-  $USE_CACHING = 0, $USE_GREP = 0 unless defined $fileName;
-  # Add compression support to Mail::Mbox::MessageParser::Grep
-  $USE_CACHING = 0, $USE_GREP = 0 if defined $compression_filter;
-
-  Mail::Mbox::MessageParser::SETUP_CACHE( {
-      'file_name' => "$ENV{'HOME'}/.grepmail-cache" } )
+  my $setup_result = Mail::Mbox::MessageParser::SETUP_CACHE(
+    { 'file_name' => $opts{'C'} } )
     if $USE_CACHING;
 
-  $folder_reader =
+  die $setup_result unless $setup_result eq 'ok';
+
+  my $folder_reader =
     new Mail::Mbox::MessageParser( {
       'file_name' => $fileName,
       'file_handle' => $fileHandle,
       'enable_cache' => $USE_CACHING,
       'enable_grep' => $USE_GREP,
+      'ignore_binary' => $opts{'F'},
       'debug' => $opts{'D'},
     } );
+
+  unless (ref $folder_reader)
+  {
+    my $error = $folder_reader;
+
+    # Catch fatal errors
+    if ($error eq 'No data on filehandle')
+    {
+      reportAndExit('No data on standard input');
+    }
+    elsif ($error eq 'Not a mailbox')
+    {
+      unless($opts{'q'})
+      {
+        if (defined $fileName)
+        {
+          warn "grepmail: \"$fileName\" is not a mailbox, skipping\n"
+        }
+        else
+        {
+          warn "grepmail: Standard input is not a mailbox, skipping\n"
+        }
+      }
+      return;
+    }
+    else
+    {
+      warn "grepmail: $error, skipping\n" unless $opts{'q'};
+      return;
+    }
+  }
+
+  my $numberOfMatches = 0;
 
   # This is the main loop. It's executed once for each email
   # Direct access for performance reasons
@@ -1840,6 +1599,8 @@ sub ParseDate
 
         my ($version_number) = $Date::Manip::VERSION =~ /^(\d+\.\d+)/;
         Date::Manip::Date_Init("TodayIsMidnight=1") if $version_number >= 5.43;
+        # To prevent warning about variable being used only once
+        my $dummy = $Date::Manip::VERSION;
       }
       else
       {
@@ -2041,15 +1802,6 @@ sub IsInSize
 
 #-------------------------------------------------------------------------------
 
-sub usage
-{
-<<EOF;
-usage: grepmail [--help] [-abBDFhHilmrRuv] [-s sizespec] [-d "datespec"] [[-eE] <expr>] <files...>
-EOF
-}
-
-#-------------------------------------------------------------------------------
-
 sub help
 {
 <<EOF;
@@ -2057,17 +1809,20 @@ grepmail $VERSION
 
 usage:
 
-  grepmail [--help|--version] [-abBDFhHilmrRuvV] [-j status] [-s sizespec]
-    [-d <date-specification>] [-X <signature-pattern>] [-Y <header-pattern>]
-    <files...>
+  grepmail [--help|--version] [-abBDFhHilmrRuvV] [-C <cache-file>]
+    [-j <status>] [-s <sizespec>] [-d <date-specification>]
+    [-X <signature-pattern>] [-Y <header-pattern>]
+    [-e] <pattern> <files...>
 
-  grepmail [--help|--version] [-abBDFhHilmrRuvV] [-j status] [-s sizespec]
-    [-d <date-specification>] [-X <signature-pattern>] [-Y <header-pattern>]
-    [[-e] <pattern>] <files...>
+  grepmail [--help|--version] [-abBDFhHilmrRuvV] [-C <cache-file>]
+    [-j <status>] [-s <sizespec>] [-d <date-specification>]
+    [-X <signature-pattern>] [-Y <header-pattern>]
+    -E <expr> <files...>
 
-  grepmail [--help|--version] [-abBDFhHilmrRuvV] [-j status] [-s sizespec]
-    [-d <date-specification>] [-X <signature-pattern>] [-Y <header-pattern>]
-    [-E <expr>] <files...>
+  grepmail [--help|--version] [-abBDFhHilmrRuvV] [-C <cache-file>]
+    [-j <status>] [-s <sizespec>] [-d <date-specification>]
+    [-X <signature-pattern>] [-Y <header-pattern>]
+    -f <pattern-file> <files...>
 
 At least one of -s, -d, -u, -e, and -E must be specified, and can appear in
 any relative order following the other flags. The -e flag is optional if
@@ -2078,11 +1833,13 @@ compressed ASCII input is taken from STDIN.
 
 -a Use received date instead of sent date for -d matching
 -b Search must match body
+-C Specify the location of the cache file
 -d Specify a required date range (see below)
 -D Debug mode
 -e Explicitly name pattern (when searching for strings beginning with "-")
 -E Specify a complex search expression
--F Force processing of mailboxes which appear to be binary
+-f Read patterns from a file
+-F Force processing of all data as mailboxes
 -h Search must match header
 -H Print headers but not bodies of matching emails
 -i Ignore case in the search expression
@@ -2128,17 +1885,20 @@ grepmail - search mailboxes for mail matching a regular expression
 
 =head1 SYNOPSIS
 
-  grepmail [--help|--version] [-abBDhHilmrRuvV] [-j status] [-s sizespec]
-    [-d <date-specification>] [-X <signature-pattern>] [-Y <header-pattern>]
-    [--] <files...>
+  grepmail [--help|--version] [-abBDFhHilmrRuvV] [-C <cache-file>]
+    [-j <status>] [-s <sizespec>] [-d <date-specification>]
+    [-X <signature-pattern>] [-Y <header-pattern>]
+    [-e] <pattern> <files...>
 
-  grepmail [--help|--version] [-abBDhHilmrRuvV] [-j status] [-s sizespec]
-    [-d <date-specification>] [-X <signature-pattern>] [-Y <header-pattern>]
-    [[-e] <pattern>] [--] <files...>
+  grepmail [--help|--version] [-abBDFhHilmrRuvV] [-C <cache-file>]
+    [-j <status>] [-s <sizespec>] [-d <date-specification>]
+    [-X <signature-pattern>] [-Y <header-pattern>]
+    -E <expr> <files...>
 
-  grepmail [--help|--version] [-abBDhHilmrRuvV] [-j status] [-s sizespec]
-    [-d <date-specification>] [-X <signature-pattern>] [-Y <header-pattern>]
-    [-E <expr>] [--] <files...>
+  grepmail [--help|--version] [-abBDFhHilmrRuvV] [-C <cache-file>]
+    [-j <status>] [-s <sizespec>] [-d <date-specification>]
+    [-X <signature-pattern>] [-Y <header-pattern>]
+    -f <pattern-file> <files...>
 
 =head1 DESCRIPTION
 
@@ -2159,9 +1919,9 @@ optional if there is no file whose name is the pattern. The B<-E> option can
 be used to specify complex search expressions involving logical operators.
 (See below.)
 
-If a mailbox can not be found, grepmail searches the $home/mail, $home/Mail,
-$home/Mailbox directories (or the directory specified by the MAIL environment
-variable).
+If a mailbox can not be found, grepmail first searches the directory specified
+by the MAILDIR environment variable (if one is defined), then searches the
+$HOME/mail, $HOME/Mail, and $HOME/Mailbox directories.
 
 =back
 
@@ -2179,7 +1939,9 @@ globbing (shell expansion). To search for more than one pattern, use the form
 "(pattern1|pattern2|...)".
 
 Note that complex pattern features such as "(?>...)" require that you use a
-version of perl which supports them.
+version of perl which supports them. You can use the pattern "()" to indicate
+that you do not want to match anything. This is useful if you want to
+initialize the cache without printing any output.
 
 =item B<mailbox>
 
@@ -2198,6 +1960,11 @@ Use arrival date instead of sent date.
 =item B<-b>
 
 Asserts that the pattern must match in the body of the email. 
+
+=item B<-C>
+
+Specifies the location of the cache file. The default is
+$HOME/.grepmail-cache.
 
 =item B<-D>
 
@@ -2253,9 +2020,16 @@ use (and perhaps at the expense of reduced functionality).
 Explicitly specify the search pattern. This is useful for specifying patterns
 that begin with "-", which would otherwise be interpreted as a flag.
 
+=item B<-f>
+
+Obtain patterns from FILE, one per line.  The  empty  file  contains zero
+patterns, and therefore matches nothing.
+
 =item B<-F>
 
-Force processing of ASCII files which don't appear to be mailboxes.
+Force grepmail to process all files and streams as though they were mailboxes.
+(i.e. Skip checks for non-mailbox ASCII files or binary files that don't look
+like they are compressed using known schemes.)
 
 =item B<-h>
 
@@ -2359,16 +2133,24 @@ follows:
 =over 2
 
 If the regular expression contains "^TO:" it will be  substituted by
-"^((Original-)?(Resent-)?(To|Cc|Bcc)|(X-Envelope|Apparently(-Resent)?)-To):",
+
+  ^((Original-)?(Resent-)?(To|Cc|Bcc)|(X-Envelope|Apparently(-Resent)?)-To):
+
 which should match all headers with destination addresses.
 
 If the regular expression contains "^FROM_DAEMON:" it  will
-be substituted by "(^(Mailing-List:|Precedence:.*(junk|bulk|list)|To: Multiple recipients of |(((Resent-)?(From|Sender)|X-Envelope-From):|>?From )([^>]*[^(.%@a-z0-9])?(Post(ma?(st(e?r)?|n)|office)|(send)?Mail(er)?|daemon|m(mdf|ajordomo)|n?uucp|LIST(SERV|proc)|NETSERV|o(wner|ps)|r(e(quest|sponse)|oot)|b(ounce|bs\.smtp)|echo|mirror|s(erv(ices?|er)|mtp(error)?|ystem)|A(dmin(istrator)?|MMGR|utoanswer))(([^).!:a-z0-9][-_a-z0-9]*)?[%@>\t ][^<)]*(\(.*\).*)?)?",
+be substituted by
+
+  (^(Mailing-List:|Precedence:.*(junk|bulk|list)|To: Multiple recipients of |(((Resent-)?(From|Sender)|X-Envelope-From):|>?From )([^>]*[^(.%@a-z0-9])?(Post(ma?(st(e?r)?|n)|office)|(send)?Mail(er)?|daemon|m(mdf|ajordomo)|n?uucp|LIST(SERV|proc)|NETSERV|o(wner|ps)|r(e(quest|sponse)|oot)|b(ounce|bs\.smtp)|echo|mirror|s(erv(ices?|er)|mtp(error)?|ystem)|A(dmin(istrator)?|MMGR|utoanswer))(([^).!:a-z0-9][-_a-z0-9]*)?[%@>\t ][^<)]*(\(.*\).*)?)?
+
 which should catch mails coming from most daemons.
 
 If  the regular expression contains "^FROM_MAILER:" it will be substituted by
-"(^(((Resent-)?(From|Sender)|X-Envelope-From):|>?From)([^>]*[^(.%@a-z0-9])?(Post(ma(st(er)?|n)|office)|(send)?Mail(er)?|daemon|mmdf|n?uucp|ops|r(esponse|oot)|(bbs\.)?smtp(error)?|s(erv(ices?|er)|ystem)|A(dmin(istrator)?|MMGR))(([^).!:a-z0-9][-_a-z0-9]*)?[%@>\t][^<)]*(\(.*\).*)?)?$([^>]|$))" (a stripped down version of
-"^FROM_DAEMON:"), which should catch mails coming from most mailer-daemons.
+
+  (^(((Resent-)?(From|Sender)|X-Envelope-From):|>?From)([^>]*[^(.%@a-z0-9])?(Post(ma(st(er)?|n)|office)|(send)?Mail(er)?|daemon|mmdf|n?uucp|ops|r(esponse|oot)|(bbs\.)?smtp(error)?|s(erv(ices?|er)|ystem)|A(dmin(istrator)?|MMGR))(([^).!:a-z0-9][-_a-z0-9]*)?[%@>\t][^<)]*(\(.*\).*)?)?$([^>]|$))
+ 
+(a stripped down version of "^FROM_DAEMON:"), which should catch mails coming
+from most mailer-daemons.
 
 =back
 
@@ -2457,9 +2239,13 @@ of the largest email message in the mailbox.
 
 =head1 ENVIRONMENT
 
-The MAIL environment variable can be used to specify the default mail
+The MAILDIR environment variable can be used to specify the default mail
 directory. This directory will be searched if the specified mailbox can not be
 found directly.
+
+The HOME environment variable is also used to find mailboxes if they can not
+be found directly. It is also used to store grepmail state information such as
+its cache file.
 
 =head1 BUGS AND LIMITATIONS
 

@@ -2,7 +2,7 @@
 
 # grepmail
 
-$VERSION = '5.20';
+$VERSION = '5.21';
 
 # Grepmail searches a normal, gzip'd, tzip'd, or bzip2'd mailbox for a given
 # regular expression and returns those emails that match the query. It also
@@ -137,6 +137,9 @@ local @SIG{keys %signals_and_messages} =
   (\&signalHandler) x keys %signals_and_messages;
 
 ################################ MAIN PROGRAM #################################
+
+binmode STDOUT;
+binmode STDERR;
 
 # PROCESS ARGUMENTS
 my ($opts_ref,@remaining_arguments) = Get_Options(@ARGV);

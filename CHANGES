@@ -3,6 +3,9 @@ Features which haven't made it in yet:
   <zbrown@tumblerings.org> for the excellent feature idea and a prototype
   implementation.)
 
+New in version 5.21:
+- Fixed line ending bugs under MS-DOS/Windows.
+
 New in version 5.20:
 - Added speed testing to the distribution
 - Fixed Makefile.PL so that test modules would not be installed.

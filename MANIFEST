@@ -97,3 +97,4 @@ t/results/unique_all_2                Output file
 t/results/unique_body                 Output file
 t/results/unique_body_imagecraft      Output file
 t/results/unique_handy                Output file
+META.yml                                Module meta-data (added by MakeMaker)
