@@ -3,13 +3,16 @@
 
 use strict;
 use ExtUtils::MakeMaker;
+use lib 'lib';
+use Test::ConfigureGrepmail;
 
 require 5.004;
 
-@ARGV = Set_Install_Options(@ARGV)
-  unless (grep {/^PREFIX=/} @ARGV) || (grep {/^INSTALLDIRS=/} @ARGV);
-
-Configure_Grepmail('grepmail');
+unless ((grep {/^PREFIX=/} @ARGV) || (grep {/^INSTALLDIRS=/} @ARGV))
+{
+  @ARGV = Set_Install_Options(@ARGV);
+  Configure_Grepmail('grepmail');
+}
 
 print "\n","-"x78,"\n\n";
 
@@ -72,23 +75,8 @@ sub Configure_Grepmail
   $enable_caching = $enable_caching =~ /^y/i ? 1 : 0;
   $enable_grep = $enable_grep =~ /^y/i ? 1 : 0;
 
-  local $/ = undef;
-
-  open SOURCE, $filename
-    or die "Couldn't open grepmail file: $!";
-
-  my $code = <SOURCE>;
-  close SOURCE;
-
-  $code =~ s/^\$USE_CACHING = (\d+);/\$USE_CACHING = $enable_caching;/m;
-  $code =~ s/^\$USE_GREP = (\d+);/\$USE_GREP = $enable_grep;/m;
-
-  open SOURCE, ">$filename"
-    or die "Couldn't open grepmail file: $!";
-
-  print SOURCE $code;
-
-  close SOURCE;
+  Test::ConfigureGrepmail::Set_Caching_And_Grep($filename, $enable_caching,
+    $enable_grep);
 }
 
 # --------------------------------------------------------------------------
@@ -123,6 +111,7 @@ sub Compute_Makefile_Attributes
     'dist'  => { COMPRESS => 'gzip -9', SUFFIX => 'gz' },
     'clean' => { FILES => 't/temp' },
     'EXE_FILES' => [ 'grepmail' ],
+    'PM' => {},
     'PREREQ_PM' => {
       'Date::Parse' => 0,
       'Mail::Mbox::MessageParser' => 0,
@@ -197,11 +186,11 @@ sub postamble
 # functionality
 '
 testspeed :: pure_all
-	PERL_DL_NONLAZY=1 $(FULLPERLRUN) "-I$(INST_LIB)" \
+	PERL_DL_NONLAZY=1 $(PERLRUN) "-I$(INST_LIB)" \
 	  "-I$(INST_ARCHLIB)" "-Ilib" t/speed.pl
 
 testfunc :: pure_all
-	PERL_DL_NONLAZY=1 $(FULLPERLRUN) "-I$(INST_LIB)" \
+	PERL_DL_NONLAZY=1 $(PERLRUN) "-I$(INST_LIB)" \
 	  "-I$(INST_ARCHLIB)" "-Ilib" t/*.t
 ';
 }
