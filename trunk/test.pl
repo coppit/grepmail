@@ -10,10 +10,10 @@
 # directory.
 
 @timedtests = (
-'grepmail -M library t/big-1.txt t/big-2.txt t/big-3.txt t/big-4.txt',
 'grepmail library t/big-1.txt t/big-2.txt t/big-3.txt t/big-4.txt',
 'grepmail library -d "before oct 15 1998" t/big-1.txt t/big-2.txt t/big-3.txt t/big-4.txt',
 'grepmail library t/big-3.txt.gz t/big-3.txt.bz2',
+'grepmail -M library t/big-1.txt t/big-2.txt t/big-3.txt t/big-4.txt',
 'grepmail -h library t/big-1.txt t/big-2.txt t/big-3.txt t/big-3.txt.gz',
 'grepmail -b library t/big-1.txt t/big-2.txt t/big-3.txt t/big-3.txt.bz2',
 'grepmail -bh library t/big-1.txt t/big-2.txt t/big-3.txt t/big-3.txt.tz',

@@ -1,8 +1,11 @@
-#!/usr/bin/perl -w
+#!/users/dwc3q/perl/bin/perl -w
+
+eval 'exec /users/dwc3q/perl/bin/perl -w -S $0 ${1+"$@"}'
+    if 0; # not running under some shell
 
 # grepmail
 
-$VERSION = '4.44';
+$VERSION = '4.43';
 
 # Grepmail searches a normal, gzip'd, tzip'd, or bzip2'd mailbox for a given
 # regular expression and returns those emails that match the query. It also
@@ -94,9 +97,10 @@ $VERSION = '4.44';
 
 require 5.00396;
 
-use vars qw( %opts $pattern $commandLine $VERSION $DEBUG %message_ids_seen );
+use vars qw(%opts $pattern $commandLine $VERSION $DEBUG %message_ids_seen );
 
 use Getopt::Std;
+use Date::Parse;
 
 use strict;
 use FileHandle;
@@ -139,14 +143,11 @@ sub cleanExit
 
 #-------------------------------------------------------------------------------
 
-# PROCESS ARGUMENTS
-
 # Print usage error if no arguments given
-print "No arguments given. grepmail --help for help.\n" and exit(1)
-  if (!@ARGV);
+print "No arguments given. grepmail --help for help.\n" and exit if (!@ARGV);
 
 # Check for --help, the standard usage command
-print usage() and exit(0) if $ARGV[0] eq '--help';
+print usage() and exit if $ARGV[0] eq '--help';
 
 # Save the arguments because getopt changes them.
 my @args = @ARGV;
@@ -154,8 +155,8 @@ my @args = @ARGV;
 # So we don't have to test whether they are defined later.
 $opts{'D'} = $opts{'e'} = $opts{'i'} = $opts{'q'} = $opts{'h'} = 0;
 $opts{'b'} = $opts{'v'} = $opts{'l'} = $opts{'r'} = $opts{'a'} = 0;
-$opts{'M'} = $opts{'m'} = $opts{'s'} = $opts{'u'} = $opts{'n'} = 0;
-$opts{'d'} = $opts{'V'} = undef;
+$opts{'M'} = $opts{'m'} = $opts{'s'} = $opts{'u'} = 0;
+$opts{'d'} = undef;
 
 # Initialize seen messages data structure to empty.
 %message_ids_seen = ();
@@ -163,6 +164,21 @@ $opts{'d'} = $opts{'V'} = undef;
 getopt("eds",\%opts);
 
 $DEBUG = $opts{'D'} || 0;
+
+# Need to quote arguments with spaces
+grep { $_ = "'$_'" if $_ =~ / /; $_ } @args;
+
+# Save the command line for later when we try to decompress standard input
+$commandLine = "$0 @args";
+
+dprint "Command line was (special characters not escaped):";
+dprint "  $commandLine";
+
+{
+  dprint "Date::Parse VERSION: $Date::Parse::VERSION";
+  # To prevent warning about variable being used only once;
+  my $dummy = $Date::Parse::VERSION;
+}
 
 # Here we have to deal with the possibility that the user specified the search
 # pattern without the -e flag.
@@ -215,74 +231,12 @@ unless ($opts{'e'})
   }
 }
 
-if (defined $opts{'d'})
-{
-  if (eval "require Date::Parse;")
-  {
-    import Date::Parse;
-  }
-  else
-  {
-    print "You specified -d, but do not have Date::Parse. ".
-          "Get it from CPAN.\n";
-    exit (1);
-  }
-}
-
-if ($opts{'e'})
-{
-  print "You specified two search patterns.\n" and exit (1)
-    if defined $pattern;
-  $pattern = $opts{'e'};
-}
-elsif (defined $opts{'V'})
-{
-  # Print version and exit if we need to
-  print "$VERSION\n";
-  exit (0);
-}
-elsif (!defined $pattern)
-{
-  # The only times you don't have to specify the pattern is when -d, -s, or -u
-  # is being used. This should catch people who do "grepmail -h" thinking
-  # it's help.
-  print usage() and exit (1)
-    unless defined $opts{'d'} || $opts{'s'} || $opts{'u'};
-
-  $pattern = ".";
-}
-
-#-------------------------------------------------------------------------------
-
-# PRINT SOME DEBUGGING INFORMATION
-
-# Need to quote arguments with spaces
-grep { $_ = "'$_'" if $_ =~ / /; $_ } @args;
-
-# Save the command line for later when we try to decompress standard input
-$commandLine = "$0 @args";
-
-dprint "Command line was (special characters not escaped):";
-dprint "  $commandLine";
-
-if (defined $Date::Parse::VERSION)
-{
-  dprint "Date::Parse VERSION: $Date::Parse::VERSION";
-}
-
 if ($DEBUG)
 {
   dprint "Options are:";
   foreach my $i (sort keys %opts)
   {
-    if (defined $opts{$i})
-    {
-      dprint "  $i: $opts{$i}";
-    }
-    else
-    {
-      dprint "  $i: undef";
-    }
+    dprint "  $i: $opts{$i}";
   }
 
   dprint "INC is:";
@@ -292,15 +246,20 @@ if ($DEBUG)
   }
 }
 
-#-------------------------------------------------------------------------------
-
-# LOAD THE MAIL::FOLDER::FASTREADER IF IT'S INSTALLED
-
-if (eval "require Mail::Folder::FastReader2;")
+if ($opts{'e'})
 {
-  # Override the slow read_email defined here
-  undef &read_email;
-  import Mail::Folder::FastReader 'read_email';
+  print "You specified two search patterns.\n" and exit if defined $pattern;
+  $pattern = $opts{'e'};
+}
+elsif (!defined $pattern)
+{
+  # The only times you don't have to specify the pattern is when -d, -s, or -u
+  # is being used. This should catch people who do "grepmail -h" thinking
+  # it's help.
+  print usage() and exit
+    unless defined $opts{'d'} || $opts{'s'} || $opts{'u'};
+
+  $pattern = ".";
 }
 
 ################################ MAIN PROGRAM #################################
@@ -350,8 +309,6 @@ else
   HandleStandardInput();
 }
 
-exit 0;
-
 #-------------------------------------------------------------------------------
 
 # Get a list of files, taking recursion into account if necessary.
@@ -379,7 +336,7 @@ sub GetFiles(@)
       {
         print "You specified -R, but do not have File::Find. ".
               "Get it from CPAN.\n";
-        exit (1);
+        exit;
       }
 
       import File::Find;
@@ -518,7 +475,7 @@ sub HandleInputFiles
       next;
     }
 
-    ProcessMailFile($fileHandle,$file,$#files+1);
+    ProcessMailFile($fileHandle,$file);
 
     $fileHandle->close();
   }
@@ -585,10 +542,17 @@ sub HandleStandardInput
     }
 
     # Here we invoke another copy of grepmail with a filter in front.
+    use vars qw(*OLDSTDERR);
+    open OLDSTDERR,">&STDERR" or die "Can't save STDERR: $!\n";
+    open STDERR,">/dev/null"
+      or die "Can't redirect STDERR to /dev/null: $!\n";
+
     my $newGrepmail = new FileHandle;
-    $newGrepmail->open("|$filter 2>/dev/null|$commandLine")
+    $newGrepmail->open("|$filter|$commandLine")
       or warn "** Can't execute \"$filter\" on STDIN: $!\n"
         unless $opts{'q'};
+
+    open STDERR,">&OLDSTDERR" or die "Can't restore STDERR: $!\n";
 
     while (!eof $fileHandle)
     {
@@ -609,7 +573,7 @@ sub HandleStandardInput
       return;
     }
 
-    ProcessMailFile($fileHandle,"Standard input",1);
+    ProcessMailFile($fileHandle,"Standard input");
   }
 }
 
@@ -648,10 +612,8 @@ sub PutBackString
 
 #-------------------------------------------------------------------------------
 
-# Detects whether an ASCII file is a mailbox, based on whether it has
-# a line whose prefix is 'From' or 'X-From-Line:', and another line
-# whose prefix is 'Received ', 'Date:', 'Subject:', 'X-Status:', or
-# 'Status:'.
+# Detects whether an ASCII file is a mailbox, based on whether it has a 'From'
+# and 'Subject:' prefix on two lines of the first paragraph.
 
 sub IsMailbox
 {
@@ -666,8 +628,7 @@ sub IsMailbox
   my $returnVal;
 
   # X-From-Line is used by Gnus, and From is used by normal Unix format
-  if ($buffer =~ /^(X-From-Line:|From)\s/im &&
-      $buffer =~ /^(Date|Subject|X-Status|Status):\s/im)
+  if ($buffer =~ /^(X-From-Line:|From)\s/im && $buffer =~ /^Subject:\s/im)
   {
     $returnVal = 1;
   }
@@ -683,48 +644,67 @@ sub IsMailbox
 
 #-------------------------------------------------------------------------------
 
-sub ProcessMailFile
+sub ProcessMailFile ($$)
 {
   my $fileHandle = shift @_;
   my $fileName = shift @_;
-  my $number_files = shift @_;
 
-  my $numberOfMatches = 0;
+  # $header_buffer stores the header for the current email. $body_buffer
+  # stores the body for the current email. $next_header stores the header for
+  # the next email, in case we encounter it while looking for the end of the
+  # current email.
 
-  reset_line();
+  # I'd really like to call PushBackString instead of storing $next_header,
+  # but that way is much slower, and fails unpredictably. :( The next best
+  # solution is to write a wrapper class for FileHandle that allows pushbacks,
+  # and stores them in an internal buffer. Too much work for now though...
+
+  my ($numberOfMatches,$header_buffer,$body_buffer,$next_header);
+
+  $next_header = undef;
+  $numberOfMatches = 0;
+
+  # Read whole paragraphs
+  local $/ = "\n\n";
 
   # This is the main loop. It's executed once for each email
-  while(1)
+  while (!eof($fileHandle))
   {
-    my ($status,$email,$line) = read_email($fileHandle);
-    last unless $status == 1;
+    $header_buffer = '';
+    $body_buffer = '';
 
-#print STDERR "---------\n", substr($email,0,40),"\n-----------\n";
-    my ($header_buffer,$body_buffer) = split /\n\n/,$email,2;
-#unless (defined $line)
-#{
-#  print STDERR $INC{'Mail/Folder/FastReader.pm'},"\n";
-#  print STDERR "########$email#####\n";
-#  exit;
-#}
-    $header_buffer .= "\n\n";
+    if (!defined $next_header)
+    {
+      dprint "Getting header for first email.";
 
-    PrintEmailStatistics($email) if $DEBUG;
+      $header_buffer = <$fileHandle>;
+    }
+    else
+    {
+      dprint "Processing buffered header.";
+      $header_buffer = $next_header;
+
+      undef $next_header;
+    }
+
+    PrintEmailStatistics($header_buffer) if $DEBUG;
 
     #----------------------------------------------------------------
 
     dprint "Checking for early match or abort based on header information.";
     my ($result,$matchesHeader) =
-      AnalyzeHeader($header_buffer,$fileHandle,$pattern);
+      AnalyzeHeader(\$header_buffer,$fileHandle,\$next_header,$pattern);
 
     if ($result eq 'skip')
     {
       dprint "Doing an early abort based on header.";
+      SkipToNextEmail($fileHandle,\$next_header,$fileName);
       next;
     }
     elsif ($result eq 'print')
     {
       dprint "Doing an early printout based on header.";
+    
       if ($opts{'l'})
       {
         print "$fileName\n";
@@ -735,18 +715,27 @@ sub ProcessMailFile
       elsif ($opts{'r'})
       {
         $numberOfMatches++;
+        SkipToNextEmail($fileHandle,\$next_header,$fileName);
         next;
       }
       else
       {
-        PrintEmail($fileName,$header_buffer,$body_buffer,$number_files,$line)
+        GetRestOfBody($fileHandle,\$body_buffer,\$next_header,$fileName);
+
+        PrintEmail($fileName,$header_buffer,$body_buffer)
           if $opts{'u'} && NotADuplicate($header_buffer) || !$opts{'u'};
 
         next;
       }
     }
 
+    dprint "Couldn't do an early printout or abort based on header.";
+
     #----------------------------------------------------------------
+
+    dprint "Reading body.";
+
+    GetRestOfBody($fileHandle,\$body_buffer,\$next_header,$fileName);
 
     my $matchesBody;
 
@@ -772,12 +761,10 @@ sub ProcessMailFile
 
     #----------------------------------------------------------------
 
-    my $matchesSize = length $email < $opts{'s'} ? 1 : 0;
+    dprint "Total email size is: ",length ($header_buffer.$body_buffer),"\n";
+    my $matchesSize = length $header_buffer.$body_buffer < $opts{'s'} ? 1 : 0;
 
-    #----------------------------------------------------------------
-
-    dprint "Checking for early match or abort based on header, body, " .
-      "and size information.";
+    dprint "Checking for early match or abort based on header+body information.";
 
     my $isMatch = 1;
     
@@ -788,12 +775,13 @@ sub ProcessMailFile
 
     if ($isMatch == 0 && !$opts{'v'})
     {
-      dprint "Doing an early abort based on header, body, and size.";
+      dprint "Doing an early abort based on header+body.";
+      SkipToNextEmail($fileHandle,\$next_header,$fileName);
       next;
     }
     elsif ($isMatch == 0 && $opts{'v'})
     {
-      dprint "Doing an early printout based on header, body, and size.";
+      dprint "Doing an early printout based on header+body.";
     
       if ($opts{'l'})
       {
@@ -805,23 +793,24 @@ sub ProcessMailFile
       elsif ($opts{'r'})
       {
         $numberOfMatches++;
+        SkipToNextEmail($fileHandle,\$next_header,$fileName);
         next;
       }
       else
       {
-        PrintEmail($fileName,$header_buffer,$body_buffer,$number_files,$line)
+        GetRestOfBody($fileHandle,\$body_buffer,\$next_header,$fileName);
+
+        PrintEmail($fileName,$header_buffer,$body_buffer)
           if $opts{'u'} && NotADuplicate($header_buffer) || !$opts{'u'};
 
         next;
       }
     }
 
-    #----------------------------------------------------------------
-
-    dprint "Checking date constraint.";
+    dprint "Couldn't do an early printout or abort based on header+body.";
 
     $isMatch = 1;
-
+    
     {
       my $matchesDate = CheckDate(\$header_buffer);
       $isMatch = 0 if defined $opts{'d'} && !$matchesDate;
@@ -852,7 +841,7 @@ sub ProcessMailFile
       }
       else
       {
-        PrintEmail($fileName,$header_buffer,$body_buffer,$number_files,$line)
+        PrintEmail($fileName,$header_buffer,$body_buffer)
           if $opts{'u'} && NotADuplicate($header_buffer) || !$opts{'u'};
       }
     }
@@ -876,7 +865,7 @@ sub NotADuplicate
   my $header_buffer = shift;
 
   my $message_id = $header_buffer;
-  $message_id =~ m/^Message-Id:<.*>$/m;
+  $message_id =~ m/^Message-Id:<.*>$/om;
 
   my $result;
 
@@ -902,10 +891,9 @@ sub NotADuplicate
 # found
 sub GetFromLine
 {
-  my $email = shift;
+  my $header = shift;
 
-  # Remove the body.
-  my $header = $email;
+  # Remove the body if there is one. (Make it really a header)
   $header =~ s/\n\n.*/\n/s;
 
   if ($header =~ /^(From:\s.*)$/im)
@@ -924,39 +912,16 @@ sub GetFromLine
 
 #-------------------------------------------------------------------------------
 
-# Get the email author from the header or email. Return undef if it can't be
+# Get the email subject from the header or email. Return undef if it can't be
 # found
 sub GetSubjectLine
 {
-  my $email = shift;
+  my $header = shift;
 
-  # Remove the body.
-  my $header = $email;
+  # Remove the body if there is one. (Make it really a header)
   $header =~ s/\n\n.*/\n/s;
 
   if ($header =~ /^(Subject:\s.*)$/im)
-  {
-    return $1;
-  }
-  else
-  {
-    return undef;
-  }
-}
-
-#-------------------------------------------------------------------------------
-
-# Get the email author from the header or email. Return undef if it can't be
-# found
-sub GetDateLine
-{
-  my $email = shift;
-
-  # Remove the body.
-  my $header = $email;
-  $header =~ s/\n\n.*/\n/s;
-
-  if ($header =~ /^(Date:\s.*)$/im)
   {
     return $1;
   }
@@ -972,12 +937,12 @@ sub GetDateLine
 
 sub PrintEmailStatistics
 {
-  my $email = shift;
+  my $header = shift;
 
   dprint '-'x70;
   dprint "Processing email:";
 
-  my $author = GetFromLine($email);
+  my $author = GetFromLine($header);
 
   if (defined $author)
   {
@@ -988,7 +953,7 @@ sub PrintEmailStatistics
     dprint "  [No from line found]";
   }
 
-  my $subject = GetSubjectLine($email);
+  my $subject = GetFromLine($header);
 
   if (defined $subject)
   {
@@ -998,19 +963,6 @@ sub PrintEmailStatistics
   {
     dprint "  [No subject line found]";
   }
-
-  my $date = GetDateLine($email);
-
-  if (defined $date)
-  {
-    dprint "  $date";
-  }
-  else
-  {
-    dprint "  [No subject line found]";
-  }
-
-  dprint "  Size: " . length $email;
 }
 
 #-------------------------------------------------------------------------------
@@ -1023,10 +975,11 @@ sub PrintEmailStatistics
 # A boolean for whether the header matches the pattern.
 # A boolean for whether the header has the correct date.
 
-sub AnalyzeHeader($$)
+sub AnalyzeHeader(\$$\$$)
 {
-  my $header_buffer = shift;
+  my $header_buffer = ${shift @_};
   my $fileHandle = shift;
+  my $next_header = ${shift @_};
   my $pattern = shift;
 
   # See if the header matches the pattern
@@ -1086,197 +1039,130 @@ sub AnalyzeHeader($$)
 
 #-------------------------------------------------------------------------------
 
-sub RemoveTrailingFrom
-{
-  my $email_ref = shift;
-
-  local $/ = "From ";
-  chomp $$email_ref;
-}
-
-#-------------------------------------------------------------------------------
-
-my $LINE = undef;
-my $OLD_LINE = undef;
-
-sub reset_line
-{
-  $LINE = 0;
-  $OLD_LINE = 0;
-}
-
-#-------------------------------------------------------------------------------
-
-sub read_email_old
+sub SkipToNextEmail($\$$)
 {
   my $fileHandle = shift;
+  my $next_header = shift;
+  my $fileName = shift;
+  my $paragraph;
 
-  dprint "Reading email";
+  dprint "Skipping to next email.";
 
-  local $/ = "\nFrom ";
+  # If we have something buffered, it's the beginning of the next email
+  # address, so we don't need to do anything. Joy.
+  return if defined $$next_header;
 
-  # Empty file means reset first email and return undef
-  if (eof $fileHandle)
+  do
   {
-    reset_line();
-    return (0);
-  }
+    $paragraph = <$fileHandle>;
 
-  my $email = <$fileHandle>;
-
-  RemoveTrailingFrom(\$email);
-
-  # The first read email will have the "From " prefix, unlike the rest
-  substr($email,0,0) = 'From ' unless $OLD_LINE == 0;
-
-  $LINE += $OLD_LINE;
-  $OLD_LINE = ($email =~ tr/\n//);
-
-  # There is more to this email if the end is a Begin Included Message
-  # This could be a loop if we wanted to support multiple included
-  # messages.  Reverse the email before searching (for efficiency).
-  my $index = rindex $email,'----- Begin Included Message -----';
-  if ($index != -1 && substr($email,$index+34) =~ /^\n+$/)
-  {
-    my $remainder = <$fileHandle>;
-
-    $OLD_LINE += ($remainder =~ tr/\n//);
-
-    # Clean up anything we got and append it
-    if (defined $remainder)
-    {
-      RemoveTrailingFrom(\$remainder) if defined $remainder;
-      substr($remainder,0,0) = 'From ';
-      return (1,$email . $remainder,$LINE);
-    }
-    # Return the email and undef buffered email if we are at eof
-    else
-    {
-      warn "** Expected an included message, but the file ended. " .
-           "Continuing **\n";
-      reset_line();
-      return (1,$email,$LINE);
-    }
-  }
-  else
-  {
-    return (1,$email,$LINE);
-  }
-}
-
-#-------------------------------------------------------------------------------
-
-my $LAST_LINE;
-
-sub read_email
-{
-  my $fileHandle = shift;
-
-  dprint "Reading email";
-
-  # Empty file means reset first email and return undef
-  if (eof $fileHandle)
-  {
-    reset_line();
-    return (0);
-  }
-
-  if ($LINE == 0)
-  {
-    $LAST_LINE = <$fileHandle>;
-    $LINE = 1;
-  }
-
-  my $email = $LAST_LINE;
-  my $line = $LINE;
-
-  while(1)
-  {
-    my $next_line = <$fileHandle>;
-
-    unless (defined $next_line)
-    {
-      reset_line();
-      return (1,$email,$line);
-    }
-
-    $LINE++;
-
-    if (substr($next_line,0,5) eq 'From ')
-    {
-      my $index = rindex $email,'----- Begin Included Message -----';
-      if ($index != -1 && substr($email,$index+34) =~ /^\n+$/)
+    # If this paragraph begins an included message, we need to be sure to drop
+    # the next paragraph, which is likely to contain the header for the
+    # included message.
+    if (defined $paragraph &&
+        $paragraph =~ /^\n*----- Begin Included Message -----/i)
+    { 
+      # Drop this paragraph if it looks like the header follows right after
+      # the ---- Begin Included Message ----
+      if ($paragraph =~ /- Begin Included Message -.*?\n./)
       {
-        $email .= $next_line;
+        $paragraph = '';
+      }
+      # Otherwise drop the next paragraph
+      else
+      {
+        $paragraph = <$fileHandle>; 
+        $paragraph = '';
+      }
+    } 
+  }
+  while (!eof($fileHandle) &&
+    ($paragraph !~ /^\n?From\s.*\d:\d+:\d.* \d{4}/i));
+
+  # Buffer if we went too far. Zap the starting newline while we're at it.
+  ($$next_header) = $paragraph =~ /^\n?(.*)/s if (!eof($fileHandle));
+}
+
+#-------------------------------------------------------------------------------
+
+sub GetRestOfBody($\$\$$)
+{
+  my $fileHandle = shift;
+  my $body_buffer = shift;
+  my $next_header = shift;
+  my $fileName = shift;
+
+  return if defined $$next_header;
+
+  # Read the entire email body into the buffer
+  my $doneLooking = 0;
+  do
+  {
+    my $paragraph = <$fileHandle>;
+
+    if (defined $paragraph)
+    {
+      # If this paragraph begins an included message, we need to be sure to
+      # grab the next paragraph, which is likely to contain the header for the
+      # included message.
+      if ($paragraph =~ /^\n*----- Begin Included Message -----/i)
+      { 
+        # Grab this paragraph if it looks like the header follows right after
+        # the ---- Begin Included Message ----
+        if ($paragraph =~ /- Begin Included Message -.*?\n./)
+        {
+          $$body_buffer .= $paragraph;
+        }
+        # Otherwise grab the next paragraph
+        else
+        {
+          $$body_buffer .= $paragraph;
+          $paragraph = <$fileHandle>; 
+          $$body_buffer .= $paragraph;
+        }
+      } 
+      elsif ($paragraph =~ /^(\n?)(From\s.*\d:\d+:\d.* \d{4}.*)/is)
+      {
+        dprint "Found next email's header, buffering.";
+        $$body_buffer .= $1;
+        $$next_header = $2;
+        $doneLooking = 1;
       }
       else
       {
-        $LAST_LINE = $next_line;
-        return (1,$email,$line);
+        $$body_buffer .= $paragraph;
       }
     }
-    else
+
+    if (eof($fileHandle))
     {
-      $email .= $next_line;
+      dprint "Found EOF.";
+      $doneLooking = 1;
     }
   }
+  while (!$doneLooking);
 }
 
 #-------------------------------------------------------------------------------
 
-sub PrintEmail
+sub PrintEmail($$$\$)
 {
   my $fileName = shift;
   my $header = shift;
   my $body = shift;
-  my $number_files = shift;
-  my $line_number = shift;
 
   dprint "Printing email.";
 
-  if ($opts{'n'})
+  # Add the mailfolder to the headers if -m was given
+  if ($opts{'m'})
   {
-    my $mailfolder_printed = 0;
-
-    # Print line-by-line
-    while ($header =~ /([^\n]*\n)/g)
-    {
-      my $line = $1;
-
-      print "$fileName:" if $number_files > 1;
-      print "$line_number:";
-
-      # Add the mailfolder to the headers if -m was given. Careful
-      # about line numbers!
-      if ($opts{'m'} && $line eq "\n" && !$mailfolder_printed)
-      {
-        $mailfolder_printed = 1;
-
-        print "X-Mailfolder: $fileName\n";
-        redo;
-      }
-
-      print $line;
-
-      $line_number++;
-    }
-
-    while ($body =~ /([^\n]*\n)/g)
-    {
-      my $line = $1;
-
-      print "$fileName:" if $number_files > 1;
-      print "$line_number:$line";
-      $line_number++;
-    }
+    $header =~ s/\n+$/\n/s;
+    $header .= "X-Mailfolder: $fileName\n\n";
   }
-  else
-  {
-    print $header;
+  print $header;
 
-    # Print whatever body we've read already.
-    print $body;
-  }
+  # Print whatever body we've read already.
+  print $body;
 }
 
 #-------------------------------------------------------------------------------
@@ -1684,13 +1570,6 @@ positives resulting from binaries encoded as ASCII attachments.
 Append "X-Mailfolder: <folder>" to all email headers, indicating which folder
 contained the matched email.
 
-=item B<-n>
-
-Prefix each line with line number information. If multiple files are
-specified, the filename will precede the line number. NOTE: When used in
-conjunction with B<-m>, the X-Mailfolder header has the same line number as
-the next (blank) line.
-
 =item B<-q>
 
 Quiet mode. Suppress the output of warning messages about non-mailbox files,
@@ -1806,16 +1685,6 @@ invoke the shell).
 In some special circumstances, grepmail will be confused by files whose names
 look like flags. In such cases, use the B<-e> flag to specify the search
 pattern.
-
-=item Error messages when searching compressed files are wrong
-
-grepmail decompresses compressed files and re-invokes itself on them.
-As a result, any errors that occur while processing the uncompressed
-file will result in messages that do not reference the original
-compressed file. For example:
-
-  grepmail foo text_file.gz
-  ** Skipping non-mailbox ASCII file: 'text_file'
 
 =back
 
