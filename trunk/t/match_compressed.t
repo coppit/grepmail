@@ -110,7 +110,7 @@ sub SetSkip
 
   my %skip;
 
-  unless (defined $Mail::Mbox::MessageParser::PROGRAMS{'gzip'})
+  unless (defined $Mail::Mbox::MessageParser::Config{'programs'}{'gzip'})
   {
     $skip{'grepmail Handy t/mailboxes/mailarc-1.txt.gz t/mailboxes/mailarc-2.txt'}
       = 'gzip support not enabled in Mail::Mbox::MessageParser';

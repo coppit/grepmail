@@ -44,6 +44,8 @@ sub Do_Diff
   my $filename = shift;
   my $output_filename = shift;
 
+  local $Test::Builder::Level = 2;
+
   my (@data1,@data2);
 
   {

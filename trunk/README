@@ -8,12 +8,10 @@ logical operators.
 
 NEW IN THIS VERSION
 
-Version 5.30.1: Thu Sep 16 2004
-- Fixed Date::Manip parsing of single-point times such as "today".
-- Changed Makefile.PL to use Module::Install
-- Changed version numbering
-- Dropped Benchmark::Timer from the distribution, since the updated version
-  has been released
+Version 5.3030: Tue Dec 21 2004
+- Improved test failure reporting
+- Fixed version numbers, which were incompatible with some modules.
+- Cleaned up code a bit
 
 
 SOME NOTES
@@ -90,13 +88,12 @@ distribution and type the following:
   make test
   make install
 
-You will be prompted for installation locations and program locations. You can
-suppress these prompts by specifying:
+You can install this package into a non-default location by appending one of
+the following to the "perl Makefile.PL" command:
 
-- either "PREFIX=/installation/path" (for installation into a custom
-  location), "INSTALLDIRS=site" (for installation into site-specific Perl
-  directories), or "INSTALLDIRS=perl" (for installation into standard Perl
-  directories).
+- "PREFIX=/installation/path" (for installation into a custom location),
+- "INSTALLDIRS=site" (for installation into site-specific Perl directories)
+- "INSTALLDIRS=perl" (for installation into standard Perl directories).
 
 If make test fails, please see the INSTALLATION PROBLEMS section below.
 

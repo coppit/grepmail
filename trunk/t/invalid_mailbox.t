@@ -245,7 +245,7 @@ sub SetSkip
 
   use Mail::Mbox::MessageParser;
 
-  unless (defined $Mail::Mbox::MessageParser::PROGRAMS{'gzip'})
+  unless (defined $Mail::Mbox::MessageParser::Config{'programs'}{'gzip'})
   {
     $skip{'cat t/mailboxes/non-mailbox.txt.gz | grepmail pattern'}
       = 'gzip support not enabled in Mail::Mbox::MessageParser';

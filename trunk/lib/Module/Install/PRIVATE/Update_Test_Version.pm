@@ -7,7 +7,7 @@ use vars qw( @ISA $VERSION );
 use Module::Install::Base;
 @ISA = qw( Module::Install::Base );
 
-$VERSION = '0.10.0';
+$VERSION = sprintf "%d.%02d%02d", q/0.10.0/ =~ /(\d+)/g;
 
 # ---------------------------------------------------------------------------
 
@@ -20,11 +20,15 @@ sub Update_Test_Version
   open SOURCE, $file_with_version
     or die "Couldn't open grepmail file: $!";
 
+  my $found = 0;
+
   while (my $line = <SOURCE>)
   {
-    if ($line =~ /\$VERSION = '(.*?)';/)
+    if ($line =~ /^\$VERSION = (.*q\/(.*?)\/.*);/)
     {
-      my $version = $1;
+      $found = 1;
+
+      my $version = eval $1;
 
       open TEST_CASE, $test_case_file
         or die "Couldn't open test case: $!";
@@ -50,6 +54,8 @@ sub Update_Test_Version
       last;
     }
   }
+
+  die "Couldn't find version line in $file_with_version" unless $found;
 
   close SOURCE;
 }
