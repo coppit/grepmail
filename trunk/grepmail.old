@@ -2,7 +2,7 @@
 
 # grepmail
 
-$VERSION = '4.45';
+$VERSION = '4.46';
 
 # Grepmail searches a normal, gzip'd, tzip'd, or bzip2'd mailbox for a given
 # regular expression and returns those emails that match the query. It also
@@ -104,6 +104,119 @@ use Carp;
 
 #-------------------------------------------------------------------------------
 
+package Mail::Folder::SlowReader;
+
+require Exporter;
+
+no strict;
+
+@ISA = qw(Exporter DynaLoader);
+@EXPORT = qw();
+@EXPORT_OK = qw( reset_file read_email );
+
+use strict;
+
+my $LINE = 0;
+my $FILE_HANDLE = undef;
+
+sub reset_file
+{
+  my $file_handle = shift;
+
+  $FILE_HANDLE = $file_handle;
+  $LINE = 0;
+}
+
+#-------------------------------------------------------------------------------
+
+# Need this for a lookahead.
+my $NEXT_EMAIL = undef;
+
+sub read_email
+{
+  local $/ = "\nFrom ";
+
+  # Empty file means reset first email and return 0
+  if (!defined $NEXT_EMAIL && eof $FILE_HANDLE)
+  {
+    $LINE = 0;
+    return 0;
+  }
+
+  $LINE++ if $LINE == 0;
+
+  my $email;
+  my $line;
+  
+  if (defined $NEXT_EMAIL)
+  {
+    $email = $NEXT_EMAIL;
+    $line = $LINE;
+    $LINE += ($NEXT_EMAIL =~ tr/\n//);
+    undef $NEXT_EMAIL;
+  }
+  else
+  {
+    $email = <$FILE_HANDLE>;
+    $line = $LINE;
+    $LINE += ($email =~ tr/\n//);
+
+    local $/ = "From ";
+    chomp $email;
+  }
+
+  while(1)
+  {
+    $NEXT_EMAIL = <$FILE_HANDLE>;
+
+    last unless defined $NEXT_EMAIL;
+
+    local $/ = "From ";
+    chomp $NEXT_EMAIL;
+    substr($NEXT_EMAIL,0,0) = 'From ';
+
+    # See if we accidentally stopped on an unescaped "From my mother". 
+    if ($NEXT_EMAIL !~ /^From\s.*\d:\d+:\d.* \d{4}/)
+    {
+      $email .= $NEXT_EMAIL;
+      $LINE += ($NEXT_EMAIL =~ tr/\n//);
+      undef $NEXT_EMAIL;
+      redo;
+    }
+
+    # There is more to this email if the end is a Begin Included
+    # Message Reverse the email before searching (for efficiency).
+    # This is just as fast as index(). (Even after taking the last 200
+    # characters as a substring.)
+    my $end_of_string = substr($email,-200);
+    if ($end_of_string =~ /\n-----( Begin Included Message |Original Message)-----\n[^\n]*\n*$/i)
+    {
+      $email .= $NEXT_EMAIL;
+      $LINE += ($NEXT_EMAIL =~ tr/\n//);
+      undef $NEXT_EMAIL;
+      redo;
+    }
+
+    # Check for mailbox attachments. This is broken... I need to
+    # handle attachments here.
+#    if ($end_of_string =~ /Content-Type:[^\n]*rfc822[^\n]*\n(Content[^\n]*\n)\n*$/i)
+#    {
+#      $email .= $NEXT_EMAIL;
+#      $LINE += ($NEXT_EMAIL =~ tr/\n//);
+#      undef $NEXT_EMAIL;
+#      redo;
+#    }
+
+    last;
+  }
+
+  return (1,$email,$line);
+}
+
+package main;
+
+#-------------------------------------------------------------------------------
+
 # Outputs debug messages with the -D flag. Be sure to return 1 so code like
 # 'dprint "blah\n" and exit' works.
 
@@ -146,7 +259,7 @@ print "No arguments given. grepmail --help for help.\n" and exit(1)
   if (!@ARGV);
 
 # Check for --help, the standard usage command
-print usage() and exit(0) if $ARGV[0] eq '--help';
+print usage() and exit(0) if grep { /--help/ } @ARGV;
 
 # Save the arguments because getopt changes them.
 my @args = @ARGV;
@@ -155,6 +268,7 @@ my @args = @ARGV;
 $opts{'D'} = $opts{'e'} = $opts{'i'} = $opts{'q'} = $opts{'h'} = 0;
 $opts{'b'} = $opts{'v'} = $opts{'l'} = $opts{'r'} = $opts{'a'} = 0;
 $opts{'M'} = $opts{'m'} = $opts{'s'} = $opts{'u'} = $opts{'n'} = 0;
+$opts{'Z'} = 0;
 $opts{'d'} = $opts{'V'} = undef;
 
 # Initialize seen messages data structure to empty.
@@ -296,12 +410,18 @@ if ($DEBUG)
 
 # LOAD THE MAIL::FOLDER::FASTREADER IF IT'S INSTALLED
 
-if (eval "require Mail::Folder::FastReader2;")
+if (!$opts{'Z'} && eval "require Mail::Folder::FastReader;")
 {
   # Override the slow read_email defined here
-  undef &read_email;
-  undef &reset_file;
+#  undef &read_email;
+#  undef &reset_file;
   import Mail::Folder::FastReader 'reset_file', 'read_email';
+  dprint "Using Mail::Folder::FastReader";
+}
+else
+{
+  import Mail::Folder::SlowReader 'reset_file', 'read_email';
+  dprint "Not using Mail::Folder::FastReader";
 }
 
 ################################ MAIN PROGRAM #################################
@@ -769,6 +889,9 @@ sub ProcessMailFile
       {
         my $line = $1;
 
+        # Avoid perl 5.6 bug which causes spurious warning even though
+        # $pattern is defined.
+        local $^W = 0;
         if ($line =~ /$pattern/om && !$in_attachment)
         {
           $matchesBody = 1;
@@ -793,6 +916,9 @@ sub ProcessMailFile
     }
     else
     {
+      # Avoid perl 5.6 bug which causes spurious warning even though
+      # $pattern is defined.
+      local $^W = 0;
       $matchesBody = ($email_body =~ /$pattern/om) || 0;
     }
 
@@ -901,8 +1027,7 @@ sub NotADuplicate
 {
   my $email_header = shift;
 
-  my $message_id = $email_header;
-  $message_id =~ m/^Message-Id:<.*>$/m;
+  my ($message_id) = $email_header =~ /^Message-Id:\s*<([^>]+)>/mi;
 
   my $result;
 
@@ -935,6 +1060,9 @@ sub GetFromLine
   my $header = $email;
   $header =~ s/\n\n.*/\n/s;
 
+  # Avoid perl 5.6 bug which causes spurious warning even though $header is
+  # defined.
+  local $^W = 0;
   if ($header =~ /^(From:\s.*)$/im)
   {
     return $1;
@@ -962,6 +1090,9 @@ sub GetSubjectLine
   my $header = $email;
   $header =~ s/\n\n.*/\n/s;
 
+  # Avoid perl 5.6 bug which causes spurious warning even though $header is
+  # defined.
+  local $^W = 0;
   if ($header =~ /^(Subject:\s.*)$/im)
   {
     return $1;
@@ -1059,6 +1190,9 @@ sub AnalyzeHeader($$)
   my $pattern = shift;
 
   # See if the header matches the pattern
+  # Avoid perl 5.6 bug which causes spurious warning even though $pattern is
+  # defined.
+  local $^W = 0;
   my $matchesHeader = ($email_header =~ /$pattern/om) || 0;
 
   # See if the email failed the size restriction. If it passes here, we still
@@ -1115,105 +1249,6 @@ sub AnalyzeHeader($$)
 
 #-------------------------------------------------------------------------------
 
-my $LINE = 0;
-my $FILE_HANDLE = undef;
-
-sub reset_file
-{
-  my $file_handle = shift;
-
-  $FILE_HANDLE = $file_handle;
-  $LINE = 0;
-}
-
-#-------------------------------------------------------------------------------
-
-# Need this for a lookahead.
-my $NEXT_EMAIL = undef;
-
-sub read_email
-{
-  local $/ = "\nFrom ";
-
-  # Empty file means reset first email and return 0
-  if (!defined $NEXT_EMAIL && eof $FILE_HANDLE)
-  {
-    $LINE = 0;
-    return 0;
-  }
-
-  $LINE++ if $LINE == 0;
-
-  my $email;
-  my $line;
-  
-  if (defined $NEXT_EMAIL)
-  {
-    $email = $NEXT_EMAIL;
-    $line = $LINE;
-    $LINE += ($NEXT_EMAIL =~ tr/\n//);
-    undef $NEXT_EMAIL;
-  }
-  else
-  {
-    $email = <$FILE_HANDLE>;
-    $line = $LINE;
-    $LINE += ($email =~ tr/\n//);
-
-    local $/ = "From ";
-    chomp $email;
-  }
-
-  while(1)
-  {
-    $NEXT_EMAIL = <$FILE_HANDLE>;
-
-    last unless defined $NEXT_EMAIL;
-
-    local $/ = "From ";
-    chomp $NEXT_EMAIL;
-    substr($NEXT_EMAIL,0,0) = 'From ';
-
-    # See if we accidentally stopped on an unescaped "From my mother". 
-    if ($NEXT_EMAIL !~ /^From\s.*\d:\d+:\d.* \d{4}/)
-    {
-      $email .= $NEXT_EMAIL;
-      $LINE += ($NEXT_EMAIL =~ tr/\n//);
-      undef $NEXT_EMAIL;
-      redo;
-    }
-
-    # There is more to this email if the end is a Begin Included
-    # Message Reverse the email before searching (for efficiency).
-    # This is just as fast as index(). (Even after taking the last 200
-    # characters as a substring.)
-    my $end_of_string = substr($email,-200);
-    if ($end_of_string =~ /\n-----( Begin Included Message |Original Message)-----\n[^\n]*\n*$/i)
-    {
-      $email .= $NEXT_EMAIL;
-      $LINE += ($NEXT_EMAIL =~ tr/\n//);
-      undef $NEXT_EMAIL;
-      redo;
-    }
-
-    # Check for mailbox attachments. This is broken... I need to
-    # handle attachments here.
-#    if ($end_of_string =~ /Content-Type:[^\n]*rfc822[^\n]*\n(Content[^\n]*\n)\n*$/i)
-#    {
-#      $email .= $NEXT_EMAIL;
-#      $LINE += ($NEXT_EMAIL =~ tr/\n//);
-#      undef $NEXT_EMAIL;
-#      redo;
-#    }
-
-    last;
-  }
-
-  return (1,$email,$line);
-}
-
-#-------------------------------------------------------------------------------
-
 sub PrintEmail
 {
   my $fileName = shift;
@@ -1226,28 +1261,23 @@ sub PrintEmail
 
   if ($opts{'n'})
   {
-    my $mailfolder_printed = 0;
-
     # Print line-by-line
     while ($header =~ /([^\n]*\n)/g)
     {
       my $line = $1;
 
-      print "$fileName:" if $number_files > 1;
-      print "$line_number:";
-
       # Add the mailfolder to the headers if -m was given. Careful
       # about line numbers!
-      if ($opts{'m'} && $line eq "\n" && !$mailfolder_printed)
+      if ($opts{'m'} && $line eq "\n")
       {
-        $mailfolder_printed = 1;
-
+        print "$fileName:" if $number_files > 1;
+        print "$line_number:";
         print "X-Mailfolder: $fileName\n";
-        redo;
       }
 
+      print "$fileName:" if $number_files > 1;
+      print "$line_number:";
       print $line;
-
       $line_number++;
     }
 
@@ -1262,6 +1292,8 @@ sub PrintEmail
   }
   else
   {
+    $header =~ s/\n\n/\nX-Mailfolder: $fileName\n\n/ if $opts{'m'};
+
     print $header;
 
     # Print whatever body we've read already.
@@ -1561,6 +1593,7 @@ compressed ASCII input is taken from STDIN.
 -u Ensure that no duplicate emails are output
 -v Output emails that don't match the expression
 -V Display the version number
+-Z Not use Mail::Folder::FastReader even if it is on the system
 
 Date specifications must be of the form of:
 a date like "today", "1st thursday in June 1992" (requires Date::Manip),
@@ -1709,6 +1742,11 @@ uniqueness by the Message-ID header.
 Invert the sense of the search, by analogy to I<grep -v>. This results in the
 set of emails printed being the complement of those that would be printed
 without the B<-v> switch.
+
+=item B<-Z>
+
+By default, grepmail uses the Mail::Folder::FastReader module if it is on the
+system. This switch tells it to use the slower Perl implementation instead.
 
 =back
 

@@ -2,7 +2,7 @@
 
 # grepmail
 
-$VERSION = '4.46';
+$VERSION = '4.47';
 
 # Grepmail searches a normal, gzip'd, tzip'd, or bzip2'd mailbox for a given
 # regular expression and returns those emails that match the query. It also
@@ -880,38 +880,45 @@ sub ProcessMailFile
       $boundary = $1 if defined $1;
       $boundary = $2 if defined $2;
 
-      my $in_attachment = 0;
-      my $last_line = undef;
+      my @attachment_positions;
 
+      # Get each of the binary attachment beginnings and endings.
+      while ($email_body =~ m/\n((?:--)?$boundary(?:--)?\n(?:(.*?)\n\n)?)/sg)
+      {
+        my $position = pos($email_body) - length($1);
+        my $header = $2;
+
+        # Remember that the beginning of the next attachment is the
+        # end of the previous.
+        $attachment_positions[-1]{'end'} = $position
+          if @attachment_positions;
+
+        # If it's the beginning of a binary attachment, store the position
+        if (defined $header && $header =~ /^Content-Type:\s+(?!text)/i)
+        {
+          $attachment_positions[$#attachment_positions+1]{'beginning'} =
+            $position;
+        }
+      }
+
+      # Now search the body, ignoring any matches in binary
+      # attachments.
       $matchesBody = 0;
 
-      while ($email_body =~ /^(.*)$/mg)
+      local $^W = 0;
+      SEARCH: while ($email_body =~ m/($pattern)/og)
       {
-        my $line = $1;
+        my $position = pos($email_body) - length($1);
 
-        # Avoid perl 5.6 bug which causes spurious warning even though
-        # $pattern is defined.
-        local $^W = 0;
-        if ($line =~ /$pattern/om && !$in_attachment)
+        foreach my $attachment (@attachment_positions)
         {
-          $matchesBody = 1;
-          last;
+          next SEARCH
+            if ($position > $attachment->{'beginning'} &&
+                $position < $attachment->{'end'});
         }
 
-        unless (defined $last_line)
-        {
-          $last_line = $line;
-          next;
-        }
-
-        if ($line eq "$boundary\n" && $last_line =~ /^Content-Type: (?!text)/)
-        {
-          $in_attachment = 1;
-        }
-        elsif ($line eq "$boundary\n" || $line eq "$boundary--\n")
-        {
-          $in_attachment = 0;
-        }
+        $matchesBody = 1;
+        last;
       }
     }
     else
@@ -961,8 +968,9 @@ sub ProcessMailFile
       }
       else
       {
-        PrintEmail($fileName,$email_header,$email_body,$number_files,$line)
-          if $opts{'u'} && NotADuplicate($email_header) || !$opts{'u'};
+        ConvertEmailToMboxAndPrintIt($fileName,$email_header,
+          $email_body,$number_files,$line)
+            if $opts{'u'} && NotADuplicate($email_header) || !$opts{'u'};
 
         next;
       }
@@ -1004,8 +1012,9 @@ sub ProcessMailFile
       }
       else
       {
-        PrintEmail($fileName,$email_header,$email_body,$number_files,$line)
-          if $opts{'u'} && NotADuplicate($email_header) || !$opts{'u'};
+        ConvertEmailToMboxAndPrintIt($fileName,$email_header,
+          $email_body,$number_files,$line)
+            if $opts{'u'} && NotADuplicate($email_header) || !$opts{'u'};
       }
     }
     else
@@ -1245,6 +1254,38 @@ sub AnalyzeHeader($$)
     );
 
   return ('continue',$matchesHeader);
+}
+
+#-------------------------------------------------------------------------------
+
+sub ConvertEmailToMboxAndPrintIt
+{
+  my $fileName = shift;
+  my $header = shift;
+  my $body = shift;
+  my $number_files = shift;
+  my $line_number = shift;
+
+  ($header,$body) = ConvertEmailToMbox($header,$body);
+  PrintEmail($fileName,$header,$body,$number_files,$line_number);
+}
+
+#-------------------------------------------------------------------------------
+
+sub ConvertEmailToMbox
+{
+  my $header = shift;
+  my $body = shift;
+
+  dprint "Making email mbox format.";
+
+  # Check for a Gnus email
+  if ($header =~ /^X-From-Line:\s+/)
+  {
+    $header =~ s/^X-From-Line:\s+/From /;
+  }
+
+  return ($header,$body);
 }
 
 #-------------------------------------------------------------------------------
@@ -1801,6 +1842,10 @@ mailboxes:
 Remove any duplicates from a mailbox:
 
   grepmail -u saved-mail
+
+Convert a Gnus mailbox to mbox format:
+
+  grepmail . gnus-mailbox-dir/* > mbox
 
 =head1 FILES
 
