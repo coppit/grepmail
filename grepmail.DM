@@ -2,7 +2,7 @@
 
 # grepmail
 
-$VERSION = 4.23;
+$VERSION = 4.24;
 
 # Grepmail searches a normal, gzip'd, tzip'd, or bzip2'd mailbox for a given
 # regular expression and returns those emails that match the query. It also
@@ -248,6 +248,9 @@ if ($opts{'d'})
 }
 
 ################################ MAIN PROGRAM #################################
+
+sub ProcessDate($);
+sub GetFiles(@);
 
 # Make the pattern insensitive if we need to
 $pattern = "(?i)$pattern" if ($opts{'i'});
