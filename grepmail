@@ -96,11 +96,6 @@ require 5.00396;
 
 use vars qw(%opts $pattern $commandLine $VERSION $DEBUG %message_ids_seen );
 
-# You may have to adjust this for maximum performance on your system.
-my $READ_SIZE = 5000;
-
-my $READ_BUFFER = '';
-
 use Getopt::Std;
 use Date::Parse;
 
@@ -673,7 +668,7 @@ sub ProcessMailFile ($$)
   my $email;
 
   # This is the main loop. It's executed once for each email
-  while (!eof($fileHandle) || $READ_BUFFER ne '')
+  while (!eof($fileHandle))
   {
     $email = ReadEmail($fileHandle);
 
@@ -1057,56 +1052,60 @@ sub AnalyzeHeader($$)
 
 #-------------------------------------------------------------------------------
 
+my $NEXT_HEADER = undef;
+
 sub ReadEmail
 {
   my $fileHandle = shift;
 
-  return undef if $READ_BUFFER eq '' && eof($fileHandle);
-
   dprint "Reading email";
 
-  my $multiplier = 0;
+  local $/ = "\n\n";
 
-  do
+  return undef if eof($fileHandle);
+
+  $NEXT_HEADER = <$fileHandle> unless defined $NEXT_HEADER;
+
+  my $email = $NEXT_HEADER;
+
+  while(1)
   {
-    # Look for the start of an email in the buffer. Set pos($READ_BUFFER) = 1
-    # in order to avoid matching the first From.
-    pos($READ_BUFFER) = 1;
-    while ($READ_BUFFER =~ /^From\s.*\d:\d+:\d.* \d{4}/igm)
+    my $paragraph = <$fileHandle>;
+
+    # Check for eof
+    unless (defined $paragraph)
     {
-      my $email = $`;
-      my $from_line = $&;
-      my $rest = $';
+      $NEXT_HEADER = undef;
+      return $email;
+    }
+
+    # Look for the start of the next email.
+    if ($paragraph =~ /^(\n*)From\s.*\d:\d+:\d.* \d{4}/i)
+    {
+      my $newlines = $1;
 
       # Avoid false positives from included messages. Reverse the email before
       # searching (for efficiency).
       my $reversed = reverse $email;
-      if ($reversed !~ /^\n*[^\n]*?----- egasseM dedulcnI nigeB -----\n/i)
+      if ($reversed =~ /^\n*[^\n]*?----- egasseM dedulcnI nigeB -----\n/i)
       {
-        $READ_BUFFER = $from_line . $rest;
+        $email .= $paragraph;
+        next;
+      }
+      else
+      {
+        $email .= $newlines;
+        $paragraph =~ s/^\n*//;
+
+        $NEXT_HEADER = $paragraph;
         return $email;
       }
     }
-
-    # We couldn't find a valid start of an email. If it's the end of the file,
-    # we just return the current read buffer. Otherwise we read a chunk and
-    # try again.
-    if (eof $fileHandle)
-    {
-      my $email = $READ_BUFFER;
-      $READ_BUFFER = '';
-      return $email;
-    }
     else
     {
-      my $block;
-      $multiplier++;
-
-      read($fileHandle,$block,$READ_SIZE * $multiplier);
-
-      $READ_BUFFER .= $block;
+      $email .= $paragraph;
     }
-  } while (1);
+  }
 }
 
 #-------------------------------------------------------------------------------
