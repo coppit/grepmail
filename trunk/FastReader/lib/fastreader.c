@@ -1,6 +1,5 @@
 #include <stdio.h>
 #include <string.h>
-#include "fastreader.h"
 
 #define DEBUG 0
 
@@ -9,6 +8,8 @@ int _ends_with_include(char *email);
 
 static int BUFFER_SIZE_INCREMENT=1000000;
 static int BUFFER_SIZE=0;
+
+static FILE *FILE_HANDLE = NULL;
 
 /* The current line count */
 static long LINE = 1;
@@ -22,23 +23,23 @@ static char *EMAIL_BUFFER = NULL;
 static unsigned int LENGTH_OF_EMAIL = 0;
 
 
-int read_email(FILE *file_handle,char **email,long *email_line)
+int read_email(char **email,long *email_line)
 {
   char next_line[256];
 
-  if (feof(file_handle))
+  if (feof(FILE_HANDLE))
   {
 #if DEBUG==1 || DEBUG==2 || DEBUG==3
     fprintf(stderr,"eof, and no more buffered data\n");
 #endif
-    reset_line();
+    LINE = 0;
     return 0;
   }
 
   /* Allocate the memory if it hasn't been already. */
   if (LINE == 0)
   {
-    fgets(LAST_LINE,255,file_handle);
+    fgets(LAST_LINE,255,FILE_HANDLE);
     LINE = 1;
   }
 
@@ -62,14 +63,14 @@ int read_email(FILE *file_handle,char **email,long *email_line)
 #if DEBUG==3
   fprintf(stderr,".");
 #endif
-    fgets(next_line,255,file_handle);
+    fgets(next_line,255,FILE_HANDLE);
 
-    if (feof(file_handle))
+    if (feof(FILE_HANDLE))
     {
 #if DEBUG==1
   fprintf(stderr,"hit eof\n");
 #endif
-      reset_line();
+      LINE = 0;
       return 1;
     }
 
@@ -125,11 +126,12 @@ int read_email(FILE *file_handle,char **email,long *email_line)
   }
 }
 
-void reset_line()
+void reset_file(FILE *file_handle)
 {
 #if DEBUG==1 || DEBUG==2 || DEBUG==3
-  fprintf(stderr,"resetting line number\n");
+  fprintf(stderr,"resetting line number & file\n");
 #endif
+  FILE_HANDLE = file_handle;
   LINE = 0;
 }
 
