@@ -199,7 +199,9 @@ sub CollectData
 
       my $t = new Benchmark::Timer(skip => 1, confidence => 97.5, error => 2);
 
-      while ($t->need_more_samples($label))
+      # Need enough for the statistics to be valid
+      my $count = 0;
+      while ($count - 1 < 10 || $t->need_more_samples($label))
       {
         unlink 't/temp/cache' if $impl eq 'Cache Init';
 
@@ -207,6 +209,8 @@ sub CollectData
         my $pid = open3(gensym, ">&NULL", ">&STDERR", $new_test);
         waitpid($pid, 0);
         $t->stop($label);
+
+        $count++;
       }
 
       $t->report($label);

@@ -7,14 +7,16 @@ use lib 'lib';
 use Test::Utils;
 
 my %tests = (
-'grepmail -h Handy t/mailboxes/mailarc-1.txt'
-  => ['header_handy','none'],
-'grepmail -h "^From.*aarone" t/mailboxes/mailarc-1.txt'
-  => ['header_aarone','none'],
-'grepmail -hb Handy t/mailboxes/mailarc-1.txt'
-  => ['header_body_handy','none'],
-'grepmail -h Handy t/mailboxes/mailarc-1.txt'
-  => ['header_handy','none'],
+'grepmail Handy t/mailboxes/mailarc-1.txt'
+  => ['all_handy','none'],
+'grepmail Handy t/mailboxes/mailarc-1.txt.gz'
+  => ['all_handy','none'],
+'grepmail Handy t/mailboxes/mailarc-1.txt.bz2'
+  => ['all_handy','none'],
+'grepmail Handy t/mailboxes/mailarc-1.txt.tz'
+  => ['all_handy','none'],
+'grepmail -e Handy t/mailboxes/mailarc-1.txt'
+  => ['all_handy','none'],
 );
 
 my %expected_errors = (
@@ -25,6 +27,8 @@ mkdir 't/temp', 0700;
 plan (tests => scalar (keys %tests));
 
 my %skip = SetSkip(\%tests);
+
+unlink 't/temp/cache';
 
 foreach my $test (sort keys %tests) 
 {
@@ -100,6 +104,24 @@ sub SetSkip
   my %tests = %{ shift @_ };
 
   my %skip;
+
+  unless (defined $Mail::Mbox::MessageParser::PROGRAMS{'gzip'})
+  {
+    $skip{'grepmail Handy t/mailboxes/mailarc-1.txt.gz'}
+      = 'gzip support not enabled in Mail::Mbox::MessageParser';
+  }
+
+  unless (defined $Mail::Mbox::MessageParser::PROGRAMS{'bzip2'})
+  {
+    $skip{'grepmail Handy t/mailboxes/mailarc-1.txt.bz2'}
+      = 'bzip2 support not enabled in Mail::Mbox::MessageParser';
+  }
+
+  unless (defined $Mail::Mbox::MessageParser::PROGRAMS{'tzip'})
+  {
+    $skip{'grepmail Handy t/mailboxes/mailarc-1.txt.tz'}
+      = 'tzip support not enabled in Mail::Mbox::MessageParser';
+  }
 
   return %skip;
 }

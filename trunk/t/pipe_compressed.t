@@ -1,9 +1,9 @@
 #!/usr/bin/perl
 
 use strict;
-use warnings 'all';
 
 use Test;
+use lib 'lib';
 use Test::Utils;
 
 my %tests = (
@@ -24,7 +24,7 @@ my %tests = (
 my %expected_errors = (
 );
 
-mkdir 't/temp';
+mkdir 't/temp', 0700;
 
 plan (tests => scalar (keys %tests));
 
@@ -51,7 +51,24 @@ sub TestIt
   $testname =~ s/.*\///;
   $testname =~ s/\.t//;
 
-  $test =~ s#\bgrepmail\s#$^X blib/script/grepmail #g;
+  {
+    my @standard_inc = split /###/, `perl -e '\$" = "###";print "\@INC"'`;
+    my @extra_inc;
+    foreach my $inc (@INC)
+    {
+      push @extra_inc, $inc unless grep { /^$inc$/ } @standard_inc;
+    }
+
+    local $" = ' -I';
+    if (@extra_inc)
+    {
+      $test =~ s#\bgrepmail\s#$^X -I@extra_inc blib/script/grepmail -C t/temp/cache #g;
+    }
+    else
+    {
+      $test =~ s#\bgrepmail\s#$^X blib/script/grepmail -C t/temp/cache #g;
+    }
+  }
 
   my $test_stdout = "t/temp/${testname}_$stdout_file.stdout";
   my $test_stderr = "t/temp/${testname}_$stderr_file.stderr";
@@ -87,6 +104,30 @@ sub SetSkip
   my %tests = %{ shift @_ };
 
   my %skip;
+
+  unless (defined $Mail::Mbox::MessageParser::PROGRAMS{'gzip'})
+  {
+    $skip{'cat t/mailboxes/mailarc-1.txt.gz | grepmail Handy'}
+      = 'gzip support not enabled in Mail::Mbox::MessageParser';
+    $skip{'cat t/mailboxes/mailarc-1.txt.gz | grepmail -v -E \'$email =~ /Handy/\''}
+      = 'gzip support not enabled in Mail::Mbox::MessageParser';
+  }
+
+  unless (defined $Mail::Mbox::MessageParser::PROGRAMS{'bzip2'})
+  {
+    $skip{'cat t/mailboxes/mailarc-1.txt.bz2 | grepmail Handy'}
+      = 'bzip2 support not enabled in Mail::Mbox::MessageParser';
+    $skip{'cat t/mailboxes/mailarc-1.txt.bz2 | grepmail -v -E \'$email =~ /Handy/\''}
+      = 'bzip2 support not enabled in Mail::Mbox::MessageParser';
+  }
+
+  unless (defined $Mail::Mbox::MessageParser::PROGRAMS{'tzip'})
+  {
+    $skip{'cat t/mailboxes/mailarc-1.txt.tz | grepmail Handy'}
+      = 'tzip support not enabled in Mail::Mbox::MessageParser';
+    $skip{'cat t/mailboxes/mailarc-1.txt.tz | grepmail -v -E \'$email =~ /Handy/\''}
+      = 'tzip support not enabled in Mail::Mbox::MessageParser';
+  }
 
   return %skip;
 }

@@ -1,0 +1,9 @@
+#!/usr/bin/perl
+
+my $results = `diff @ARGV`;
+
+$results =~ s/^diff.*\/CVS\/.*\/CVS\/.*\n([\d,acd]+\n|< .*\n|---\n|> .*\n)+//mg;
+$results =~ s/^Only in.*\bCVS\b.*\n//mg;
+
+print $results;
+

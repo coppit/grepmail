@@ -13,10 +13,14 @@ use Mail::Mbox::MessageParser;
   Broken_Pipe No_such_file_or_directory
 );
 
-our %PROGRAMS = (
- 'grep' => '',
- 'zcat' => '',
- 'zgrep' => '',
+use vars qw( %PROGRAMS );
+
+%PROGRAMS = (
+ 'tzip' => undef,
+ 'gzip' => '/usr/cs/contrib/bin/gzip',
+ 'compress' => '/usr/cs/contrib/bin/gzip',
+ 'bzip' => undef,
+ 'bzip2' => undef,
 );
 
 sub CheckDiffs
@@ -173,7 +177,21 @@ sub No_such_file_or_directory
 # doing this?
 sub Broken_Pipe
 {
-  my $result = `cat $0 | head 2>&1 1>/dev/null`;
+  mkdir 't/temp', 0700;
+
+  open F, ">t/temp/broken_pipe.pl";
+  print F<<EOF;
+unless (open B, '-|')
+{
+  open(F, "|cat 2>/dev/null");
+  print F 'x';
+  close F;
+  exit;
+}
+EOF
+  close F;
+
+  my $result = `$^X t/temp/broken_pipe.pl 2>&1 1>/dev/null`;
 
   $result = '' unless defined $result;
 

@@ -1,0 +1,37 @@
+SUBJECT: grepmail 5.10 released
+
+Description:
+- grepmail is a Perl program that searches a normal or compressed mailbox
+  (gzip, bzip2, or tzip) for a given regular expression and returns those
+  emails that match the query. It also supports searches constrained by date
+  and size.
+
+Download:
+- You can download grepmail from CPAN:
+  http://www.cpan.org/authors/id/D/DC/DCOPPIT/grepmail-5.10.tar.gz
+- Until the file propagates to the mirrors, you can use the following URL:
+  http://prdownloads.sourceforge.net/grepmail/grepmail-5.10.tar.gz
+
+Changes:
+- Extracted mail parsing into the new Mail::Mbox::MessageParser module.
+- Fixed small performance loss bugs in short-circuit matching of headers which
+  were introduced in the last version
+- Improved performance a bit.
+- The Makefile.PL now uses the default values when run non-interactively.
+- Caching is now enabled by default. (It's no longer experimental.) Users can
+  disable it during installation.
+- Date specifications without times (e.g. "today") are interpreted as midnight
+  of the given day instead of the current time of that day. grepmail now
+  relies on Date::Manip to handle this--users must upgrade Date::Manip to get
+  this support.
+- Restructured test cases
+
+See the README for additional notes on complex queries, and generation of
+message IDs.
+
+A complete change log is at:
+- http://grepmail.sourceforge.net/CHANGES
+
+Regards,
+David
+
