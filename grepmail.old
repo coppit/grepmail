@@ -296,12 +296,11 @@ if ($DEBUG)
 
 # LOAD THE MAIL::FOLDER::FASTREADER IF IT'S INSTALLED
 
-if (eval "require Mail::Folder::FastReader;")
+if (eval "require Mail::Folder::FastReader2;")
 {
   # Override the slow read_email defined here
   undef &read_email;
-  undef &reset_line;
-  import Mail::Folder::FastReader 'reset_line', 'read_email';
+  import Mail::Folder::FastReader 'read_email';
 }
 
 ################################ MAIN PROGRAM #################################
@@ -700,14 +699,11 @@ sub ProcessMailFile
     my ($status,$email,$line) = read_email($fileHandle);
     last unless $status == 1;
 
-#print STDERR length($email),"\n";
+#print STDERR "---------\n", substr($email,0,40),"\n-----------\n";
     my ($header_buffer,$body_buffer) = split /\n\n/,$email,2;
-#if (defined $body_buffer)
+#unless (defined $line)
 #{
-#  print STDERR "#$email#\n";
-#}
-#else
-#{
+#  print STDERR $INC{'Mail/Folder/FastReader.pm'},"\n";
 #  print STDERR "########$email#####\n";
 #  exit;
 #}
@@ -1101,10 +1097,71 @@ sub RemoveTrailingFrom
 #-------------------------------------------------------------------------------
 
 my $LINE = undef;
+my $OLD_LINE = undef;
 
 sub reset_line
 {
   $LINE = 0;
+  $OLD_LINE = 0;
+}
+
+#-------------------------------------------------------------------------------
+
+sub read_email_old
+{
+  my $fileHandle = shift;
+
+  dprint "Reading email";
+
+  local $/ = "\nFrom ";
+
+  # Empty file means reset first email and return undef
+  if (eof $fileHandle)
+  {
+    reset_line();
+    return (0);
+  }
+
+  my $email = <$fileHandle>;
+
+  RemoveTrailingFrom(\$email);
+
+  # The first read email will have the "From " prefix, unlike the rest
+  substr($email,0,0) = 'From ' unless $OLD_LINE == 0;
+
+  $LINE += $OLD_LINE;
+  $OLD_LINE = ($email =~ tr/\n//);
+
+  # There is more to this email if the end is a Begin Included Message
+  # This could be a loop if we wanted to support multiple included
+  # messages.  Reverse the email before searching (for efficiency).
+  my $index = rindex $email,'----- Begin Included Message -----';
+  if ($index != -1 && substr($email,$index+34) =~ /^\n+$/)
+  {
+    my $remainder = <$fileHandle>;
+
+    $OLD_LINE += ($remainder =~ tr/\n//);
+
+    # Clean up anything we got and append it
+    if (defined $remainder)
+    {
+      RemoveTrailingFrom(\$remainder) if defined $remainder;
+      substr($remainder,0,0) = 'From ';
+      return (1,$email . $remainder,$LINE);
+    }
+    # Return the email and undef buffered email if we are at eof
+    else
+    {
+      warn "** Expected an included message, but the file ended. " .
+           "Continuing **\n";
+      reset_line();
+      return (1,$email,$LINE);
+    }
+  }
+  else
+  {
+    return (1,$email,$LINE);
+  }
 }
 
 #-------------------------------------------------------------------------------
