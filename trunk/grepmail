@@ -1073,8 +1073,6 @@ sub SkipToNextEmail($\$$)
   }
   while (!eof($fileHandle) &&
     ($paragraph !~ /^\n?From\s.*\d:\d+:\d.* \d{4}/i));
-#  while (!eof($fileHandle) &&
-#    ($paragraph !~ /^(----- Begin Included Message -----)?\n?From .*\d:\d+:\d.* \d{4}/i)); 
 
   # Buffer if we went too far. Zap the starting newline while we're at it.
   ($$next_header) = $paragraph =~ /^\n?(.*)/s if (!eof($fileHandle));
@@ -1536,7 +1534,7 @@ Date specifications must be of the form of:
 
 Simple date expressions will first be parsed by Date::Parse. If this fails,
 grepmail will attempt to parse the date with Date::Manip, if the module is
-installed on the system. Use an empty pattern (i.e. -d "") to find emails
+installed on the system. Use an empty pattern (i.e. B<-d "">) to find emails
 without a "Date: ..." line in the header.
 
 =item B<-e>
