@@ -6,7 +6,8 @@ $VERSION = 4.20;
 
 # Grepmail searches a normal, gzip'd, tzip'd, or bzip2'd mailbox for a given
 # regular expression and returns those emails that match the query. It also
-# supports piped compressed or ascii input, and searches constrained by date. 
+# supports piped compressed or ascii input, and searches constrained by date
+# and size. 
 
 # Visit the grepmail project homepage at http://grepmail.sourceforge.net/
 # There you can join the announcements mailing list to be notified of updates,
