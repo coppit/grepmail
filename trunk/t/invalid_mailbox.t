@@ -31,7 +31,7 @@ my %localization = (
 
 mkdir 't/temp', 0700;
 
-plan (tests => scalar (keys %tests));
+plan tests => scalar (keys %tests) * 2;
 
 my %skip = SetSkip(\%tests);
 
@@ -41,7 +41,7 @@ foreach my $test (sort keys %tests)
 
   SKIP:
   {
-    skip("$skip{$test}",1) if exists $skip{$test};
+    skip("$skip{$test}",2) if exists $skip{$test};
 
     TestIt($test, $tests{$test}, $expected_errors{$test}, $localization{$test});
   }
@@ -86,14 +86,14 @@ sub TestIt
 
   if (!$? && defined $error_expected)
   {
-    ok(0,"Did not encounter an error executing the test when one was expected.\n\n");
+    ok(0,"Did not encounter an error executing the test when one was expected.");
     return;
   }
 
   if ($? && !defined $error_expected)
   {
     ok(0, "Encountered an error executing the test when one was not expected.\n" .
-      "See $test_stdout and $test_stderr.\n\n");
+      "See $test_stdout and $test_stderr.");
     return;
   }
 
@@ -124,7 +124,8 @@ sub TestIt
     copy($real_stderr, $modified_stderr_2);
   }
 
-  CustomCheckDiffs([$modified_stdout,$test_stdout],[$modified_stderr_1,$modified_stderr_2,$test_stderr]);
+  Do_Diff($modified_stdout,$test_stdout);
+  Custom_Do_Diff($modified_stderr_1,$modified_stderr_2,$test_stderr);
 
   unlink $modified_stdout;
   unlink $modified_stderr_1;
@@ -133,46 +134,7 @@ sub TestIt
 
 # ---------------------------------------------------------------------------
 
-sub CustomCheckDiffs
-{
-  my @pairs = @_;
-
-  foreach my $pair (@pairs)
-  {
-    if (@$pair == 2)
-    {
-      my $filename = $pair->[0];
-      my $output_filename = $pair->[1];
-
-      my ($diff,$result) = DoDiff($filename,$output_filename);
-
-      ok(0), return if $diff == 0;
-      ok(0), return if $result == 0;
-    }
-    # Compare two versions of the file. Either can match for success
-    elsif (@$pair == 3)
-    {
-      my $filename_1 = $pair->[0];
-      my $filename_2 = $pair->[1];
-      my $output_filename = $pair->[2];
-
-      my ($diff,$result) = CustomDoDiff($filename_1,$filename_2,$output_filename);
-
-      ok(0), return if $diff == 0;
-      ok(0), return if defined $result && $result == 0;
-    }
-    else
-    {
-      die "Incorrect files to check differences\n";
-    }
-  }
-
-  ok(1), return;
-}
-
-# ---------------------------------------------------------------------------
-
-sub CustomDoDiff
+sub Custom_Do_Diff
 {
   my $filename_1 = shift;
   my $filename_2 = shift;
@@ -195,14 +157,14 @@ sub CustomDoDiff
 
     if ($? == 2)
     {
-      print "Couldn't do diff on results.\n";
-      return (0,undef);
+      ok(0,"Couldn't do diff on results.");
+      return;
     }
 
     if ($diff_err ne '')
     {
-      print $diff_err;
-      return (0,undef);
+      ok(0,$diff_err);
+      return;
     }
 
     local $/ = "\n";
@@ -213,10 +175,9 @@ sub CustomDoDiff
 
     if ($numdiffs == 0)
     {
-      print "Output $output_filename looks good.\n";
-
+      ok(1,"Output $output_filename looks good.");
       unlink "$output_filename.diff";
-      return (1,1);
+      return;
     }
 
     if ($numdiffs != 0)
@@ -242,14 +203,14 @@ sub CustomDoDiff
 
     if ($? == 2)
     {
-      print "Couldn't do diff on results.\n";
-      return (0,undef);
+      ok(0,"Couldn't do diff on results.");
+      return;
     }
 
     if ($diff_err ne '')
     {
-      print $diff_err;
-      return (0,undef);
+      ok(0,$diff_err);
+      return;
     }
 
     local $/ = "\n";
@@ -260,18 +221,16 @@ sub CustomDoDiff
 
     if ($numdiffs == 0)
     {
-      print "Output $output_filename looks good.\n";
-
+      ok(1,"Output $output_filename looks good.");
       unlink "$output_filename.diff";
-      return (1,1);
+      return;
     }
 
     if ($numdiffs != 0)
     {
-      print "Failed, with $numdiffs differences.\n";
-      print "  See $output_filename and " .
-        "$output_filename.diff.\n";
-      return (1,0);
+      ok(0,"Failed, with $numdiffs differences.\n" .
+        "  See $output_filename and $output_filename.diff.");
+      return;
     }
   }
 }
