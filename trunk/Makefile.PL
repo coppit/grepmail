@@ -11,6 +11,8 @@ require 5.004;
 
 Configure_Grepmail('grepmail');
 
+print "\n","-"x78,"\n\n";
+
 my %makefile_attributes = Compute_Makefile_Attributes(@ARGV);
 
 WriteMakefile( %makefile_attributes );
@@ -50,7 +52,7 @@ sub Configure_Grepmail
 {
   my $filename = shift;
 
-  print "\n\n","-"x78,"\n\n";
+  print "\n","-"x78,"\n\n";
 
   print "The following questions are used to configure grepmail.\n";
   print "You can change these settings later by editing the grepmail script.\n\n";
@@ -121,7 +123,10 @@ sub Compute_Makefile_Attributes
     'dist'  => { COMPRESS => 'gzip -9', SUFFIX => 'gz' },
     'clean' => { FILES => 't/temp' },
     'EXE_FILES' => [ 'grepmail' ],
-    'PREREQ_PM' => { 'Date::Parse' => 0, 'Storable' => 0},
+    'PREREQ_PM' => {
+      'Date::Parse' => 0,
+      'Mail::Mbox::MessageParser' => 0,
+    },
     'DIR' => [],
   );
 
@@ -174,18 +179,30 @@ sub UpdateTestVersion
 
 # --------------------------------------------------------------------------
 
-sub MY::postamble
+# So that "SUPER" works right
+package MY;
+
+sub test {
+  my $inherited = shift->SUPER::test(@_);
+  $inherited =~ s#'\)" \$\(TEST_FILES\)#', 'lib'\)" \$\(TEST_FILES\)#;
+  $inherited =~ s#"-I\$\(INST_ARCHLIB\)" \$\(TEST_FILE\)#"-I\$\(INST_ARCHLIB\)" "-Ilib" \$\(TEST_FILE\)#;
+  $inherited;
+}
+
+# --------------------------------------------------------------------------
+
+sub postamble
 {
 # Add a target for testing the speed, and one for testing
 # functionality
 '
 testspeed :: pure_all
 	PERL_DL_NONLAZY=1 $(FULLPERLRUN) "-I$(INST_LIB)" \
-	  "-I$(INST_ARCHLIB)" $(TEST_FILE)
+	  "-I$(INST_ARCHLIB)" "-Ilib" t/speed.pl
 
 testfunc :: pure_all
 	PERL_DL_NONLAZY=1 $(FULLPERLRUN) "-I$(INST_LIB)" \
-	  "-I$(INST_ARCHLIB)" t/*.t
+	  "-I$(INST_ARCHLIB)" "-Ilib" t/*.t
 ';
 }
 

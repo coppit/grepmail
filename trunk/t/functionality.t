@@ -330,6 +330,8 @@ plan (tests => $#tests + 1);
 
 DoTests($ARGV[0]);
 
+rmdir 't/temp' unless <t/temp/*>;
+
 # ---------------------------------------------------------------------------
 
 sub Check_Known_Timezone
