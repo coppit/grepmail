@@ -1,0 +1,15 @@
+This directory contains two versions of grepmail -- one for Date::Manip and
+one for Date::Parse. Please update both when necessary.
+
+The t directory contains speed tests that are not part of the test suite that
+is distributed with the software.
+
+Right now the tests just run the old version and the new version -- you have
+to compare the results. Eventually the test script should be updated to do
+comparison and error reporting if the results exceed a threshold.
+
+The speed.t script executes ~/bin/grepmail, which is assumed to be the old
+version, and then executes ./grepmail, which should be a symbolic link to
+either ../grepmail.DM or ../grepmail.DP.
+
+David Coppit
