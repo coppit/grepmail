@@ -2,7 +2,7 @@
 
 # grepmail
 
-$VERSION = '5.21';
+$VERSION = '5.22';
 
 # Grepmail searches a normal, gzip'd, tzip'd, or bzip2'd mailbox for a given
 # regular expression and returns those emails that match the query. It also
@@ -231,7 +231,7 @@ sub Get_Options
   print "$VERSION\n" and exit(0) if grep { /^--version$/ } @ARGV;
 
   my @valid_options =
-    qw( a b C d D e E f F i j h H l M m n q r R s S t T u v V X Y Z );
+    qw( a b B C d D e E f F i j h H l M m n q r R s S t T u v V X Y Z );
 
   my %opts;
 
@@ -610,6 +610,11 @@ sub HandleStandardInput
 
 #-------------------------------------------------------------------------------
 
+# This algorithm is complicated by code to short-circuit some
+# computations. For example, if the user specified -h but not -b, when
+# we can analyze the header for a match and avoid needing to search
+# the body, which may be much larger.
+
 sub Do_Simple_Pattern_Matching
 {
   my $email_header = shift;
@@ -850,6 +855,11 @@ sub Do_Simple_Pattern_Matching
 
 #-------------------------------------------------------------------------------
 
+# This algorithm is complicated by code to short-circuit some
+# computations. For example, if the user specified -h but not -b, when
+# we can analyze the header for a match and avoid needing to search
+# the body, which may be much larger.
+
 sub Do_Complex_Pattern_Matching
 {
   my $email_header = shift;
@@ -1017,11 +1027,6 @@ sub Do_Complex_Pattern_Matching
 
 #-------------------------------------------------------------------------------
 
-# This algorithm is complicated by code to short-circuit some
-# computations. For example, if the user specified -h but not -b, when
-# we can analyze the header for a match and avoid needing to search
-# the body, which may be much larger.
-
 sub ProcessMailFile
 {
   my $fileHandle = shift @_;
@@ -1032,7 +1037,7 @@ sub ProcessMailFile
     { 'file_name' => $opts{'C'} } )
     if $USE_CACHING;
 
-  die $setup_result unless $setup_result eq 'ok';
+  $USE_CACHING = 0 if $USE_CACHING && $setup_result ne 'ok';
 
   my $folder_reader =
     new Mail::Mbox::MessageParser( {
@@ -1201,13 +1206,16 @@ sub NotADuplicate
 
 #-------------------------------------------------------------------------------
 
-# Get the email author from the given reference to a header. Return
-# undef if it can't be found
-
-sub GetHeaderLine
+# - Returns header lines in the email header which match the given name.
+# - Example names: 'From:', 'Received:' or 'From '
+# - If the calling context wants a list, a list of the matching header lines
+#   are returned. Otherwise, the first (and perhaps only) match is returned.
+# - Wrapped lines are handled. Look for multiple \n's in the return value(s)
+# - 'From ' also looks for Gnus 'X-From-Line:' or 'X-Draft-From:'
+sub GetHeaderField
 {
   my $email_header = shift;
-  my $header_line = shift;
+  my $header_name = shift;
 
   die unless ref $email_header;
 
@@ -1215,18 +1223,26 @@ sub GetHeaderLine
   # is defined.
   local $^W = 0 if $] >= 5.006 && $] < 5.8;
 
-  if ($$email_header =~ /^($header_line:\s.*)$/im)
+  if ($header_name =~ /^From$/i &&
+    $$email_header =~ /^((?:From\s|X-From-Line:|X-Draft-From:).*\n(\s.*\n)*)/im)
   {
-    return $1;
+    return wantarray ? ($1) : $1;
   }
-  elsif ($header_line eq 'From' && $$email_header =~ /^(From\s.*)$/im)
+
+  my @matches = $$email_header =~ /^($header_name\s.*\n(?:\s.*\n)*)/igm;
+
+  if (@matches)
   {
-    return $1;
+    return wantarray ? @matches : shift @matches;
   }
-  else
+
+  if (lc $header_name eq 'from ' &&
+    $$email_header =~ /^(From\s.*\n(\s.*\n)*)/im)
   {
-    return undef;
+    return wantarray ? ($1) : $1;
   }
+
+  return undef;
 }
 
 #-------------------------------------------------------------------------------
@@ -1243,7 +1259,7 @@ sub PrintEmailStatistics
   dprint '-'x70;
   dprint "Processing email:";
 
-  my $message_id = GetHeaderLine($email_header,'Message-Id');
+  my $message_id = GetHeaderField($email_header,'Message-Id:');
 
   if (defined $message_id)
   {
@@ -1254,7 +1270,9 @@ sub PrintEmailStatistics
     dprint "  [No message id line found]";
   }
 
-  my $author = GetHeaderLine($email_header,'From');
+  my $author = GetHeaderField($email_header,'From:');
+  $author = GetHeaderField($email_header,'From ')
+    unless defined $author;
 
   if (defined $author)
   {
@@ -1265,7 +1283,7 @@ sub PrintEmailStatistics
     dprint "  [No from line found]";
   }
 
-  my $subject = GetHeaderLine($email_header,'Subject');
+  my $subject = GetHeaderField($email_header,'Subject:');
 
   if (defined $subject)
   {
@@ -1276,7 +1294,7 @@ sub PrintEmailStatistics
     dprint "  [No subject line found]";
   }
 
-  my $date = GetHeaderLine($email_header,'Date');
+  my $date = GetHeaderField($email_header,'Date:');
 
   if (defined $date)
   {
@@ -1470,27 +1488,42 @@ sub PrintEmail
 
   if ($opts{'n'})
   {
-    # Print line-by-line
-    while ($$email_header =~ /([^\n]*\n)/g)
-    {
-      my $line = $1;
+    # Print header-by-header
+    my @headers = $$email_header =~ /^(.*\n(?:\s.*\n)*)/gm;
 
+    foreach my $header (@headers)
+    {
       # Add the mailfolder to the headers if -m was given. Careful
       # about line numbers!
-      if ($opts{'m'} && $line eq "\n")
+      if ($opts{'m'} && $header eq "\n")
       {
         print "$fileName:" if $number_files > 1;
-        print "$line_number:X-Mailfolder: $fileName\n";
+
+        print " " x length $line_number, ":X-Mailfolder: $fileName\n";
       }
 
-      print "$fileName:" if $number_files > 1;
-      print "$line_number:";
-      print $line;
-      $line_number++;
+      # Print only 3-line header if -B
+      if ($opts{'B'} &&
+        $header !~ /^(From\s|X-From-Line:|X-Draft-From:|From:|Date:|Subject:|\n)/i)
+      {
+        $line_number += ($header =~ tr/\n//);
+      }
+      else
+      {
+        my $prefix = '';
+        $prefix = "$fileName:" if $number_files > 1;
+
+        $header =~ s/^/$line_number++;$prefix . ($line_number-1) . ':'/mge;
+        print $header;
+      }
     }
 
     # Don't print the body if -H is specified
-    return if $opts{'H'};
+    if($opts{'H'})
+    {
+      $line_number += ($$email_body =~ tr/\n//);
+      return;
+    }
 
     while ($$email_body =~ /([^\n]*\n)/g)
     {
@@ -1503,9 +1536,24 @@ sub PrintEmail
   }
   else
   {
-    $$email_header =~ s/\n\n/\nX-Mailfolder: $fileName\n\n/ if $opts{'m'};
-
-    print $$email_header;
+    # print short headers if -B is specified
+    if ($opts{'B'})
+    {
+      print GetHeaderField($email_header,'From ');
+      print GetHeaderField($email_header,'Date:');
+      print GetHeaderField($email_header,'From:');
+      print GetHeaderField($email_header,'Subject:');
+      print "X-Mailfolder: $fileName\n\n" if $opts{'m'};
+    }
+    else
+    {
+      # Had better be a newline!
+      chop $$email_header;
+      print $$email_header;
+      print "X-Mailfolder: $fileName\n" if $opts{'m'};
+      print "\n";
+      $$email_header .= "\n";
+    }
 
     # Don't print the body if -H is specified
     return if $opts{'H'};
@@ -1523,34 +1571,38 @@ sub PrintEmail
 
 sub Email_Matches_Date
 {
-  my $email_header = ${ shift @_ };
+  my $email_header = shift @_;
+
+  die unless ref $email_header;
 
   my ($emailDate, $isInDate) = ('',0);
 
   return 1 unless defined $opts{'d'};
 
-  # RFC 822 allows header lines to be continued on the next line, in
-  # which case they must be preceded by whitespace. Let's remove the
-  # continuations.
-  $email_header =~ s/\n\s+(\S)/ $1/g;
+  my $received_header = GetHeaderField($email_header, 'Received:');
+  my $date_header = GetHeaderField($email_header, 'Date:');
+  my $subject_header = GetHeaderField($email_header, 'Subject:');
+  my $from_header = GetHeaderField($email_header, 'From ');
 
-  if ( ($opts{'a'} && ($email_header =~ /^Received:\s.*\;\s*(.*?)$/im)) ||
-    $email_header =~ /^Date:\s*(.*)$/im ||
-    $email_header =~ /^(?:From |X-From-Line:)\S+\s+(.*)$/im)
+  if ( ($opts{'a'} && (defined $received_header &&
+      $received_header =~ /.*\;\s*(.*?)$/s)) ||
+    defined $date_header && $date_header =~ /^[^:]*:\s*(.*)$/s ||
+    defined $from_header && $from_header =~ /^[^ ]*\s*\S+\s+(.*)$/s)
   {
-    dprint "Date in email is: $1.";
+    my $date = $1;
+    $date =~ tr/\n//;
 
-    $emailDate = str2time($1);
+    dprint "Date in email is: $date.";
+
+    $emailDate = str2time($date);
 
     return IsInDate($emailDate,$dateRestriction,$date1,$date2)
       if defined $emailDate;
     
-    warn "grepmail: Couldn't parse email date \"$1\". " .
+    warn "grepmail: Couldn't parse email date \"$date\". " .
       "Assuming it doesn't match the date constraint\n";
-    warn "  " . GetHeaderLine(\$email_header,'From') . "\n"
-        if defined GetHeaderLine(\$email_header,'From');
-    warn "  " . GetHeaderLine(\$email_header,'Subject') . "\n"
-        if defined GetHeaderLine(\$email_header,'Subject');
+    warn "  $from_header\n" if defined $from_header;
+    warn "  $subject_header\n" if defined $subject_header;
 
     return 0;
   }
@@ -1561,10 +1613,8 @@ sub Email_Matches_Date
 
     warn "grepmail: Couldn't find a date. Assuming email doesn't match the " .
          "date constraint:\n";
-    warn "  " . GetHeaderLine(\$email_header,'From') . "\n"
-      if defined GetHeaderLine(\$email_header,'From');
-    warn "  " . GetHeaderLine(\$email_header,'Subject') . "\n"
-      if defined GetHeaderLine(\$email_header,'Subject');
+    warn "  $from_header\n" if defined $from_header;
+    warn "  $subject_header\n" if defined $subject_header;
 
     return 0;
   }
@@ -1836,6 +1886,7 @@ compressed ASCII input is taken from STDIN.
 
 -a Use received date instead of sent date for -d matching
 -b Search must match body
+-B Print message bodies but with only limited headers
 -C Specify the location of the cache file
 -d Specify a required date range (see below)
 -D Debug mode
@@ -1963,6 +2014,12 @@ Use arrival date instead of sent date.
 =item B<-b>
 
 Asserts that the pattern must match in the body of the email. 
+
+=item B<-B>
+
+Print the body but with only minimal ('From ', 'From:', 'Subject:', 'Date:')
+headers. This flag can be used with -H, in which case it will print only short
+headers and no email bodies.
 
 =item B<-C>
 
@@ -2274,6 +2331,6 @@ David Coppit, <david@coppit.org>, http://coppit.org/
 
 elm(1), mail(1), grep(1), perl(1), printmail(1), Mail::Internet(3),
 procmailrc(5). Crocker, D.  H., Standard for the Format of Arpa Internet Text
-Messages, RFC822.
+Messages, RFC 822.
 
 =cut
