@@ -11,6 +11,7 @@ WriteMakefile(
     # So the tests will work when this is built from the root grepmail
     # directory
     'INC'	=> '-I../blib -I../blib/arch',
+    'dist'  => { COMPRESS => 'gzip -9', SUFFIX => 'gz' },
 );
 
 sub MY::postamble {
