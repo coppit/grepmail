@@ -1,8 +1,11 @@
-#!/usr/bin/perl -w
+#!/users/dwc3q/perl/bin/perl -w
+
+eval 'exec /users/dwc3q/perl/bin/perl -w -S $0 ${1+"$@"}'
+    if 0; # not running under some shell
 
 # grepmail
 
-$VERSION = '4.45';
+$VERSION = '4.44';
 
 # Grepmail searches a normal, gzip'd, tzip'd, or bzip2'd mailbox for a given
 # regular expression and returns those emails that match the query. It also
@@ -300,8 +303,8 @@ if (eval "require Mail::Folder::FastReader;")
 {
   # Override the slow read_email defined here
   undef &read_email;
-  undef &reset_file;
-  import Mail::Folder::FastReader 'reset_file', 'read_email';
+  undef &reset_line;
+  import Mail::Folder::FastReader 'reset_line', 'read_email';
 }
 
 ################################ MAIN PROGRAM #################################
@@ -697,14 +700,14 @@ sub ProcessMailFile
 
   my $numberOfMatches = 0;
 
-  reset_file($fileHandle);
+  reset_line();
 
   # This is the main loop. It's executed once for each email
   while(1)
   {
     dprint "Reading email";
 
-    my ($status,$email,$line) = read_email();
+    my ($status,$email,$line) = read_email($fileHandle);
     last unless $status == 1;
 
     my ($email_header,$email_body) = split /\n\n/,$email,2;
@@ -1116,13 +1119,9 @@ sub AnalyzeHeader($$)
 #-------------------------------------------------------------------------------
 
 my $LINE = 0;
-my $FILE_HANDLE = undef;
 
-sub reset_file
+sub reset_line
 {
-  my $file_handle = shift;
-
-  $FILE_HANDLE = $file_handle;
   $LINE = 0;
 }
 
@@ -1133,12 +1132,14 @@ my $NEXT_EMAIL = undef;
 
 sub read_email
 {
+  my $fileHandle = shift;
+
   local $/ = "\nFrom ";
 
   # Empty file means reset first email and return 0
-  if (!defined $NEXT_EMAIL && eof $FILE_HANDLE)
+  if (!defined $NEXT_EMAIL && eof $fileHandle)
   {
-    $LINE = 0;
+    reset_line();
     return 0;
   }
 
@@ -1156,7 +1157,7 @@ sub read_email
   }
   else
   {
-    $email = <$FILE_HANDLE>;
+    $email = <$fileHandle>;
     $line = $LINE;
     $LINE += ($email =~ tr/\n//);
 
@@ -1166,7 +1167,7 @@ sub read_email
 
   while(1)
   {
-    $NEXT_EMAIL = <$FILE_HANDLE>;
+    $NEXT_EMAIL = <$fileHandle>;
 
     last unless defined $NEXT_EMAIL;
 
@@ -1282,74 +1283,76 @@ sub CheckDate($)
   $emailDate = "";
   $isInDate = 0;
 
-  unless (defined $opts{'d'})
-  {
-    return 1;
-  }
-
-  # RFC 822 allows header lines to be continued on the next line, in
-  # which case they must be preceded by whitespace. Let's remove the
-  # continuations.
+  # RFC 822 allows header lines to be continued on the next line, in which case
+  # they must be preceded by whitespace. Let's remove the continuations.
   $header =~ s/\n\s+(\S)/ $1/g;
 
-  if ($opts{'a'} && ($header =~ /^Received:\s.*\;\s*(.*?)$/im))
+  if (defined $opts{'d'})
   {
-    dprint "Received date in email is: $1.";
-
-    $emailDate = str2time($1);
-
-    if (defined $emailDate)
+    if ($opts{'a'} && ($header =~ /^Received:\s.*\;\s*(.*?)$/im))
     {
-      return IsInDate($emailDate,$dateRestriction,$date1,$date2);
+      dprint "Received date in email is: $1.";
+
+      $emailDate = str2time($1);
+
+      if (defined $emailDate)
+      {
+        $isInDate = IsInDate($emailDate,$dateRestriction,$date1,$date2);
+      }
+      else
+      {
+        warn "** Couldn't parse received date \"$1\". " .
+             "Assuming it doesn't match the date constraint **\n";
+        warn "  " . GetFromLine($header) . "\n";
+        warn "  " . GetSubjectLine($header) . "\n";
+
+        $isInDate = 0;
+      }
     }
+    elsif ($header =~ /^Date:\s*(.*)$/im)
+    {
+      dprint "Date in email is: $1.";
+
+      $emailDate = str2time($1);
+
+      if (defined $emailDate)
+      {
+        $isInDate = IsInDate($emailDate,$dateRestriction,$date1,$date2);
+      }
+      else
+      {
+        warn "** Couldn't parse sent date \"$1\". " .
+             "Assuming it doesn't match the date constraint:\n";
+        warn "  " . GetFromLine($header) . "\n";
+        warn "  " . GetSubjectLine($header) . "\n";
+
+        $isInDate = 0;
+      }
+    }
+    # The email might not have a date. In this case, print out a warning.
     else
     {
-      warn "** Couldn't parse received date \"$1\". " .
-           "Assuming it doesn't match the date constraint **\n";
-      warn "  " . GetFromLine($header) . "\n"
-        if defined GetFromLine($header);
-      warn "  " . GetSubjectLine($header) . "\n"
-        if defined GetSubjectLine($header);
+      if ($dateRestriction eq 'nodate')
+      {
+        $isInDate = 1;
+      }
+      else
+      {
+        warn "** Couldn't find a date. Assuming email doesn't match the " .
+             "date constraint:\n";
+        warn "  " . GetFromLine($header) . "\n";
+        warn "  " . GetSubjectLine($header) . "\n";
 
-      return 0;
+        $isInDate = 0;
+      }
     }
   }
-  elsif ($header =~ /^Date:\s*(.*)$/im)
-  {
-    dprint "Date in email is: $1.";
-
-    $emailDate = str2time($1);
-
-    if (defined $emailDate)
-    {
-      return IsInDate($emailDate,$dateRestriction,$date1,$date2);
-    }
-    else
-    {
-      warn "** Couldn't parse sent date \"$1\". " .
-           "Assuming it doesn't match the date constraint:\n";
-      warn "  " . GetFromLine($header) . "\n"
-        if defined GetFromLine($header);
-      warn "  " . GetSubjectLine($header) . "\n"
-        if defined GetSubjectLine($header);
-
-      return 0;
-    }
-  }
-  # The email might not have a date. In this case, print out a warning.
   else
   {
-    return 1 if $dateRestriction eq 'nodate';
-
-    warn "** Couldn't find a date. Assuming email doesn't match the " .
-         "date constraint:\n";
-    warn "  " . GetFromLine($header) . "\n"
-      if defined GetFromLine($header);
-    warn "  " . GetSubjectLine($header) . "\n"
-      if defined GetSubjectLine($header);
-
-    return 0;
+    $isInDate = 1;
   }
+
+  return $isInDate;
 }
 
 #-------------------------------------------------------------------------------
@@ -1552,7 +1555,6 @@ compressed ASCII input is taken from STDIN.
 -M Do not search non-text mime attachments
 -m Append "X-Mailfolder: <folder>" to all headers to indicate in which folder
    the match occurred
--n Print the line number info (and filename if necessary) for the emails
 -q Quiet mode -- don't output warnings
 -r Output the names of the files and the number of emails matching the
    expression
@@ -1560,7 +1562,6 @@ compressed ASCII input is taken from STDIN.
 -s Restrict results to emails less than a certain size (in bytes)
 -u Ensure that no duplicate emails are output
 -v Output emails that don't match the expression
--V Display the version number
 
 Date specifications must be of the form of:
 a date like "today", "1st thursday in June 1992" (requires Date::Manip),
