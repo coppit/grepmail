@@ -2,7 +2,7 @@
 
 # grepmail
 
-$VERSION = 4.22;
+$VERSION = 4.23;
 
 # Grepmail searches a normal, gzip'd, tzip'd, or bzip2'd mailbox for a given
 # regular expression and returns those emails that match the query. It also
@@ -137,22 +137,26 @@ sub cleanExit
 
 #-------------------------------------------------------------------------------
 
-$commandLine = "$0 @ARGV";
+# Print usage error if no arguments given
+print "No arguments given. grepmail -h for help.\n" and exit if (!@ARGV);
+
+# Save the arguments because getopt changes them.
+my @args = @ARGV;
 
 # So we don't have to test whether they are defined later.
 $opts{'D'} = $opts{'d'} = $opts{'e'} = $opts{'i'} = $opts{'q'} = 0;
 $opts{'h'} = $opts{'b'} = $opts{'v'} = $opts{'l'} = $opts{'r'} = 0;
 $opts{'M'} = $opts{'m'} = $opts{'s'} = 0;
 
-# Print usage error if no arguments given
-print "No arguments given. grepmail -h for help.\n" and exit if (!@ARGV);
-
 getopt("eds",\%opts);
 
 $DEBUG = $opts{'D'} || 0;
 
-dprint "Command line was:";
-dprint "  $commandLine";
+# Need to quote arguments with spaces
+grep { $_ = "'$_'" if $_ =~ / /; $_ } @args;
+
+dprint "Command line was (special characters not escaped):";
+dprint "  $0 @args";
 
 # Here we have to deal with the possibility that the user specified the search
 # pattern without the -e flag. They have to use the -e flag if the pattern
@@ -237,6 +241,10 @@ if ($opts{'d'})
   }
 
   import Date::Manip;
+
+  dprint "Date::Manip VERSION: $Date::Manip::VERSION";
+  # To prevent warning about variable being used only once;
+  my $dummy = $Date::Manip::VERSION;
 }
 
 ################################ MAIN PROGRAM #################################
@@ -707,7 +715,8 @@ sub ProcessMailFile ($$)
       my $tempBody = $body_buffer;
 
       # Strip out any attachments that aren't textual
-      $tempBody =~ s/\Q$boundary\E\nContent-Type: (?!text).*?(?=$boundary)//igs;
+      $tempBody =~
+        s/\Q$boundary\E\nContent-Type: (?!text).*?(?=\Q$boundary\E)//igs;
 
       $matchesBody = ($tempBody =~ /$pattern/om) || 0;
     }
@@ -764,8 +773,15 @@ sub ProcessMailFile ($$)
 
     $isMatch = 1;
     
-    my $matchesDate = CheckDate(\$header_buffer);
-    $isMatch = 0 if $opts{'d'} && !$matchesDate;
+    {
+      my $matchesDate = CheckDate(\$header_buffer);
+      $isMatch = 0 if $opts{'d'} && !$matchesDate;
+
+      dprint "Email matches date constraint\n"
+        if $opts{'d'} && $matchesDate;
+      dprint "Email doesn't match date constraint\n"
+        if $opts{'d'} && !$matchesDate;
+    }
 
     $isMatch = !$isMatch if $opts{'v'};
 
@@ -792,7 +808,7 @@ sub ProcessMailFile ($$)
     }
     else
     {
-      dprint "Did not find a pattern match on the body.";
+      dprint "Email did not match all patterns and constraints.";
     }
   }
 
@@ -1381,6 +1397,27 @@ archives. The last version to do this was 3.5. While the new design uses
 more memory, the code is much simpler, and there is less chance that email
 can be read by malicious third parties. Memory usage is determined by the size
 of the largest email message in the mailbox.
+
+=head1 BUGS
+
+=over 8
+
+=item Test case 1 fails on some platforms
+
+Bug not squashed yet.
+
+=item Some legal file names cause problems.
+
+grepmail uses the shell to invoke the decompression filters. I the filename
+contains single quotes, ampersands, backslashes, etc, this can cause problems.
+This bug is not a high priority -- please send email if you really need it
+fixed.
+
+The fix is to fork the process, opening up a pipe to the child, which starts
+the filter process using the multiple argument form of exec (which doesn't
+invoke the shell).
+
+=back
 
 =head1 AUTHOR
 
