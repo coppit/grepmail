@@ -63,6 +63,7 @@ my @tests = (
 'grepmail -m library t/mailarc-1.txt t/mailarc-2.txt',
 'grepmail -mn library t/mailarc-1.txt t/mailarc-2.txt',
 'grepmail . t/gnus.txt',
+'grepmail -iB Free t/mailarc-1.txt',
 );
 
 # Tests for certain supported options.
@@ -154,7 +155,11 @@ DoTests($ARGV[0],0);
 
 sub Check_Known_Timezone
 {
+  # Date::Manip prior to 5.39 nukes the PATH. Save and restore it to avoid
+  # problems.
+  my $path = $ENV{PATH};
   require Date::Manip;
+  $ENV{PATH} = $path;
 
   unless (eval 'Date::Manip::Date_TimeZone()')
   {

@@ -1,6 +1,6 @@
-grepmail 4.48
+grepmail 4.50
 
-usage: grepmail [-abDhilmrRuv] [-s size] [-d "datespec"] [[-e] <expr>] <files...>
+usage: grepmail [-abBDhHilmrRuv] [-s size] [-d "datespec"] [[-e] <expr>] <files...>
 
 At least one of -s, -d, -u, and -e must be specified, and can appear in any
 relative order following the other flags. The -e flag is optional if expr
@@ -8,9 +8,10 @@ appears immediately before -s or -d. Files can be plain ASCII or ASCII files
 compressed with gzip, tzip, or bzip2. If no file is provided, normal or
 compressed ASCII input is taken from STDIN.
 
--b Search must match body
--d Specify a date range (see below)
 -a Use received date instead of sent date for -d matching
+-b Search must match body
+-B Search must match body, except for signature
+-d Specify a date range (see below)
 -D Debug mode
 -e Explicitly name expr (when searching for strings beginning with "-")
 -h Search must match header
