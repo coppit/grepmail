@@ -22,52 +22,80 @@
 'cat t/big-1.txt t/big-2.txt t/big-3.txt t/big-4.txt | grepmail -b hello -d "before oct 15 1998"',
 );
 
-use Benchmark;
+use Benchmark qw( timesum timestr timethis );
 DoTimeTests();
 
 ################################################################################
 
 sub DoTimeTests()
 {
-print "Now doing timed tests...\n";
+  print "Now doing timed tests...\n";
 
-unlink "times";
+  print "--------------------------------------\n";
 
-my $firstTest = 1;
-foreach $test (@timedtests)
-{
-  if ($firstTest)
+  my $old_time;
+  my $new_time;
+
+  my $firstTest = 1;
+  foreach $test (@timedtests)
   {
-    $firstTest = 0;
+    if ($firstTest)
+    {
+      $firstTest = 0;
+    }
+    else
+    {
+      print "--------------------------------------\n";
+    }
+
+    print "$test\n";
+
+    local $" = " -I";
+    my $includes = "-I@INC";
+
+    $test =~ s/\bgrepmail /$^X $includes \.\/grepmail.old /;
+
+    $result = timethis(4,sub {system "$test > /dev/null"},'OLD');
+
+    if (defined $old_time)
+    {
+      $old_time = timesum($old_time,$result);
+    }
+    else
+    {
+      $old_time = $result;
+    }
+
+    if ($?)
+    {
+      print STDERR "Test failed. Here's the command:\n$test\n";
+      exit(1);
+    }
+
+    $test =~ s/\bgrepmail.old /grepmail /;
+
+    $result = timethis(4,sub {system "$test >/dev/null"},'NEW');
+
+    if (defined $new_time)
+    {
+      $new_time = timesum($new_time,$result);
+    }
+    else
+    {
+      $new_time = $result;
+    }
+
+    if ($?)
+    {
+      print STDERR "Test failed. Here's the command:\n$test\n";
+      exit(1);
+    }
   }
-  else
-  {
-    print "--------------------------------------\n";
-  }
 
-  print "$test\n";
+  print "======================================\n";
 
-  local $" = " -I";
-  my $includes = "-I@INC";
-
-  $test =~ s/\bgrepmail /$^X $includes grepmail.old /;
-
-  timethis(4,sub {system "$test > /dev/null"},'OLD');
-
-  if ($?)
-  {
-    print STDERR "Test failed. Here's the command:\n$test\n";
-    exit(1);
-  }
-
-  $test =~ s/\bgrepmail.old /grepmail /;
-
-  timethis(4,sub {system "$test >/dev/null"},'NEW');
-
-  if ($?)
-  {
-    print STDERR "Test failed. Here's the command:\n$test\n";
-    exit(1);
-  }
-}
+  print "Total time for old version:\n            " .
+    timestr($old_time) . "\n";
+  print "Total time for new version:\n            " .
+    timestr($new_time) . "\n";
 }

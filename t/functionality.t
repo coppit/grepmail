@@ -105,7 +105,7 @@ my @tests = (
 # 42
 'grepmail -mn library t/mailarc-1.txt t/mailarc-2.txt',
 # 43
-'grepmail . t/gnus.txt',
+'grepmail test t/gnus.txt',
 # 44
 'grepmail -ibS Free t/mailarc-1.txt',
 # 45
@@ -245,20 +245,24 @@ my @tests = (
 # 111
 'grepmail -E \'$email =~ /library/ || $email =~ /Poke/\' t/mailarc-1.txt',
 # 112
-'grepmail -f ro t/mailarc-1.txt',
+'grepmail -j ro t/mailarc-1.txt',
 # 113
 'grepmail -s 1300-1500 t/mailarc-1.txt',
 # 114
 'grepmail -s \'>3000\' t/mailarc-1.txt',
 # 115
 'grepmail -s 1211 t/mailarc-1.txt',
+
+# More non -E tests
+# 116
+'grepmail -f t/patterns t/mailarc-1.txt',
 );
 
 # Tests for certain supported options. (0-based indices)
 my @date_manip = (33);
 my @date_parse = (0, 22, 28, 33, 34, 35, 36, 59, 85);
 my @bzip2 = (20,21,79,80);
-my @gzip = (15,16,17,19,23,74,75,81,107);
+my @gzip = (15,16,23,58,74,75,81,107);
 my @tzip = (25,82);
 my @broken_pipe = (58,107);
 my @error_cases = (27, 28, 84, 85);
