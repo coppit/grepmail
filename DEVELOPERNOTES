@@ -52,3 +52,5 @@ Checklist for a release:
   [search for grepmail, select add release]
 - Announce it to grepmail-announce@sourceforge.net and to
   comp.lang.perl.announce.
+- Copy current code to old in devel
+  $ cp grepmail grepmail.old
