@@ -108,7 +108,7 @@ sub SetSkip
 
   my %skip;
 
-  unless (defined $Mail::Mbox::MessageParser::PROGRAMS{'gzip'})
+  unless (defined $Mail::Mbox::MessageParser::Config{'programs'}{'gzip'})
   {
     $skip{'cat t/mailboxes/mailarc-1.txt.gz' . ' | grepmail Handy'}
       = 'gzip support not enabled in Mail::Mbox::MessageParser';
@@ -116,7 +116,7 @@ sub SetSkip
       = 'gzip support not enabled in Mail::Mbox::MessageParser';
   }
 
-  unless (defined $Mail::Mbox::MessageParser::PROGRAMS{'bzip2'})
+  unless (defined $Mail::Mbox::MessageParser::Config{'programs'}{'bzip2'})
   {
     $skip{'cat t/mailboxes/mailarc-1.txt.bz2' . ' | grepmail Handy'}
       = 'bzip2 support not enabled in Mail::Mbox::MessageParser';
@@ -124,7 +124,7 @@ sub SetSkip
       = 'bzip2 support not enabled in Mail::Mbox::MessageParser';
   }
 
-  unless (defined $Mail::Mbox::MessageParser::PROGRAMS{'tzip'})
+  unless (defined $Mail::Mbox::MessageParser::Config{'programs'}{'tzip'})
   {
     $skip{'cat t/mailboxes/mailarc-1.txt.tz' . ' | grepmail Handy'}
       = 'tzip support not enabled in Mail::Mbox::MessageParser';

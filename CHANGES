@@ -3,6 +3,13 @@ Features which haven't made it in yet:
   <zbrown@tumblerings.org> for the excellent feature idea and a prototype
   implementation.)
 
+Version 5.3030: Tue Dec 21 2004
+- Improved test failure reporting
+- Fixed version numbers, which were incompatible with some modules. (Thanks to
+  Tassilo von Parseval <tassilo.von.parseval@rwth-aachen.de> for the bug
+  report)
+- Cleaned up code a bit
+
 Version 5.30.2:
 - Switched to Test::More for better test reporting
 

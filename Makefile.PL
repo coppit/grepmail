@@ -24,9 +24,7 @@ build_requires    (
 requires          (
                     'perl' => '5.004',
                     'Date::Parse' => 0,
-                    # 1.20.0 => 1.020000. This is to prevent a spurious warning
-                    # in ExtUtils::MakeMaker
-                    'Mail::Mbox::MessageParser' => '1.020000',
+                    'Mail::Mbox::MessageParser' => '1.2130',
                   );
 
 postamble         (
@@ -41,21 +39,15 @@ testspeed :: pure_all
 features          (
                     'Reduced Memory Consumption for -u' => [
                       -default => 0,
-                      # 0.60.0 => 0.060000. This is to prevent a spurious warning
-                      # in ExtUtils::MakeMaker
                       recommends( 'Digest::MD5' => 0 ),
                     ],
                     'Complex Date Patterns' => [
                       -default => 1,
-                      # 0.60.0 => 0.060000. This is to prevent a spurious warning
-                      # in ExtUtils::MakeMaker
                       recommends( 'Date::Manip' => 0 ),
                     ],
                     'Speed Tests' => [
                       -default => 0,
-                      # 0.60.0 => 0.060000. This is to prevent a spurious warning
-                      # in ExtUtils::MakeMaker
-                      recommends( 'Benchmark::Timer' => '0.006000' ),
+                      recommends( 'Benchmark::Timer' => '0.7100' ),
                     ],
                   );
 
