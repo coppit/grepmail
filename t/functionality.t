@@ -244,6 +244,8 @@ my @tests = (
 'grepmail -E \'$email =~ /library/ && $email_header =~ /Blank/\' t/mailarc-1.txt',
 # 111
 'grepmail -E \'$email =~ /library/ || $email =~ /Poke/\' t/mailarc-1.txt',
+# 112
+'grepmail -f ro t/mailarc-1.txt',
 );
 
 # Tests for certain supported options. (0-based indices)
