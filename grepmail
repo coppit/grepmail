@@ -707,8 +707,8 @@ sub ProcessMailFile
     my ($status,$email,$line) = read_email($fileHandle);
     last unless $status == 1;
 
-    my ($header_buffer,$body_buffer) = split /\n\n/,$email,2;
-    $header_buffer .= "\n\n";
+    my ($email_header,$email_body) = split /\n\n/,$email,2;
+    $email_header .= "\n\n";
 
     PrintEmailStatistics($email) if $DEBUG;
 
@@ -717,7 +717,7 @@ sub ProcessMailFile
     dprint "Checking for early match or abort based on header information.";
 
     my ($result,$matchesHeader) =
-      AnalyzeHeader($header_buffer,$fileHandle,$pattern);
+      AnalyzeHeader($email_header,$fileHandle,$pattern);
 
     if ($result eq 'skip')
     {
@@ -741,8 +741,8 @@ sub ProcessMailFile
       }
       else
       {
-        PrintEmail($fileName,$header_buffer,$body_buffer,$number_files,$line)
-          if $opts{'u'} && NotADuplicate($header_buffer) || !$opts{'u'};
+        PrintEmail($fileName,$email_header,$email_body,$number_files,$line)
+          if $opts{'u'} && NotADuplicate($email_header) || !$opts{'u'};
 
         next;
       }
@@ -754,22 +754,46 @@ sub ProcessMailFile
 
     # Ignore the MIME attachments if -M was specified
     if ($opts{'M'} &&
-        (($header_buffer =~ /\nContent-Type:.*?boundary="([^"]*)"/is) ||
-        ($header_buffer =~ /\nContent-Type:.*?boundary=([^\n]*)/is)))
+       ($email_header =~ /^Content-Type:.*?boundary=(?:"([^"]*)"|([^\n]*))/ism))
     {
-      my $boundary = $1;
+      my $boundary;
+      $boundary = $1 if defined $1;
+      $boundary = $2 if defined $2;
 
-      my $tempBody = $body_buffer;
+      my $in_attachment = 0;
+      my $last_line = undef;
 
-      # Strip out any attachments that aren't textual
-      $tempBody =~
-        s/\Q$boundary\E\nContent-Type: (?!text).*?(?=\Q$boundary\E)//igs;
+      $matchesBody = 0;
 
-      $matchesBody = ($tempBody =~ /$pattern/om) || 0;
+      while ($email_body =~ /^(.*)$/mg)
+      {
+        my $line = $1;
+
+        if ($line =~ /$pattern/om && !$in_attachment)
+        {
+          $matchesBody = 1;
+          last;
+        }
+
+        unless (defined $last_line)
+        {
+          $last_line = $line;
+          next;
+        }
+
+        if ($line eq "$boundary\n" && $last_line =~ /^Content-Type: (?!text)/)
+        {
+          $in_attachment = 1;
+        }
+        elsif ($line eq "$boundary\n" || $line eq "$boundary--\n")
+        {
+          $in_attachment = 0;
+        }
+      }
     }
     else
     {
-      $matchesBody = ($body_buffer =~ /$pattern/om) || 0;
+      $matchesBody = ($email_body =~ /$pattern/om) || 0;
     }
 
     #----------------------------------------------------------------
@@ -811,8 +835,8 @@ sub ProcessMailFile
       }
       else
       {
-        PrintEmail($fileName,$header_buffer,$body_buffer,$number_files,$line)
-          if $opts{'u'} && NotADuplicate($header_buffer) || !$opts{'u'};
+        PrintEmail($fileName,$email_header,$email_body,$number_files,$line)
+          if $opts{'u'} && NotADuplicate($email_header) || !$opts{'u'};
 
         next;
       }
@@ -825,7 +849,7 @@ sub ProcessMailFile
     $isMatch = 1;
 
     {
-      my $matchesDate = CheckDate(\$header_buffer);
+      my $matchesDate = CheckDate(\$email_header);
       $isMatch = 0 if defined $opts{'d'} && !$matchesDate;
 
       dprint "Email matches date constraint\n"
@@ -854,8 +878,8 @@ sub ProcessMailFile
       }
       else
       {
-        PrintEmail($fileName,$header_buffer,$body_buffer,$number_files,$line)
-          if $opts{'u'} && NotADuplicate($header_buffer) || !$opts{'u'};
+        PrintEmail($fileName,$email_header,$email_body,$number_files,$line)
+          if $opts{'u'} && NotADuplicate($email_header) || !$opts{'u'};
       }
     }
     else
@@ -875,9 +899,9 @@ sub ProcessMailFile
 
 sub NotADuplicate
 {
-  my $header_buffer = shift;
+  my $email_header = shift;
 
-  my $message_id = $header_buffer;
+  my $message_id = $email_header;
   $message_id =~ m/^Message-Id:<.*>$/m;
 
   my $result;
@@ -1030,16 +1054,16 @@ sub PrintEmailStatistics
 
 sub AnalyzeHeader($$)
 {
-  my $header_buffer = shift;
+  my $email_header = shift;
   my $fileHandle = shift;
   my $pattern = shift;
 
   # See if the header matches the pattern
-  my $matchesHeader = ($header_buffer =~ /$pattern/om) || 0;
+  my $matchesHeader = ($email_header =~ /$pattern/om) || 0;
 
   # See if the email failed the size restriction. If it passes here, we still
   # don't know if the entire length of the email is too long.
-  my $matchesSize = length $header_buffer < $opts{'s'} ? 1 : 0;
+  my $matchesSize = length $email_header < $opts{'s'} ? 1 : 0;
 
   # At this point, we might know enough to print the email, or call for an
   # early abort. See the documentation at the top for information. These
@@ -1091,7 +1115,7 @@ sub AnalyzeHeader($$)
 
 #-------------------------------------------------------------------------------
 
-my $LINE = undef;
+my $LINE = 0;
 
 sub reset_line
 {
@@ -1100,77 +1124,90 @@ sub reset_line
 
 #-------------------------------------------------------------------------------
 
-my $LAST_LINE;
+# Need this for a lookahead.
+my $NEXT_EMAIL = undef;
 
 sub read_email
 {
   my $fileHandle = shift;
 
-  # Empty file means reset first email and return undef
-  if (eof $fileHandle)
+  local $/ = "\nFrom ";
+
+  # Empty file means reset first email and return 0
+  if (!defined $NEXT_EMAIL && eof $fileHandle)
   {
     reset_line();
     return 0;
   }
 
-  if ($LINE == 0)
-  {
-    $LAST_LINE = <$fileHandle>;
-    $LINE = 1;
-  }
+  $LINE++ if $LINE == 0;
 
-  my $email = $LAST_LINE;
-  my $line = $LINE;
+  my $email;
+  my $line;
+  
+  if (defined $NEXT_EMAIL)
+  {
+    $email = $NEXT_EMAIL;
+    $line = $LINE;
+    $LINE += ($NEXT_EMAIL =~ tr/\n//);
+    undef $NEXT_EMAIL;
+  }
+  else
+  {
+    $email = <$fileHandle>;
+    $line = $LINE;
+    $LINE += ($email =~ tr/\n//);
+
+    local $/ = "From ";
+    chomp $email;
+  }
 
   while(1)
   {
-    my $next_line = <$fileHandle>;
+    $NEXT_EMAIL = <$fileHandle>;
 
-    # Return whatever we've read so far if we hit eof
-    unless (defined $next_line)
+    last unless defined $NEXT_EMAIL;
+
+    local $/ = "From ";
+    chomp $NEXT_EMAIL;
+    substr($NEXT_EMAIL,0,0) = 'From ';
+
+    # See if we accidentally stopped on an unescaped "From my mother". 
+    if ($NEXT_EMAIL !~ /^From\s.*\d:\d+:\d.* \d{4}/)
     {
-      reset_line();
-      return (1,$email,$line);
+      $email .= $NEXT_EMAIL;
+      $LINE += ($NEXT_EMAIL =~ tr/\n//);
+      undef $NEXT_EMAIL;
+      redo;
     }
 
-    $LINE++;
-
-    if (substr($next_line,0,5) eq 'From ')
+    # There is more to this email if the end is a Begin Included
+    # Message Reverse the email before searching (for efficiency).
+    # This is just as fast as index(). (Even after taking the last 200
+    # characters as a substring.)
+    my $end_of_string = substr($email,-200);
+    if ($end_of_string =~ /\n-----( Begin Included Message |Original Message)-----\n[^\n]*\n*$/i)
     {
-      my $ends_with_include = 0;
-      my $index;
-
-      $index = rindex $email,'----- Begin Included Message -----';
-
-      if ($index != -1 && substr($email,$index+34) =~ /^\n+$/)
-      {
-        $ends_with_include = 1;
-      }
-      else
-      {
-        $index = rindex $email,'-----Original Message-----';
-
-        if ($index != -1 && substr($email,$index+26) =~ /^\n+$/)
-        {
-          $ends_with_include = 1;
-        }
-      }
-
-      if ($ends_with_include)
-      {
-        $email .= $next_line;
-      }
-      else
-      {
-        $LAST_LINE = $next_line;
-        return (1,$email,$line);
-      }
+      $email .= $NEXT_EMAIL;
+      $LINE += ($NEXT_EMAIL =~ tr/\n//);
+      undef $NEXT_EMAIL;
+      redo;
     }
-    else
-    {
-      $email .= $next_line;
-    }
+
+    # Check for mailbox attachments. This is broken... I need to
+    # handle attachments here.
+#    if ($end_of_string =~ /Content-Type:[^\n]*rfc822[^\n]*\n(Content[^\n]*\n)\n*$/i)
+#    {
+#      $email .= $NEXT_EMAIL;
+#      $LINE += ($NEXT_EMAIL =~ tr/\n//);
+#      undef $NEXT_EMAIL;
+#      redo;
+#    }
+
+    last;
   }
+
+  return (1,$email,$line);
 }
 
 #-------------------------------------------------------------------------------
@@ -1245,11 +1282,11 @@ sub CheckDate($)
 
   # RFC 822 allows header lines to be continued on the next line, in which case
   # they must be preceded by whitespace. Let's remove the continuations.
-  $header =~ s/\n\s+/ /gs;
+  $header =~ s/\n\s+(\S)/ $1/g;
 
   if (defined $opts{'d'})
   {
-    if ($opts{'a'} && ($header =~ /^Received:\s.*\;\s*(.*)$/im))
+    if ($opts{'a'} && ($header =~ /^Received:\s.*\;\s*(.*?)$/im))
     {
       dprint "Received date in email is: $1.";
 
@@ -1733,7 +1770,7 @@ more memory, the code is much simpler, and there is less chance that email
 can be read by malicious third parties. Memory usage is determined by the size
 of the largest email message in the mailbox.
 
-=head1 BUGS
+=head1 BUGS AND LIMITATIONS
 
 =over 8
 
