@@ -1,0 +1,187 @@
+grepmail - search mailboxes for a particular email
+
+Grepmail searches a normal, gzip'd, bzip'd, or tzip'd mailbox for a given
+regular expression, and returns those emails that match it. Piped input is
+allowed, and date and size restrictions are supported, as are searches using
+logical operators.
+
+
+NEW IN THIS VERSION
+
+Version 5.3030: Tue Dec 21 2004
+- Improved test failure reporting
+- Fixed version numbers, which were incompatible with some modules.
+- Cleaned up code a bit
+
+
+SOME NOTES
+
+perl version:
+
+If you plan to use advanced pattern features such as "(?>...)", you will need
+to make sure that your version of perl supports them.
+
+Complex queries:
+
+The -E flag allows you to perform complex searches involving logical
+operators. For example,
+
+  $email_header =~ /^From: .*\@coppit.org/ && $email =~ /grepmail/i
+
+will find all emails which originate from coppit.org (you must escape the "@"
+sign with a backslash), and which contain the keyword "grepmail" anywhere in
+the message, in any capitalization.
+
+NOTE: -E support is experimental right now. I'm looking for feedback on the
+following:
+
+- Do you like the feature?
+- Do you like the Perl-based syntax? Is there an alternative which is easier?
+- How should date and size constraints be integrated? Should they be
+  "variables", a la: "$email =~ /grepmail/ && $date <= 'sep 20 1998' || $size
+  > 50000"?
+- Should -i, -h, and -b be supported in conjunction with -E? (Where "-h
+  pattern" would mean augmenting the -E pattern with "$email_header =~
+  /pattern/ && ")
+- -S ignores signatures. If/when this feature is implemented for -E, should it
+  be "global" for all $email_body matches, or should it be possible to specify
+  this for each $email_body match? For example, one can append an "i" modifier
+  to an individual pattern match to make it case-insensitive. Should there be
+  a standard way of dealing with such "global" pattern matching options on an
+  individual pattern match basis? 
+
+Message IDs:
+
+NOTE: For emails without message ids, grepmail will use Digest::MD5 to
+compute a hash based on the email header. If you don't have
+Digest::MD5, grepmail will just use the header itself as the messsage
+id. The Digest::MD5 checksum takes a little while to compute, but
+saves a lot of space. Currently there is no easy way to choose space
+over time. Let me know if this is a problem.
+
+
+MODULE DEPENDENCIES
+
+To use this program, you will need to install:
+
+- Mail::Mbox::MessageParser: required
+- Date::Parse: required
+- Date::Manip: required if you want to search using complex date
+  specifications (-d)
+- Digest::MD5: not required, but can help grepmail use less memory if
+  you are checking for unique emails (-u) and your emails don't have a
+  Message-Id header
+
+You should be prompted to install modules automatically when you run "perl
+Makefile.PL".
+
+
+INSTALLATION
+
+=> On Non-Windows (Unix/Cygwin/etc.) systems:
+
+To install this package, change to the directory where you unarchived this
+distribution and type the following:
+
+  perl Makefile.PL
+  make
+  make test
+  make install
+
+You can install this package into a non-default location by appending one of
+the following to the "perl Makefile.PL" command:
+
+- "PREFIX=/installation/path" (for installation into a custom location),
+- "INSTALLDIRS=site" (for installation into site-specific Perl directories)
+- "INSTALLDIRS=perl" (for installation into standard Perl directories).
+
+If make test fails, please see the INSTALLATION PROBLEMS section below.
+
+=> On Windows systems:
+
+- Just copy "grepmail" to a place in your path. You may want to rename it
+  "grepmail.pl" if you've associated .pl files with perl.exe.
+
+
+CONFIGURATION
+
+You may want to set your MAIL environment variable so that grepmail will know
+the default location to search for mailboxes.
+
+If you are terribly concerned about performance, you may want to modify the
+value of the variable READ_CHUNK_SIZE located in the code. This variable
+controls how much text is read from the mailbox at a time. If the value is set
+to 0, the entire file is read into memory. (There is no user-visible option
+for setting this value.) You may also want to hack the code to not use
+Digest::MD5, thereby trading space for time.
+
+If you frequently use the same set of flags, you may wish to alias "grepmail"
+to "grepmail -flags" within your command interpreter (shell). See the
+documentation for your shell for details on how to do this.
+
+
+INSTALLATION PROBLEMS
+
+If "make test" fails, run
+
+  make test TEST_VERBOSE=1
+
+and see which test(s) are failing. Please email, to the address below, the
+output files for the test, which are located in t/temp and noted in the test
+output when the test fails. Also email the output of running the particular
+subtest with the -D flag. e.g.:
+
+  ./blib/script/grepmail -D --help > test_name.debug
+
+If the first date_manip test case fails, you are in a timezone that
+Date::Manip does not yet support.  You will need to contact the author of
+Date::Manip.
+
+For other bugs, see the section REPORTING BUGS below.
+
+
+DOCUMENTATION
+
+Just "perldoc grepmail". After installation on Unix systems, you can also do
+"man grepmail".
+
+
+HOMEPAGE
+
+Visit http://grepmail.sourceforge.net/ for the latest version, mailing lists,
+discussion forums, CVS access, cool utilities, and more.
+
+
+TODO/WISHLIST
+
+- Michael D. Schleif <mds@helices.org> suggested grepmail have support for
+  compressed mail directories. Adding support for this is not easy, and I'm
+  not sure many people would benefit from the feature. Let me know if you too
+  want this support, and I may implement it.
+
+
+REPORTING BUGS
+
+You can report bugs at http://sourceforge.net/bugs/?group_id=2207.  Please
+attach the output of running grepmail with the -D switch. If the bug is
+related to processing of a particular mailbox, try to trim the mailbox to the
+smallest set of emails that still exhibit the problem.  Then use the
+"anonymize_mailbox" program that comes with grepmail to remove any sensitive
+information, and attach the mailbox to the bug report.
+
+
+COPYRIGHT
+
+Copyright (c) 1998-Sep 1 2000 Broc Seib. Copyright (c) Sep 1 2000-2004 David
+Coppit. All rights reserved, save those granted by the license.
+
+
+LICENSE
+
+This code is distributed under the GNU General Public License (GPL).  See
+the file LICENSE included in the distribution.
+
+
+AUTHOR
+
+David Coppit <david@coppit.org>

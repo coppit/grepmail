@@ -1,0 +1,164 @@
+#!/usr/bin/perl -w
+
+$VERSION = '1.00';
+
+use strict;
+use FileHandle;
+
+#-------------------------------------------------------------------------------
+
+my $LINE = 0;
+my $FILE_HANDLE = undef;
+my $START = 0;
+my $END = 0;
+my $READ_BUFFER = '';
+
+sub reset_file
+{
+  my $file_handle = shift;
+
+  $FILE_HANDLE = $file_handle;
+  $LINE = 1;
+  $START = 0;
+  $END = 0;
+  $READ_BUFFER = '';
+}
+
+#-------------------------------------------------------------------------------
+
+# Need this for a lookahead.
+my $READ_CHUNK_SIZE = 0;
+
+sub read_email
+{
+  # Undefined read buffer means we hit eof on the last read.
+  return 0 unless defined $READ_BUFFER;
+
+  my $line = $LINE;
+
+  $START = $END;
+
+  # Look for the start of the next email
+  LOOK_FOR_NEXT_HEADER:
+  while($READ_BUFFER =~ m/^(From\s.*\d:\d+:\d.* \d{4})/mg)
+  {
+    $END = pos($READ_BUFFER) - length($1);
+
+    # Don't stop on email header for the first email in the buffer
+    next if $END == 0;
+
+    # Keep looking if the header we found is part of a "Begin Included
+    # Message".
+    my $end_of_string = substr($READ_BUFFER, $END-200, 200);
+    if ($end_of_string =~
+        /\n-----( Begin Included Message |Original Message)-----\n[^\n]*\n*$/i)
+    {
+      next;
+    }
+
+    # Found the next email!
+    my $email = substr($READ_BUFFER, $START, $END-$START);
+    $LINE += ($email =~ tr/\n//);
+    
+    return (1, $email, $line);
+  }
+
+  # Didn't find next email in current buffer. Most likely we need to read some
+  # more of the mailbox. Shift the current email to the front of the buffer
+  # unless we've already done so.
+  $READ_BUFFER = substr($READ_BUFFER,$START) unless $START == 0;
+  $START = 0;
+
+  # Start looking at the end of the buffer, but back up some in case the edge
+  # of the newly read buffer contains the start of a new header. I believe the
+  # RFC says header lines can be at most 90 characters long.
+  my $search_position = length($READ_BUFFER) - 90;
+  $search_position = 0 if $search_position < 0;
+
+  # Can't use sysread because it doesn't work with ungetc
+  if ($READ_CHUNK_SIZE == 0)
+  {
+    local $/ = undef;
+
+    if (eof $FILE_HANDLE)
+    {
+      my $email = $READ_BUFFER;
+      undef $READ_BUFFER;
+      return (1, $email, $line);
+    }
+    else
+    {
+      $READ_BUFFER = <$FILE_HANDLE>;
+      pos($READ_BUFFER) = $search_position;
+      goto LOOK_FOR_NEXT_HEADER;
+    }
+  }
+  else
+  {
+    if (read($FILE_HANDLE, $READ_BUFFER, $READ_CHUNK_SIZE, length($READ_BUFFER)))
+    {
+      pos($READ_BUFFER) = $search_position;
+      goto LOOK_FOR_NEXT_HEADER;
+    }
+    else
+    {
+      my $email = $READ_BUFFER;
+      undef $READ_BUFFER;
+      return (1, $email, $line);
+    }
+  }
+}
+
+sub Read_Chunk_Of_Body
+{
+  my $email = shift;
+
+  local $/ = "\nFrom ";
+  my $chunk = <$FILE_HANDLE>;
+  local $/ = "From ";
+  chomp $chunk;
+
+  $LINE += ($chunk =~ tr/\n//);
+
+  $$email .= $chunk;
+}
+
+die unless @ARGV;
+
+$FILE_HANDLE = new FileHandle($ARGV[0]);
+
+while(1)
+{
+  my ($status,$email,$line) = read_email();
+  exit unless $status;
+
+  my ($header,$body) = $email =~ /(.*?\n\n)(.*)/s;
+
+
+  $body =~ s/\w/X/g;
+
+
+  {
+    my ($header_to) = $header =~ /^To: (.*)$/m;
+    my ($header_subject) = $header =~ /^Subject: (.*)$/m;
+
+    if (defined $header_to)
+    {
+      my $modified_header_to = $header_to;
+      $modified_header_to =~ s/\w/X/g;
+
+      $header =~ s/To: \Q$header_to\E/To: $modified_header_to/g;
+    }
+
+    if (defined $header_subject)
+    {
+      my $modified_header_subject = $header_subject;
+      $modified_header_subject =~ s/\w/X/g;
+
+      $header =~ s/Subject: \Q$header_subject\E/Subject: $modified_header_subject/g;
+    }
+  }
+
+
+  print $header,$body;
+}
