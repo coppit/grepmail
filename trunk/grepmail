@@ -1974,7 +1974,9 @@ sub Date_Manip_strptime
     $Date::Manip::Cnf{"TZ"} = 'EST';
     my $tz_test_2 = Date::Manip::ParseDate($datestring);
 
-    $Date$old_tz;
+    # Different lines so that CVS doesn't insert the date
+    $Date::Manip::Cnf{"TZ"} =
+      $old_tz;
 
     if ($parsed_time eq $tz_test_1 && $parsed_time eq $tz_test_2)
     {
