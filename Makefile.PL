@@ -16,6 +16,8 @@ my %makefile_attributes=(
   'VERSION_FROM' => 'grepmail',
 
   'dist'  => { COMPRESS => 'gzip -9', SUFFIX => 'gz' },
+  'clean' =>
+    { FILES => 't/results/*.diff t/results/*.stdout t/results/*.stderr' },
   'EXE_FILES' => ['grepmail'],
   'PREREQ_PM' => {'Date::Parse' => 0},
 );
