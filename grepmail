@@ -2,7 +2,7 @@
 
 # grepmail
 
-$VERSION = '4.48';
+$VERSION = '4.50';
 
 # Grepmail searches a normal, gzip'd, tzip'd, or bzip2'd mailbox for a given
 # regular expression and returns those emails that match the query. It also
@@ -268,7 +268,7 @@ my @args = @ARGV;
 $opts{'D'} = $opts{'e'} = $opts{'i'} = $opts{'q'} = $opts{'h'} = 0;
 $opts{'b'} = $opts{'v'} = $opts{'l'} = $opts{'r'} = $opts{'a'} = 0;
 $opts{'M'} = $opts{'m'} = $opts{'s'} = $opts{'u'} = $opts{'n'} = 0;
-$opts{'Z'} = $opts{'H'} = 0;
+$opts{'Z'} = $opts{'H'} = $opts{'B'} = 0;
 $opts{'d'} = $opts{'V'} = undef;
 
 # Initialize seen messages data structure to empty.
@@ -364,6 +364,11 @@ elsif (!defined $pattern)
     unless defined $opts{'d'} || $opts{'s'} || $opts{'u'};
 
   $pattern = ".";
+}
+
+if ($opts{'b'} && $opts{'B'})
+{
+  print "You can not use both -b and -B.\n" and exit (1);
 }
 
 #-------------------------------------------------------------------------------
@@ -702,7 +707,7 @@ sub HandleStandardInput
     else
     {
       dprint "Trying to decompress using gunzip.";
-      $filter = "gunzip -c";
+      $filter = "gzip -dc";
     }
 
     # Here we invoke another copy of grepmail with a filter in front.
@@ -770,9 +775,9 @@ sub PutBackString
 #-------------------------------------------------------------------------------
 
 # Detects whether an ASCII file is a mailbox, based on whether it has
-# a line whose prefix is 'From' or 'X-From-Line:', and another line
-# whose prefix is 'Received ', 'Date:', 'Subject:', 'X-Status:', or
-# 'Status:'.
+# a line whose prefix is 'From' or 'X-From-Line:' or 'X-Draft-From:',
+# and another line whose prefix is 'Received ', 'Date:', 'Subject:',
+# 'X-Status:', or 'Status:'.
 
 sub IsMailbox
 {
@@ -786,8 +791,9 @@ sub IsMailbox
 
   my $returnVal;
 
-  # X-From-Line is used by Gnus, and From is used by normal Unix format
-  if ($buffer =~ /^(X-From-Line:|From)\s/im &&
+  # X-From-Line is used by Gnus, and From is used by normal Unix
+  # format. Newer versions of Gnus use X-Draft-From
+  if ($buffer =~ /^(X-Draft-From:|X-From-Line:|From)\s/im &&
       $buffer =~ /^(Date|Subject|X-Status|Status):\s/im)
   {
     $returnVal = 1;
@@ -870,7 +876,15 @@ sub ProcessMailFile
 
     #----------------------------------------------------------------
 
-    my $matchesBody;
+    my $matchesBody = 0;
+
+    my ($has_signature,$signature_offset) = (0,undef);
+
+    if ($email_body =~ m/^-- \n/sg || $email_body =~ m/.*\n-- \n/sg)
+    {
+      $has_signature = 1;
+      $signature_offset = pos($email_body) - 4;
+    }
 
     # Ignore the MIME attachments if -M was specified
     if ($opts{'M'} &&
@@ -903,12 +917,12 @@ sub ProcessMailFile
 
       # Now search the body, ignoring any matches in binary
       # attachments.
-      $matchesBody = 0;
-
       local $^W = 0;
       SEARCH: while ($email_body =~ m/($pattern)/og)
       {
         my $position = pos($email_body) - length($1);
+
+        last SEARCH if $opts{'B'} && $position > $signature_offset;
 
         foreach my $attachment (@attachment_positions)
         {
@@ -926,7 +940,12 @@ sub ProcessMailFile
       # Avoid perl 5.6 bug which causes spurious warning even though
       # $pattern is defined.
       local $^W = 0;
-      $matchesBody = ($email_body =~ /$pattern/om) || 0;
+      if ($email_body =~ m/($pattern)/omg)
+      {
+        my $position = pos($email_body) - length($1);
+
+        $matchesBody = 1 unless $opts{'B'} && $position > $signature_offset;
+      }
     }
 
     #----------------------------------------------------------------
@@ -1612,7 +1631,7 @@ sub usage
 <<EOF;
 grepmail $VERSION
 
-usage: grepmail [-abDhilmrRuv] [-s size] [-d "datespec"] [[-e] <expr>] <files...>
+usage: grepmail [-abBDhHilmrRuv] [-s size] [-d "datespec"] [[-e] <expr>] <files...>
 
 At least one of -s, -d, -u, and -e must be specified, and can appear in any
 relative order following the other flags. The -e flag is optional if expr
@@ -1620,9 +1639,10 @@ appears immediately before -s or -d. Files can be plain ASCII or ASCII files
 compressed with gzip, tzip, or bzip2. If no file is provided, normal or
 compressed ASCII input is taken from STDIN.
 
--b Search must match body
--d Specify a date range (see below)
 -a Use received date instead of sent date for -d matching
+-b Search must match body
+-B Search must match body, except for signature
+-d Specify a date range (see below)
 -D Debug mode
 -e Explicitly name expr (when searching for strings beginning with "-")
 -h Search must match header
@@ -1659,7 +1679,7 @@ grepmail - search mailboxes for mail matching a regular expression
 
 =head1 SYNOPSIS
 
-  grepmail [-bDhHilmrRuv] [-s size] [-d "datespec"] [[-e] <expr>] <files...>
+  grepmail [-abBDhHilmrRuv] [-s size] [-d "datespec"] [[-e] <expr>] <files...>
 
 =head1 DESCRIPTION
 
@@ -1709,7 +1729,14 @@ Use arrival date instead of sent date.
 
 =item B<-b>
 
-Asserts that the pattern must match in the body of the email.
+Asserts that the pattern must match in the body of the email. (Not compatible
+with -B.)
+
+=item B<-B>
+
+Asserts that the pattern must match in the body of the email, but not the
+signature. The signature consists of everything after a line consisting of
+"-- ". (Not compatible with -b.)
 
 =item B<-D>
 
