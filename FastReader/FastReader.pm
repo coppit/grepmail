@@ -9,11 +9,11 @@ use vars qw($VERSION @ISA @EXPORT @EXPORT_OK);
 @EXPORT = qw();
 @EXPORT_OK = qw( reset_file read_email );
 	
-$VERSION = '0.10';
+$VERSION = '0.11';
 
 use Inline (C => DATA =>
               NAME => 'Mail::Folder::FastReader',
-              VERSION => '0.10',
+              VERSION => '0.11',
            );
 Inline->init;
 
@@ -21,6 +21,7 @@ Inline->init;
 
 __DATA__
 __C__
+/* 1-3. Higher for more debugging info. */
 #define DEBUG 0
 
 /* Storage for the email */
@@ -54,7 +55,7 @@ void read_email()
   long email_line;
 
   char *start_of_new_line;
-  unsigned int number_characters_read;
+  unsigned int number_of_characters_read;
 
   Inline_Stack_Vars;
   Inline_Stack_Reset;
@@ -63,7 +64,7 @@ void read_email()
   if (feof(FILE_HANDLE))
   {
 #if DEBUG==1 || DEBUG==2 || DEBUG==3
-    fprintf(stderr,"eof\n");
+    fprintf(stderr,"FASTREADER DEBUG: eof\n");
 #endif
 
     Inline_Stack_Push(newSViv(0));
@@ -97,7 +98,7 @@ void read_email()
     if (EMAIL_BUFFER_SIZE < LENGTH_OF_EMAIL + 1024)
     {
 #if DEBUG==1
-      fprintf(stderr,"extending\n");
+      fprintf(stderr,"FASTREADER DEBUG: extending\n");
 #endif
       EMAIL_BUFFER_SIZE += EMAIL_BUFFER_SIZE_INCREMENT;
       EMAIL_BUFFER = (char *)realloc(EMAIL_BUFFER,EMAIL_BUFFER_SIZE*sizeof(char));
@@ -108,14 +109,14 @@ void read_email()
      * be the start of the next email. */
     start_of_new_line = EMAIL_BUFFER+LENGTH_OF_EMAIL;
     fgets(start_of_new_line,1024,FILE_HANDLE);
-    number_characters_read = strlen(start_of_new_line);
-    LENGTH_OF_EMAIL += number_characters_read;
+    number_of_characters_read = strlen(start_of_new_line);
+    LENGTH_OF_EMAIL += number_of_characters_read;
 
     /* If we hit the end of the file, return the email */
     if (feof(FILE_HANDLE))
     {
 #if DEBUG==1
-      fprintf(stderr,"hit eof\n");
+      fprintf(stderr,"FASTREADER DEBUG: hit eof\n");
 #endif
 
       Inline_Stack_Push(newSViv(1));
@@ -126,7 +127,7 @@ void read_email()
       return;
     }
 
-    if (start_of_new_line[number_characters_read-1] == '\n')
+    if (start_of_new_line[number_of_characters_read-1] == '\n')
       LINE_NUMBER++;
 
     /* See if the line is the start of a new email. Try to avoid
@@ -135,17 +136,17 @@ void read_email()
     if(start_of_new_line[-1] == '\n' && start_of_new_line[0] == 'F' &&
        start_of_new_line[1]  == 'r'  && start_of_new_line[2] == 'o' &&
        start_of_new_line[3]  == 'm'  && start_of_new_line[4] == ' ' &&
-       isdigit(start_of_new_line[number_characters_read-2]) &&
-       isdigit(start_of_new_line[number_characters_read-3]) &&
-       isdigit(start_of_new_line[number_characters_read-4]) &&
-       isdigit(start_of_new_line[number_characters_read-5]))
+       isdigit(start_of_new_line[number_of_characters_read-2]) &&
+       isdigit(start_of_new_line[number_of_characters_read-3]) &&
+       isdigit(start_of_new_line[number_of_characters_read-4]) &&
+       isdigit(start_of_new_line[number_of_characters_read-5]))
     {
       /* If the email doesn't end with an included message declaration,
        * then the From line must be the start of a new email. */
-      if(!_ends_with_include(start_of_new_line))
+      if(!_ends_with_include(start_of_new_line, LENGTH_OF_EMAIL-number_of_characters_read))
       {
 #if DEBUG==1
-  fprintf(stderr,"found next email\n");
+  fprintf(stderr,"FASTREADER DEBUG: found next email\n");
 #endif
         strncpy(LAST_LINE,start_of_new_line,1024);
         LENGTH_OF_EMAIL -= strlen(start_of_new_line);
@@ -166,7 +167,7 @@ void read_email()
 void reset_file(FILE *infile)
 {
 #if DEBUG==1 || DEBUG==2 || DEBUG==3
-  fprintf(stderr,"resetting line number\n");
+  fprintf(stderr,"FASTREADER DEBUG: resetting line number\n");
 #endif
 
   /* Initialize the email buffer if it has not been initialized already. */
@@ -180,12 +181,22 @@ void reset_file(FILE *infile)
   LINE_NUMBER = 0;
 }
 
-int _ends_with_include(char *email_boundary)
+int _ends_with_include(char *email_boundary, int size_of_email)
 {
   char *location;
   int newlines;
+  int backtrack;
 
-  location = strstr(email_boundary-255,"\n----- Begin Included Message -----\n");
+  if (size_of_email < 255)
+  {
+    backtrack = size_of_email;
+  }
+  else
+  {
+    backtrack = 255;
+  }
+
+  location = strstr(email_boundary-backtrack,"\n----- Begin Included Message -----\n");
 
   if (location == 0)
     return 0;
@@ -196,7 +207,7 @@ int _ends_with_include(char *email_boundary)
   if(location+35+newlines == email_boundary)
     return 1;
 
-  location = strstr(email_boundary-255,"\n-----Original Message-----\n");
+  location = strstr(email_boundary-backtrack,"\n-----Original Message-----\n");
 
   if (location == 0)
     return 0;
