@@ -1,5 +1,8 @@
 Revision history for Perl extension Mail::Folder::FastReader.
 
+0.10  Sun Jun  3 21:14:25 EDT 2001
+	- Code updated to use Inline 0.40.
+
 0.01  Sat Nov  4 16:08:25 2000
 	- original version; created by h2xs 1.19
 

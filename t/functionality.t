@@ -72,6 +72,13 @@ my @gzip = (15,16,17,19,23);
 my @tzip = (25);
 my @error_cases = (26,27,28);
 
+# Tests that need language localization
+my %localization = (
+  27 => { 'stderr' => { 'search' => 'No such file or directory',
+                        'replace' => No_such_file_or_directory() },
+        },
+);
+
 my $version = GetVersion();
 
 my $bzip2 = 0;
@@ -193,6 +200,56 @@ sub CheckSkip
 
 # ---------------------------------------------------------------------------
 
+sub LocalizeTestOutput
+{
+  my $testID = shift;
+
+  $testID++;
+
+  return unless exists $localization{$testID};
+
+  if (exists $localization{$testID}{'stdout'})
+  {
+    open REAL, "t/results/test$testID.stdout.real";
+    local $/ = undef;
+    my $output = <REAL>;
+    close REAL;
+
+    my $replaced = $output;
+
+    $replaced =~ s/\Q$localization{$testID}{'stdout'}{'search'}\E/
+                     $localization{$testID}{'stdout'}{'replace'}/gx;
+
+    if ($output ne $replaced)
+    {
+      open REAL, ">t/results/test$testID.stdout.real";
+      print REAL $replaced;
+      close REAL;
+    }
+  }
+
+  if (exists $localization{$testID}{'stderr'})
+  {
+    open REAL, "t/results/test$testID.stderr.real";
+    local $/ = undef;
+    my $output = <REAL>;
+    close REAL;
+
+    my $replaced = $output;
+
+    $replaced =~ s/\Q$localization{$testID}{'stderr'}{'search'}\E/$localization{$testID}{'stderr'}{'replace'}/gx;
+
+    if ($output ne $replaced)
+    {
+      open REAL, ">t/results/test$testID.stderr.real";
+      print REAL $replaced;
+      close REAL;
+    }
+  }
+}
+
+# ---------------------------------------------------------------------------
+
 sub ModuleInstalled
 {
   my $module_name = shift;
@@ -245,6 +302,8 @@ sub DoTests
       print "\n";
       next;
     }
+
+    LocalizeTestOutput($testID);
 
     system "$test 1>t/results/test$testNumber.stdout " .
       "2>t/results/test$testNumber.stderr";
@@ -339,4 +398,26 @@ sub DoDiff
     unlink "t/results/test$testNumber.$resultType.diff";
     return (1,1);
   }
+}
+
+# ---------------------------------------------------------------------------
+
+use vars qw( *FOO );
+
+sub No_such_file_or_directory
+{
+  my $filename;
+
+  $filename = 0;
+
+  $filename++ while -e $filename;
+
+  local $!;
+
+  open FOO, $filename;
+
+  die q{Couldn't determine local text for "No such file or directory"}
+    if $! eq '';
+
+  return $!;
 }
