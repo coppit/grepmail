@@ -250,6 +250,7 @@ my @tests = (
 
 # Tests for certain supported options. (0-based indices)
 my @date_manip = (33);
+my @date_parse = (0, 22, 28, 33, 34, 35, 36, 59, 85);
 my @bzip2 = (20,21,79,80);
 my @gzip = (15,16,17,19,23,74,75,81,107);
 my @tzip = (25,82);
@@ -265,12 +266,11 @@ my %localization = (
         },
 );
 
-my $version = GetVersion();
-
 my $bzip2 = 0;
 my $gzip = 0;
 my $tzip = 0;
 my $date_manip = 0;
+my $date_parse = 0;
 
 {
   my $temp;
@@ -302,11 +302,18 @@ my $date_manip = 0;
   {
     $date_manip = 0;
   }
+
+  if (ModuleInstalled("Date::Parse"))
+  {
+    $date_parse = 1;
+  }
+  else
+  {
+    $date_parse = 0;
+  }
 }
 
 plan (tests => $#tests + 1);
-
-print "Testing $version version of grepmail.\n\n";
 
 DoTests($ARGV[0]);
 
@@ -334,18 +341,6 @@ EOF
 
 # ---------------------------------------------------------------------------
 
-sub GetVersion
-{
-  open CODE, "blib/script/grepmail" or die "Can't open grepmail script: $!\n";
-  my $code = join '',<CODE>;
-  close CODE;
-
-  return 'Date::Manip' if $code =~ /require Date::Manip/s;
-  return 'Date::Parse' if $code =~ /require Date::Parse/s;
-}
-
-# ---------------------------------------------------------------------------
-
 sub CheckSkip
 {
   my $testID = shift;
@@ -361,6 +356,13 @@ sub CheckSkip
   {
     print "Skipping test for Date::Manip version\n";
     skip('Skip Date::Manip not available',1);
+    return 1;
+  }
+
+  if((grep {$_ == $testID} @date_parse) && !$date_parse)
+  {
+    print "Skipping test for Date::Parse\n";
+    skip('Skip Date::Parse not available',1);
     return 1;
   }
 
@@ -506,14 +508,14 @@ sub DoTests
 
     if (!$? && (grep {$_ == $testID} @error_cases))
     {
-      print "Did not encounter an expected error executing the test.\n\n";
+      print "Did not encounter an error executing the test when one was expected.\n\n";
       ok(0);
       next;
     }
 
     if ($? && (!grep {$_ == $testID} @error_cases))
     {
-      print "Encountered an unexpected error executing the test.\n\n";
+      print "Encountered an error executing the test when one was not expected.\n\n";
       ok(0);
       next;
     }

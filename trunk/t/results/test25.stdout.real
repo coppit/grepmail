@@ -50,8 +50,9 @@ compressed ASCII input is taken from STDIN.
 -Y Specify a header to search (implies -h)
 --help Print a help message
 
-Date specifications must be of the form of:
-a date like "today", "1st thursday in June 1992" (requires Date::Manip),
+Date constraints require Date::Parse. Date specifications must be of the
+form of:
+- a date like "today", "1st thursday in June 1992" (requires Date::Manip),
   "05/18/93", "12:30 Dec 12th 1880", "8:00pm december tenth",
-OR "before", "after", or "since", followed by a date as defined above,
-OR "between <date> and <date>", where <date> is defined as above.
+- "before", "after", or "since", followed by a date as defined above,
+- "between <date> and <date>", where <date> is defined as above.
