@@ -141,10 +141,11 @@ sub cleanExit
 #-------------------------------------------------------------------------------
 
 # Print usage error if no arguments given
-print "No arguments given. grepmail --help for help.\n" and exit if (!@ARGV);
+print "No arguments given. grepmail --help for help.\n" and exit(1)
+  if (!@ARGV);
 
 # Check for --help, the standard usage command
-print usage() and exit if $ARGV[0] eq '--help';
+print usage() and exit(1) if $ARGV[0] eq '--help';
 
 # Save the arguments because getopt changes them.
 my @args = @ARGV;
@@ -153,7 +154,7 @@ my @args = @ARGV;
 $opts{'D'} = $opts{'e'} = $opts{'i'} = $opts{'q'} = $opts{'h'} = 0;
 $opts{'b'} = $opts{'v'} = $opts{'l'} = $opts{'r'} = $opts{'a'} = 0;
 $opts{'M'} = $opts{'m'} = $opts{'s'} = $opts{'u'} = 0;
-$opts{'d'} = undef;
+$opts{'d'} = $opts{'V'} = undef;
 
 # Initialize seen messages data structure to empty.
 %message_ids_seen = ();
@@ -245,15 +246,22 @@ if ($DEBUG)
 
 if ($opts{'e'})
 {
-  print "You specified two search patterns.\n" and exit if defined $pattern;
+  print "You specified two search patterns.\n" and exit (1)
+    if defined $pattern;
   $pattern = $opts{'e'};
+}
+elsif (defined $opts{'V'})
+{
+  # Print version and exit if we need to
+  print "$VERSION\n";
+  exit (0);
 }
 elsif (!defined $pattern)
 {
   # The only times you don't have to specify the pattern is when -d, -s, or -u
   # is being used. This should catch people who do "grepmail -h" thinking
   # it's help.
-  print usage() and exit
+  print usage() and exit (1)
     unless defined $opts{'d'} || $opts{'s'} || $opts{'u'};
 
   $pattern = ".";
@@ -333,7 +341,7 @@ sub GetFiles(@)
       {
         print "You specified -R, but do not have File::Find. ".
               "Get it from CPAN.\n";
-        exit;
+        exit (1);
       }
 
       import File::Find;
@@ -609,8 +617,10 @@ sub PutBackString
 
 #-------------------------------------------------------------------------------
 
-# Detects whether an ASCII file is a mailbox, based on whether it has a 'From'
-# and 'Received:' prefix on two lines of the first paragraph.
+# Detects whether an ASCII file is a mailbox, based on whether it has
+# a line whose prefix is 'From' or 'X-From-Line:', and another line
+# whose prefix is 'Received ', 'Date:', 'Subject:', 'X-Status:', or
+# 'Status:'.
 
 sub IsMailbox
 {
@@ -625,7 +635,8 @@ sub IsMailbox
   my $returnVal;
 
   # X-From-Line is used by Gnus, and From is used by normal Unix format
-  if ($buffer =~ /^(X-From-Line:|From)\s/im && $buffer =~ /^Received:\s/im)
+  if ($buffer =~ /^(X-From-Line:|From)\s/im &&
+      $buffer =~ /^(Date|Subject|X-Status|Status):\s/im)
   {
     $returnVal = 1;
   }
@@ -862,7 +873,7 @@ sub NotADuplicate
   my $header_buffer = shift;
 
   my $message_id = $header_buffer;
-  $message_id =~ m/^Message-Id:<.*>$/om;
+  $message_id =~ m/^Message-Id:<.*>$/m;
 
   my $result;
 
