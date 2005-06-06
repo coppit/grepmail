@@ -1,0 +1,57 @@
+This file is not distributed with the program. It outlines some notes for
+developers readying a set of files for distribution.
+
+CVS CHECKOUT:
+$ export CVS_RSH=ssh
+$ cvs -z3 -d:ext:coppit@cvs.sourceforge.net:/cvsroot/grepmail co devel
+
+Checklist for a release:
+- Be sure to add new test cases for new features
+- Make sure version number increases.
+- Add version changes to README and CHANGES, anonymizing the notes in the README.
+- Add new module dependencies to Makefile.PL, and update README
+- Update MANIFEST and MANIFEST.SKIP if necessary.
+  $ make distcheck
+- Test your distribution:
+  $ make realclean
+  $ perl Makefile.PL
+  $ make
+  $ make test
+- Test the speed of the new code:
+  - make testspeed
+- After the tests have passed, make the distribution file:
+  $ make dist
+- Install the distribution file elsewhere to test it.
+  $ scp grepmail-X.XX.tar.gz coppit@linux.sourceforge.net:.
+  $ ssh -l coppit linux.sourceforge.net
+  $ tar xvfz grepmail-X.XX.tar.gz
+  $ cd grepmail-X.XX
+  $ perl Makefile.PL
+  $ make
+  $ make test
+- Update CHANGES file, and copy to server:
+  $ scp CHANGES coppit@grepmail.sourceforge.net:/home/groups/g/gr/grepmail/htdocs
+  (Use your username instead of coppit)
+- Upload to CPAN:
+    http://pause.perl.org/pause/authenquery
+  or
+    cpan-upload grepmail-X.XX.tar.gz
+- Release file:
+  http://sourceforge.net/account/login.php
+  ncftpput upload.sf.net incoming grepmail-X.XX.tar.gz
+  http://sourceforge.net/project/admin/editpackages.php?group_id=2207
+- Announce any news on SourceForge:
+  http://sourceforge.net/news/submit.php?group_id=2207
+- Update webpage:
+  $ ssh -t coppit@grepmail.sf.net 'vim /home/groups/g/gr/grepmail/htdocs/index.html'
+- Announce on freshmeat:
+  http://freshmeat.net/login/
+  http://freshmeat.net/projects/grepmail/
+- Announce it to grepmail-announce@sourceforge.net and to
+  comp.lang.perl.announce.
+- Copy current code to old in devel
+  $ cp grepmail grepmail.old
+- Check in code:
+  $ cvs ci
+- Tag the release for easy retrieval later
+  $ cvs tag "v5_20_0"
