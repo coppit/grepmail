@@ -8,60 +8,18 @@ use Test::Utils;
 use File::Spec::Functions qw( :ALL );
 
 my %tests = (
-'grepmail -d "before 1st Tuesday in July 1998" t/mailboxes/mailarc-1.txt'
-  => ['date_manip','none'],
-'grepmail -d "after armageddon" pattern t/mailboxes/mailarc-1.txt'
-  => ['none','invalid_date_1'],
-"grepmail -d \"after armageddon\" -E $single_quote\$email =~ /pattern/$single_quote t/mailboxes/mailarc-1.txt"
-  => ['none','invalid_date_1'],
-"grepmail -d \"1st Tuesday in July 1998\" . t/mailboxes/mailarc-1.txt"
-  => ['sep_7_1998','none'],
+'grepmail -d "before today" t/mailboxes/invalid_date.txt'
+  => ['date_invalid','none'],
 );
 
 my %expected_errors = (
-'grepmail -d "after armageddon" pattern t/mailboxes/mailarc-1.txt'
-  => 1,
-"grepmail -d \"after armageddon\" -E $single_quote\$email =~ /pattern/$single_quote t/mailboxes/mailarc-1.txt"
-  => 1,
 );
 
 mkdir 't/temp', 0700;
 
-plan tests => scalar (keys %tests) * 2 + 1;
+plan tests => scalar (keys %tests) * 2;
 
 my %skip = SetSkip(\%tests);
-
-SKIP:
-{
-  print "Checking Date::Manip::Date_TimeZone()\n";
-
-  skip("Date::Manip not installed",1) unless Module_Installed('Date::Manip');
-
-  # Date::Manip prior to 5.39 nukes the PATH. Save and restore it to avoid
-  # problems.
-  my $path = $ENV{PATH};
-  require Date::Manip;
-  $ENV{PATH} = $path;
-
-  if (eval 'Date::Manip::Date_TimeZone()')
-  {
-    ok(1);
-  }
-  else
-  {
-    print <<EOF;
-
-WARNING: Your time zone is not recognized by Date::Manip. It is likely
-that many test cases related to dates will fail. See the README for more
-information on how to resolve this problem.
-
-EOF
-    ok(0);
-  }
-}
-
-# So that the tests will work consistently across timezones
-$ENV{'TZ'} = 'EST';
 
 foreach my $test (sort keys %tests) 
 {
@@ -139,12 +97,6 @@ sub SetSkip
   my %tests = %{ shift @_ };
 
   my %skip;
-
-  foreach my $test (keys %tests)
-  {
-    $skip{$test} = 'Date::Manip not installed'
-      unless Module_Installed('Date::Manip');
-  }
 
   return %skip;
 }

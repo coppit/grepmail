@@ -46,7 +46,7 @@ Checklist for a release:
   $ ssh -t coppit@grepmail.sf.net 'vim /home/groups/g/gr/grepmail/htdocs/index.html'
 - Announce on freshmeat:
   http://freshmeat.net/login/
-  [search for grepmail, select add release]
+  http://freshmeat.net/projects/grepmail/
 - Announce it to grepmail-announce@sourceforge.net and to
   comp.lang.perl.announce.
 - Copy current code to old in devel

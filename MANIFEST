@@ -28,6 +28,7 @@ t/date.t
 t/header.t
 t/help.t
 t/ignore_signatures.t
+t/invalid_date.t 
 t/invalid_mailbox.t
 t/line_number.t
 t/list.t
@@ -49,6 +50,7 @@ t/speed.pl
 t/no_patterns
 t/patterns
 t/mailboxes/gnus.txt
+t/mailboxes/invalid_date.txt
 t/mailboxes/mailseparators.txt
 t/mailboxes/mailarc-1.txt
 t/mailboxes/mailarc-1-dos.txt
@@ -82,6 +84,7 @@ t/results/date_1
 t/results/date_2
 t/results/date_3
 t/results/date_august
+t/results/date_invalid
 t/results/date_manip
 t/results/header_aarone
 t/results/header_body_handy

@@ -2,7 +2,7 @@
 
 # grepmail
 
-$VERSION = sprintf "%d.%02d%02d", q/5.30.30/ =~ /(\d+)/g;
+$VERSION = sprintf "%d.%02d%02d", q/5.30.31/ =~ /(\d+)/g;
 
 # Grepmail searches a normal, gzip'd, tzip'd, or bzip2'd mailbox for a given
 # regular expression and returns those emails that match the query. It also
@@ -1683,39 +1683,28 @@ sub Email_Matches_Date
   die unless ref $email_header;
 
   return 1 unless defined $opts{'d'};
+  return 0 if $dateRestriction == $NODATE;
 
   my $received_header = Get_Header_Field($email_header, 'Received:',$endline);
   my $date_header = Get_Header_Field($email_header, 'Date:',$endline);
   my $subject_header = Get_Header_Field($email_header, 'Subject:',$endline);
   my $from_header = Get_Header_Field($email_header, 'From ',$endline);
 
-  if ( ($opts{'a'} && (defined $received_header &&
-      $received_header =~ /.*\;\s*(.*?)$/s)) ||
-    defined $date_header && $date_header =~ /^[^:]*:\s*(.*)$/s ||
-    defined $from_header && $from_header =~ /^[^ ]*\s*\S+\s+(.*)$/s)
+  # Collect different date header values.  We'll try each one until
+  # we find a value that parses.
+  my @dateValues = ();
+
+  push(@dateValues, $1) if $opts{'a'} &&
+    defined $received_header && $received_header =~ /.*\;\s*(.*?)$/s;
+
+  push(@dateValues, $1)
+    if defined $date_header && $date_header =~ /^[^:]*:\s*(.*)$/s;
+
+  push(@dateValues, $1)
+    if defined $from_header && $from_header =~ /^[^ ]*\s*\S+\s+(.*)$/s;
+
+  unless (scalar(@dateValues) > 0) 
   {
-    my $date = $1;
-    $date =~ tr/\n//;
-
-    dprint "Date in email is: $date.";
-
-    my $emailDate = str2time($date);
-
-    return Is_In_Date($emailDate,$dateRestriction,$date1,$date2)
-      if defined $emailDate;
-    
-    warn "grepmail: Couldn't parse email date \"$date\". " .
-      "Assuming it doesn't match the date constraint\n";
-    warn "  $from_header\n" if defined $from_header;
-    warn "  $subject_header\n" if defined $subject_header;
-
-    return 0;
-  }
-  # The email might not have a date. In this case, print out a warning.
-  else
-  {
-    return 1 if $dateRestriction == $NODATE;
-
     warn "grepmail: Couldn't find a date. Assuming email doesn't match the " .
          "date constraint:\n";
     warn "  $from_header\n" if defined $from_header;
@@ -1723,6 +1712,29 @@ sub Email_Matches_Date
 
     return 0;
   }
+
+  foreach my $date (@dateValues) 
+  {
+    $date =~ s/$endline//g;
+  }
+
+  my $emailDate = undef;
+  foreach my $date (@dateValues) 
+  {
+    dprint("Trying to parse date: $date");
+    $emailDate = str2time($date);
+    last if defined($emailDate);
+  }
+
+  return Is_In_Date($emailDate,$dateRestriction,$date1,$date2)
+      if defined $emailDate;
+
+  warn "grepmail: Couldn't parse email date(s) [" . join("|", @dateValues) . "]. "
+      . "Assuming message doesn't match the date constraint\n";
+  warn "  $from_header\n" if defined $from_header;
+  warn "  $subject_header\n" if defined $subject_header;
+  
+  return 0;
 }
 
 #-------------------------------------------------------------------------------
