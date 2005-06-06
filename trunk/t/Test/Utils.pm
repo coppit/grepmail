@@ -4,6 +4,7 @@ use strict;
 use Exporter;
 use Test::More;
 use FileHandle;
+use File::Spec::Functions qw( :ALL );
 
 use vars qw( @EXPORT @ISA );
 use Mail::Mbox::MessageParser;
@@ -69,12 +70,12 @@ sub Module_Installed
 {
   my $module_name = shift;
 
-  $module_name =~ s/::/\//g;
+  $module_name =~ s#::#/#g;
   $module_name .= '.pm';
 
   foreach my $inc (@INC)
   {
-    return 1 if -e "$inc/$module_name";
+    return 1 if -e catfile($inc,$module_name);
   }
 
   return 0;
@@ -106,13 +107,16 @@ sub No_such_file_or_directory
 # doing this?
 sub Broken_Pipe
 {
-  mkdir 't/temp', 0700;
+  mkdir catdir('t','temp'), 0700;
 
-  open F, ">t/temp/broken_pipe.pl";
+  my $script_path = catfile('t','temp','broken_pipe.pl');
+  my $dev_null = devnull();
+
+  open F, ">$script_path";
   print F<<EOF;
 unless (open B, '-|')
 {
-  open(F, "|$^X -pe 'print' 2>/dev/null");
+  open(F, "|$^X -pe 'print' 2>$dev_null");
   print F 'x';
   close F;
   exit;
@@ -120,7 +124,7 @@ unless (open B, '-|')
 EOF
   close F;
 
-  my $result = `$^X t/temp/broken_pipe.pl 2>&1 1>/dev/null`;
+  my $result = `$^X $script_path 2>&1 1>$dev_null`;
 
   $result = '' unless defined $result;
 
