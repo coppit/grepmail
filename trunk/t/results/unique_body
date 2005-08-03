@@ -1,3 +1,37 @@
+From aarone@sirius.com  Wed Jul  1 02:44:06 1998
+Received: from aleve.media.mit.edu by hub.media.mit.edu; (5.65v3.2/1.1/06Jun95-8.2MPM)
+	id AA22669; Wed, 1 Jul 1998 02:44:06 -0400
+Received: from mail3.sirius.com (mail3.sirius.com [205.134.253.133])
+	by aleve.media.mit.edu (8.8.7/ML970927) with ESMTP id CAA13214
+	for <handyboard@media.mit.edu>; Wed, 1 Jul 1998 02:01:55 -0400 (EDT)
+Received: from edsinger (ppp-asfm03--126.sirius.net [205.134.240.126])
+	by mail3.sirius.com (8.8.7/Sirius-8.8.7-97.08.12) with ESMTP id XAA26862
+	for <handyboard@media.mit.edu>; Tue, 30 Jun 1998 23:01:54 -0700 (PDT)
+Message-Id: <199807010601.XAA26862@mail3.sirius.com>
+From: "Aaron Edsinger" <aarone@sirius.com>
+To: "handy" <handyboard@media.mit.edu>
+Subject: Serial Interface
+Date: Wed, 1 Jul 1998 02:06:39 +0100
+X-Msmail-Priority: Normal
+X-Priority: 3
+X-Mailer: Microsoft Internet Mail 4.70.1162
+Mime-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+
+Hello,	
+	I've been having some problems using my HandyBoard to talk directly to my
+PC via the serial interface.  I disable Interactive C and then Poke() and
+Peek() as has been described on this list.  I  send short character strings
+from my PC to the HandyBoard under Windows 95.  If I send strings longer
+than 2 characters, it seems that some of the characters get lost. This
+behavior seems to be affected by repositioning or slightly modifying the
+code, suggesting perhaps a timing issue.
+ 
+Why might this be?  Is there any way to check for an error situation?
+
+Thanks for any help,
+		Aaron
 From cmcmanis@freegate.com  Thu Jul 16 03:13:49 1998
 Received: from aleve.media.mit.edu by hub.media.mit.edu; (5.65v3.2/1.1/06Jun95-8.2MPM)
 	id AA23518; Thu, 16 Jul 1998 03:13:49 -0400

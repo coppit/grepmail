@@ -3,6 +3,12 @@ Features which haven't made it in yet:
   <zbrown@tumblerings.org> for the excellent feature idea and a prototype
   implementation.)
 
+Version 5.3032: Tue Aug 2 2005
+- Fixed backwards diff in test cases
+- Updated Mail::Mbox::MessageParser dependency to latest version, and updated
+  test cases as well. (Thanks to Christoph Thiel <ct@kki.org> for the heads
+  up.)
+
 Version 5.3031: Mon Jun 6 2005
 - Fixed a bug that would cause the date_manip test to fail in some time zones.
   (Thanks to Kurt Roeckx <kurt@roeckx.be> for the Debian bug report, and Joey

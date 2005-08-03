@@ -2,7 +2,7 @@
 
 # grepmail
 
-$VERSION = sprintf "%d.%02d%02d", q/5.30.31/ =~ /(\d+)/g;
+$VERSION = sprintf "%d.%02d%02d", q/5.30.32/ =~ /(\d+)/g;
 
 # Grepmail searches a normal, gzip'd, tzip'd, or bzip2'd mailbox for a given
 # regular expression and returns those emails that match the query. It also

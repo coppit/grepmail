@@ -49,7 +49,6 @@ t/unique.t
 t/speed.pl
 t/no_patterns
 t/patterns
-t/mailboxes/gnus.txt
 t/mailboxes/invalid_date.txt
 t/mailboxes/mailseparators.txt
 t/mailboxes/mailarc-1.txt

@@ -14,8 +14,6 @@ my %tests = (
   => ['all_handy','none'],
 'grepmail "From.*luikeith@egr.msu.edu" t/mailboxes/mailarc-1.txt'
   => ['all_luikeith','none'],
-'grepmail test t/mailboxes/gnus.txt'
-  => ['all_test','none'],
 'grepmail Driving t/mailboxes/mailarc-1.txt'
   => ['all_driving','none'],
 'grepmail Handy t/mailboxes/mailarc-1.txt.gz t/mailboxes/mailarc-2.txt'
@@ -98,8 +96,8 @@ sub TestIt
   my $real_stdout = catfile('t','results',$stdout_file);
   my $real_stderr = catfile('t','results',$stderr_file);
 
-  Do_Diff($real_stdout,$test_stdout);
-  Do_Diff($real_stderr,$test_stderr);
+  Do_Diff($test_stdout,$real_stdout);
+  Do_Diff($test_stderr,$real_stderr);
 }
 
 # ---------------------------------------------------------------------------

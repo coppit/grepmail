@@ -94,8 +94,8 @@ sub TestIt
   my $real_stdout = catfile('t','results',$stdout_file);
   my $real_stderr = catfile('t','results',$stderr_file);
 
-  Do_Diff($real_stdout,$test_stdout);
-  Do_Diff($real_stderr,$test_stderr);
+  Do_Diff($test_stdout,$real_stdout);
+  Do_Diff($test_stderr,$real_stderr);
 }
 
 # ---------------------------------------------------------------------------
