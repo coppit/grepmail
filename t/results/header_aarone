@@ -32,6 +32,34 @@ Why might this be?  Is there any way to check for an error situation?
 
 Thanks for any help,
 		Aaron
+From cmcmanis@freegate.com  Thu Jul 16 03:13:49 1998
+Received: from aleve.media.mit.edu by hub.media.mit.edu; (5.65v3.2/1.1/06Jun95-8.2MPM)
+	id AA23518; Thu, 16 Jul 1998 03:13:49 -0400
+Received: from hq.freegate.com ([208.226.86.1])
+	by aleve.media.mit.edu (8.8.7/ML970927) with SMTP id CAA18991
+	for <handyboard@media.mit.edu>; Thu, 16 Jul 1998 02:17:47 -0400 (EDT)
+Received: (qmail+freegate 6968 invoked by alias); 16 Jul 1998 06:17:38 -0000
+Received: from dialip-04.hq.freegate.com (HELO freegate.com) (208.226.86.222)
+  by hq.freegate.com with SMTP; 16 Jul 1998 06:17:38 -0000
+Message-Id: <35AD9BDA.3A9EC8F7@freegate.com>
+Date: Wed, 15 Jul 1998 23:21:14 -0700
+From: Chuck McManis <cmcmanis@freegate.com>
+Reply-To: cmcmanis@freegate.com
+Organization: Freegate Corporation
+X-Mailer: Mozilla 4.04 [en] (Win95; I)
+Mime-Version: 1.0
+To: David Rye <rye@mech.eng.usyd.edu.au>
+Cc: handyboard@media.mit.edu
+Subject: Re: Handyboard/RWP without p-code
+References: <3.0.32.19980716151646.00809d20@nemo.mech.eng.usyd.edu.au>
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+
+Get a copy of icc11 v5.0 or later (from www.imagecraft.com) and use the
+handyboard library from their site. 
+
+--Chuck
+
 From aarone@sirius.com  Wed Sep 30 12:35:05 1998
 Received: from aleve.media.mit.edu by hub.media.mit.edu; (5.65v4.0/1.1/06Jun95-8.2MPM)
 	id AA09172; Wed, 30 Sep 1998 12:35:05 -0400

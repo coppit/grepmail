@@ -620,252 +620,294 @@
 898:Content-Type: MESSAGE/rfc822; name=Mailbox
 899:Content-Description: Mailbox
 900:
-1100:From wallace@theory.phys.vt.edu  Mon Jul 27 18:34:05 1998
-1101:Received: from aleve.media.mit.edu by hub.media.mit.edu; (5.65v3.2/1.1/06Jun95-8.2MPM)
-1102:	id AA00723; Mon, 27 Jul 1998 18:34:05 -0400
-1103:Received: from theory.phys.vt.edu (theory.phys.vt.edu [128.173.176.33])
-1104:	by aleve.media.mit.edu (8.8.7/ML970927) with ESMTP id RAA19984
-1105:	for <handyboard@media.mit.edu>; Mon, 27 Jul 1998 17:22:26 -0400 (EDT)
-1106:Received: from localhost (wallace@localhost)
-1107:	by theory.phys.vt.edu (8.8.5/8.8.5) with SMTP id RAA00312
-1108:	for <handyboard@media.mit.edu>; Mon, 27 Jul 1998 17:22:24 -0400 (EDT)
-1109:Date: Mon, 27 Jul 1998 17:22:24 -0400 (EDT)
-1110:From: Mark Wallace <wallace@theory.phys.vt.edu>
-1111:To: handyboard@media.mit.edu
-1112:Subject: sonar.c for the handyboard
-1113:Message-Id: <Pine.SOL.3.92.980727164935.159A-100000@theory.phys.vt.edu>
-1114:Mime-Version: 1.0
-1115:Content-Type: TEXT/PLAIN; charset=US-ASCII
-1116:
-1117:Hello,
-1118:	I have a handyboard and 6500 series poloroid ultrasonic ranging
-1119:system.  I have downloaded the sonar.c programs used to drive the
-1120:transducer for distance measurements.  There appears to be a problem, or
-1121:atleast I think there is, with it.  The sonar device is supposed to give
-1122:distances of up to 35ft but the TCNC time register is 16 bit and in the
-1123:program it says "if ((peekwork(0x100e)-start_time) < 0)" too much time has
-1124:elapsed and it returns -1.  Therefore as soon as about 32700 counts goes
-1125:by, that value will go negative. I believe hex goes from 0 to 32768 then
-1126:-32768 to -1. In this case the difference will be < 0 if the object
-1127:is greater then about 9 ft.  I have taken this out of the program and can
-1128:get accurate measurements up to atleast 30 ft but I have to look at the
-1129:value given and add multiples of 2^16 to it to figure out where it is.
-1130:Taking this out of the program also can get you stuck if you really are
-1131:out of range.
-1132:	I have looked on the motorola web pages to see about this clock
-1133:and it says that the clock goes till it reachs $ffff and then flags
-1134:somewhere that there is an overflow and then starts over.  I don't know
-1135:how to find out were in the chip this information might be stored.  I know
-1136:the TCNT time register is at 0x100e from the notes on Simplified Sonar for
-1137:the Handy Board but I don't know where that overflow flag is stored.  I
-1138:thought that maybe by setting this flag and using it in the loop you might
-1139:be about to get a greater distance out of you measurement.
-1140:	Another question I have is about IC.  I would like to display
-1141:numbers greater then 32000 and right now there are several int type
-1142:variables and normal C comands don't seem to work to make a "long" or any
-1143:other type that are larger then 32000.  How does IC handle larger numbers?
-1144:	I am only a student and don't have much experience with this stuff
-1145:so I would appreciate any feedback I can get on either of these problems.
-1146:Thanks.
-1147:
-1148:Mark Wallace
-1149:
-1150: e-mail  mawalla3@vt.edu
-1151:         wallace@astro.phys.vt.edu
-1152:Web page http://sps1.phys.vt.edu/~mwallace/index.html
-1153:
-1154:"What a waste it would be after 4 billion tortuous years of evolution if
-1155:the dominant organism contrived its own self-destruction"
-1156:                                        Carl Sagan
-1157:
+901:From someone@imagecraft.com  Fri Jul 10 18:59:26 1998
+902:Return-Path: <icc11-list-errors@lists.best.com>
+903:Received: from Aus.Sun.COM by war.Aus.Sun.COM (SMI-8.6/SMI-SVR4)
+904:	id SAA14426; Fri, 10 Jul 1998 18:59:26 +1000
+905:Received: from earth.sun.com by Aus.Sun.COM id SAA24238
+906:	(SMI-8.6/SMI-4.1 for <<scott.seaton@aus.sun.com>>); Fri, 10 Jul 1998 18:59:48 +1000
+907:Received: from iisesun.iise.CSIRO.AU (iisesun.iise.csiro.au [130.155.5.44])
+908:	by earth.sun.com (8.8.8/8.8.8) with SMTP id BAA18609
+909:	for <scott.seaton@aus.sun.com>; Fri, 10 Jul 1998 01:59:44 -0700 (PDT)
+910:Received: from lists1.best.com (lists1.best.com [206.86.8.15]) by iisesun.iise.CSIRO.AU (SMI-8.6/8.6.12-IISE-SWA) with ESMTP id SAA25847 for <sseaton@iise.csiro.au>; Fri, 10 Jul 1998 18:49:31 +1000
+911:Received: (from daemon@localhost) by lists1.best.com (8.9.0/8.8.BEST) id BAA15320 for icc11-list-errors@lists.best.com; Fri, 10 Jul 1998 01:04:34 -0700 (PDT)
+912:Message-Id: <199807100804.BAA15320@lists1.best.com>
+913:From: Christina Willrich & Richard Man <someone@imagecraft.com>
+914:Subject: icc11 Handyboard library available
+915:Date: Fri, 10 Jul 1998 00:58:49 -0700
+916:BestServHost: lists.best.com
+917:MIME-Version: 1.0
+918:Content-Type: text/plain; charset="us-ascii"
+919:Sender: icc11-list-errors@lists.best.com
+920:Errors-To: icc11-list-errors@lists.best.com
+921:Reply-To: icc11-list@lists.best.com
+922:To: icc11-list@lists.best.com
+923:content-length: 399
+924:Status: RO
+925:X-Status: $$$$
+926:X-UID: 0000000001
+927:
+928:At long last, I dusted off Chuck McManis Handyboard library and ported it
+929:to V5. No reason why it can't work with V4.5 either ;-) Anyway, to try it
+930:out, point your browser to
+931:
+932:ftp://ftp.imagecraft.com/pub/libhb.zip
+933:
+934:Chuck really did a great job with the LCD. There are commands to scroll,
+935:move etc. Make sure you try the lcdtest2.c test.
+936:
+937:// richard
+938:someone@imagecraft.com http://www.imagecraft.com
+939:
+940:
+941:--Troop_of_Baboons_752_000--
+942:
+1142:From wallace@theory.phys.vt.edu  Mon Jul 27 18:34:05 1998
+1143:Received: from aleve.media.mit.edu by hub.media.mit.edu; (5.65v3.2/1.1/06Jun95-8.2MPM)
+1144:	id AA00723; Mon, 27 Jul 1998 18:34:05 -0400
+1145:Received: from theory.phys.vt.edu (theory.phys.vt.edu [128.173.176.33])
+1146:	by aleve.media.mit.edu (8.8.7/ML970927) with ESMTP id RAA19984
+1147:	for <handyboard@media.mit.edu>; Mon, 27 Jul 1998 17:22:26 -0400 (EDT)
+1148:Received: from localhost (wallace@localhost)
+1149:	by theory.phys.vt.edu (8.8.5/8.8.5) with SMTP id RAA00312
+1150:	for <handyboard@media.mit.edu>; Mon, 27 Jul 1998 17:22:24 -0400 (EDT)
+1151:Date: Mon, 27 Jul 1998 17:22:24 -0400 (EDT)
+1152:From: Mark Wallace <wallace@theory.phys.vt.edu>
+1153:To: handyboard@media.mit.edu
+1154:Subject: sonar.c for the handyboard
+1155:Message-Id: <Pine.SOL.3.92.980727164935.159A-100000@theory.phys.vt.edu>
+1156:Mime-Version: 1.0
+1157:Content-Type: TEXT/PLAIN; charset=US-ASCII
 1158:
-1232:From mawalla3@vt.edu  Wed Aug 12 13:10:06 1998
-1233:Received: from aleve.media.mit.edu by hub.media.mit.edu; (5.65v3.2/1.1/06Jun95-8.2MPM)
-1234:	id AA07529; Wed, 12 Aug 1998 13:10:06 -0400
-1235:Received: from quackerjack.cc.vt.edu (root@quackerjack.cc.vt.edu [198.82.160.250])
-1236:	by aleve.media.mit.edu (8.8.7/ML970927) with ESMTP id MAA05729
-1237:	for <Handyboard@media.mit.edu>; Wed, 12 Aug 1998 12:13:53 -0400 (EDT)
-1238:Received: from sable.cc.vt.edu (sable.cc.vt.edu [128.173.16.30])
-1239:	by quackerjack.cc.vt.edu (8.8.8/8.8.8) with ESMTP id MAA20678
-1240:	for <Handyboard@media.mit.edu>; Wed, 12 Aug 1998 12:20:09 -0400 (EDT)
-1241:Received: from research10.phys.vt.edu (dhcp9.phys.vt.edu [128.173.176.166])
-1242:	by sable.cc.vt.edu (8.8.8/8.8.8) with SMTP id MAA05159
-1243:	for <Handyboard@media.mit.edu>; Wed, 12 Aug 1998 12:13:51 -0400 (EDT)
-1244:Message-Id: <3.0.5.32.19980812121345.00796960@mail.vt.edu>
-1245:X-Sender: mawalla3@mail.vt.edu (Unverified)
-1246:X-Mailer: QUALCOMM Windows Eudora Light Version 3.0.5 (32)
-1247:Date: Wed, 12 Aug 1998 12:13:45 -0400
-1248:To: Handyboard@media.mit.edu
-1249:From: Mark Wallace <mawalla3@vt.edu>
-1250:Subject: serial library for C++ 
-1251:Mime-Version: 1.0
-1252:Content-Type: text/plain; charset="us-ascii"
-1253:
-1254:Hello,
-1255:	I have a handy board with poloroid transducers and I am trying use the
-1256:results of my distance measurments in a C++ program on the computer.  I
-1257:have found programs on the handyboard web page that should alow the
-1258:handyboard to transmit information over the serial line.  What I am looking
-1259:for is if anyone knows were I could find a serial for Microsofts
-1260:Visual C++ 5.0.  I would like to find one that is free or sharware but any
-1261:information on any serial that will work would be appreciated.
-1262:Thanks.
-1263:Mark Wallace
-1264:
-1265: e-mail  mawalla3@vt.edu
-1266:	 mwallace@sps1.phys.vt.edu
-1267:web page http://sps1.phys.vt.ede/~mwallace
-1268:
-1269:"What a waist it would be after 4 billion tortuous years of evolution if
-1270:the dominant organism contrived its own self-distruction"
-1271:			Carl Sagan
-1272:
-1273:
-1319:From aarone@sirius.com  Wed Aug 12 13:42:19 1998
-1320:Received: from aleve.media.mit.edu by hub.media.mit.edu; (5.65v3.2/1.1/06Jun95-8.2MPM)
-1321:	id AA13439; Wed, 12 Aug 1998 13:42:19 -0400
-1322:Received: from mail3.sirius.com (mail3.sirius.com [205.134.253.133])
-1323:	by aleve.media.mit.edu (8.8.7/ML970927) with ESMTP id MAA10630
-1324:	for <handyboard@media.mit.edu>; Wed, 12 Aug 1998 12:48:27 -0400 (EDT)
-1325:Received: from aarone (ppp-asfm05--041.sirius.net [205.134.241.41])
-1326:	by mail3.sirius.com (8.8.7/Sirius-8.8.7-97.08.12) with SMTP id JAA20821;
-1327:	Wed, 12 Aug 1998 09:48:24 -0700 (PDT)
-1328:Message-Id: <004401bdc62a$e8ecc8c0$70f086cd@aarone.sirius.com>
-1329:From: "Aaron Edsinger" <aarone@sirius.com>
-1330:To: "Mark Wallace" <mawalla3@vt.edu>
-1331:Cc: "handy" <handyboard@media.mit.edu>
-1332:Subject: Re: serial library for C++ 
-1333:Date: Wed, 12 Aug 1998 12:53:41 -0700
-1334:Mime-Version: 1.0
-1335:Content-Type: text/plain;
-1336:	charset="iso-8859-1"
-1337:Content-Transfer-Encoding: 7bit
-1338:X-Priority: 3
-1339:X-Msmail-Priority: Normal
-1340:X-Mailer: Microsoft Outlook Express 4.72.2106.4
-1341:X-Mimeole: Produced By Microsoft MimeOLE V4.72.2106.4
-1342:
-1343:
-1344:  Check out this site.  It works well.  The only problem I had was timing
-1345:issues when trying to read and write to the port too quickly.
-1346:
-1347:http://www.codeguru.com/show.cgi?general=/misc/misc_toc.shtml
-1348:
-1349:
-1350:-----Original Message-----
-1351:From: Mark Wallace <mawalla3@vt.edu>
-1352:To: Handyboard@media.mit.edu <Handyboard@media.mit.edu>
-1353:Date: Wednesday, August 12, 1998 9:25 AM
-1354:Subject: serial library for C++
-1355:
-1356:
-1357:>Hello,
-1358:> I have a handy board with poloroid transducers and I am trying use the
-1359:>results of my distance measurments in a C++ program on the computer.  I
-1360:>have found programs on the handyboard web page that should alow the
-1361:>handyboard to transmit information over the serial line.  What I am looking
-1362:>for is if anyone knows were I could find a serial library for Microsofts
-1363:>Visual C++ 5.0.  I would like to find one that is free or sharware but any
-1364:>information on any serial librarys that will work would be appreciated.
-1365:>Thanks.
-1366:>Mark Wallace
-1367:>
-1368:> e-mail  mawalla3@vt.edu
-1369:> mwallace@sps1.phys.vt.edu
-1370:>web page http://sps1.phys.vt.ede/~mwallace
-1371:>
-1372:>"What a waist it would be after 4 billion tortuous years of evolution if
-1373:>the dominant organism contrived its own self-distruction"
-1374:> Carl Sagan
-1375:>
-1376:
-1377:From Scott.Seaton@Aus.Sun.COM  Thu Jul 16 03:42:38 1998
-1378:Received: from aleve.media.mit.edu by hub.media.mit.edu; (5.65v3.2/1.1/06Jun95-8.2MPM)
-1379:	id AA24945; Thu, 16 Jul 1998 03:42:38 -0400
-1380:Received: from mercury.Sun.COM (mercury.Sun.COM [192.9.25.1])
-1381:	by aleve.media.mit.edu (8.8.7/ML970927) with SMTP id CAA07415
-1382:	for <handyboard@media.mit.edu>; Thu, 16 Jul 1998 02:44:58 -0400 (EDT)
-1383:Received: from Aus.Sun.COM ([129.158.80.6]) by mercury.Sun.COM (SMI-8.6/mail.byaddr) with SMTP id XAA29734; Wed, 15 Jul 1998 23:44:52 -0700
-1384:Received: from war.Aus.Sun.COM by Aus.Sun.COM id QAA03011
-1385:	(SMI-8.6/SMI-4.1 for <>); Thu, 16 Jul 1998 16:44:50 +1000
-1386:Received: from drone by war.Aus.Sun.COM (SMI-8.6/SMI-SVR4)
-1387:	id QAA10921; Thu, 16 Jul 1998 16:44:20 +1000
-1388:Message-Id: <199807160644.QAA10921@war.Aus.Sun.COM>
-1389:Date: Thu, 16 Jul 1998 16:41:56 +1000 (EST)
-1390:From: Scott Seaton - Systems Consultant - ESG <Scott.Seaton@Aus.Sun.COM>
-1391:Reply-To: Scott Seaton - Systems Consultant - ESG <Scott.Seaton@Aus.Sun.COM>
-1392:Subject: Re: Handyboard/RWP without p-code
-1393:To: handyboard@media.mit.edu, rye@mech.eng.usyd.edu.au
-1394:Mime-Version: 1.0
-1395:Content-Type: MULTIPART/mixed; BOUNDARY=Troop_of_Baboons_752_000
-1396:X-Mailer: dtmail 1.2.0 CDE Version 1.2 SunOS 5.6 sun4u sparc 
+1159:Hello,
+1160:	I have a handyboard and 6500 series poloroid ultrasonic ranging
+1161:system.  I have downloaded the sonar.c programs used to drive the
+1162:transducer for distance measurements.  There appears to be a problem, or
+1163:atleast I think there is, with it.  The sonar device is supposed to give
+1164:distances of up to 35ft but the TCNC time register is 16 bit and in the
+1165:program it says "if ((peekwork(0x100e)-start_time) < 0)" too much time has
+1166:elapsed and it returns -1.  Therefore as soon as about 32700 counts goes
+1167:by, that value will go negative. I believe hex goes from 0 to 32768 then
+1168:-32768 to -1. In this case the difference will be < 0 if the object
+1169:is greater then about 9 ft.  I have taken this out of the program and can
+1170:get accurate measurements up to atleast 30 ft but I have to look at the
+1171:value given and add multiples of 2^16 to it to figure out where it is.
+1172:Taking this out of the program also can get you stuck if you really are
+1173:out of range.
+1174:	I have looked on the motorola web pages to see about this clock
+1175:and it says that the clock goes till it reachs $ffff and then flags
+1176:somewhere that there is an overflow and then starts over.  I don't know
+1177:how to find out were in the chip this information might be stored.  I know
+1178:the TCNT time register is at 0x100e from the notes on Simplified Sonar for
+1179:the Handy Board but I don't know where that overflow flag is stored.  I
+1180:thought that maybe by setting this flag and using it in the loop you might
+1181:be about to get a greater distance out of you measurement.
+1182:	Another question I have is about IC.  I would like to display
+1183:numbers greater then 32000 and right now there are several int type
+1184:variables and normal C comands don't seem to work to make a "long" or any
+1185:other type that are larger then 32000.  How does IC handle larger numbers?
+1186:	I am only a student and don't have much experience with this stuff
+1187:so I would appreciate any feedback I can get on either of these problems.
+1188:Thanks.
+1189:
+1190:Mark Wallace
+1191:
+1192: e-mail  mawalla3@vt.edu
+1193:         wallace@astro.phys.vt.edu
+1194:Web page http://sps1.phys.vt.edu/~mwallace/index.html
+1195:
+1196:"What a waste it would be after 4 billion tortuous years of evolution if
+1197:the dominant organism contrived its own self-destruction"
+1198:                                        Carl Sagan
+1199:
+1200:
+1274:From mawalla3@vt.edu  Wed Aug 12 13:10:06 1998
+1275:Received: from aleve.media.mit.edu by hub.media.mit.edu; (5.65v3.2/1.1/06Jun95-8.2MPM)
+1276:	id AA07529; Wed, 12 Aug 1998 13:10:06 -0400
+1277:Received: from quackerjack.cc.vt.edu (root@quackerjack.cc.vt.edu [198.82.160.250])
+1278:	by aleve.media.mit.edu (8.8.7/ML970927) with ESMTP id MAA05729
+1279:	for <Handyboard@media.mit.edu>; Wed, 12 Aug 1998 12:13:53 -0400 (EDT)
+1280:Received: from sable.cc.vt.edu (sable.cc.vt.edu [128.173.16.30])
+1281:	by quackerjack.cc.vt.edu (8.8.8/8.8.8) with ESMTP id MAA20678
+1282:	for <Handyboard@media.mit.edu>; Wed, 12 Aug 1998 12:20:09 -0400 (EDT)
+1283:Received: from research10.phys.vt.edu (dhcp9.phys.vt.edu [128.173.176.166])
+1284:	by sable.cc.vt.edu (8.8.8/8.8.8) with SMTP id MAA05159
+1285:	for <Handyboard@media.mit.edu>; Wed, 12 Aug 1998 12:13:51 -0400 (EDT)
+1286:Message-Id: <3.0.5.32.19980812121345.00796960@mail.vt.edu>
+1287:X-Sender: mawalla3@mail.vt.edu (Unverified)
+1288:X-Mailer: QUALCOMM Windows Eudora Light Version 3.0.5 (32)
+1289:Date: Wed, 12 Aug 1998 12:13:45 -0400
+1290:To: Handyboard@media.mit.edu
+1291:From: Mark Wallace <mawalla3@vt.edu>
+1292:Subject: serial library for C++ 
+1293:Mime-Version: 1.0
+1294:Content-Type: text/plain; charset="us-ascii"
+1295:
+1296:Hello,
+1297:	I have a handy board with poloroid transducers and I am trying use the
+1298:results of my distance measurments in a C++ program on the computer.  I
+1299:have found programs on the handyboard web page that should alow the
+1300:handyboard to transmit information over the serial line.  What I am looking
+1301:for is if anyone knows were I could find a serial for Microsofts
+1302:Visual C++ 5.0.  I would like to find one that is free or sharware but any
+1303:information on any serial that will work would be appreciated.
+1304:Thanks.
+1305:Mark Wallace
+1306:
+1307: e-mail  mawalla3@vt.edu
+1308:	 mwallace@sps1.phys.vt.edu
+1309:web page http://sps1.phys.vt.ede/~mwallace
+1310:
+1311:"What a waist it would be after 4 billion tortuous years of evolution if
+1312:the dominant organism contrived its own self-distruction"
+1313:			Carl Sagan
+1314:
+1315:
+1361:From aarone@sirius.com  Wed Aug 12 13:42:19 1998
+1362:Received: from aleve.media.mit.edu by hub.media.mit.edu; (5.65v3.2/1.1/06Jun95-8.2MPM)
+1363:	id AA13439; Wed, 12 Aug 1998 13:42:19 -0400
+1364:Received: from mail3.sirius.com (mail3.sirius.com [205.134.253.133])
+1365:	by aleve.media.mit.edu (8.8.7/ML970927) with ESMTP id MAA10630
+1366:	for <handyboard@media.mit.edu>; Wed, 12 Aug 1998 12:48:27 -0400 (EDT)
+1367:Received: from aarone (ppp-asfm05--041.sirius.net [205.134.241.41])
+1368:	by mail3.sirius.com (8.8.7/Sirius-8.8.7-97.08.12) with SMTP id JAA20821;
+1369:	Wed, 12 Aug 1998 09:48:24 -0700 (PDT)
+1370:Message-Id: <004401bdc62a$e8ecc8c0$70f086cd@aarone.sirius.com>
+1371:From: "Aaron Edsinger" <aarone@sirius.com>
+1372:To: "Mark Wallace" <mawalla3@vt.edu>
+1373:Cc: "handy" <handyboard@media.mit.edu>
+1374:Subject: Re: serial library for C++ 
+1375:Date: Wed, 12 Aug 1998 12:53:41 -0700
+1376:Mime-Version: 1.0
+1377:Content-Type: text/plain;
+1378:	charset="iso-8859-1"
+1379:Content-Transfer-Encoding: 7bit
+1380:X-Priority: 3
+1381:X-Msmail-Priority: Normal
+1382:X-Mailer: Microsoft Outlook Express 4.72.2106.4
+1383:X-Mimeole: Produced By Microsoft MimeOLE V4.72.2106.4
+1384:
+1385:
+1386:  Check out this site.  It works well.  The only problem I had was timing
+1387:issues when trying to read and write to the port too quickly.
+1388:
+1389:http://www.codeguru.com/show.cgi?general=/misc/misc_toc.shtml
+1390:
+1391:
+1392:-----Original Message-----
+1393:From: Mark Wallace <mawalla3@vt.edu>
+1394:To: Handyboard@media.mit.edu <Handyboard@media.mit.edu>
+1395:Date: Wednesday, August 12, 1998 9:25 AM
+1396:Subject: serial library for C++
 1397:
-1398:--Troop_of_Baboons_752_000
-1399:Content-Type: TEXT/plain; charset=us-ascii
-1400:Content-MD5: i/HKSIa/Vk0mZT5ml+q21A==
-1401:
-1402:Hi
-1403:
-1404:I suggest that you contact ImageCraft.
-1405:http://www.imagecraft.com/software/index.html  or  info@imagecraft.com 
-1406:
-1407:They have a C compiler for 68HC11 CPU's that will do what you want, including a
-1408:library for the HandyBoard (see attached e-mail) !
-1409:
-1410:I have no affiliation with ImageCraft (other than as a satisfied customer).
-1411:
-1412:Hope this helps
-1413:Scott
-1414:============================================================================== 
-1415: ,-_|\       Scott Seaton - Sun Enterprise Services -  Systems Consultant      
-1416:/     \  Sun Microsystems Australia Pty Ltd  E-mail : scott.seaton@aus.sun.com 
-1417:\_,-\_+  828 Pacific Highway                  Phone : +61 2 9844 5381          
-1418:     v   Gordon, N.S.W., 2072, AUSTRALIA        Fax : +61 2 9844 5161          
-1419:============================================================================== 
-1420:
-1421:--Troop_of_Baboons_752_000
-1422:Content-Type: MESSAGE/rfc822; name=Mailbox
-1423:Content-Description: Mailbox
-1424:
-1425:From someone@imagecraft.com  Fri Jul 10 18:59:26 1998
-1426:Return-Path: <icc11-list-errors@lists.best.com>
-1427:Received: from Aus.Sun.COM by war.Aus.Sun.COM (SMI-8.6/SMI-SVR4)
-1428:	id SAA14426; Fri, 10 Jul 1998 18:59:26 +1000
-1429:Received: from earth.sun.com by Aus.Sun.COM id SAA24238
-1430:	(SMI-8.6/SMI-4.1 for <<scott.seaton@aus.sun.com>>); Fri, 10 Jul 1998 18:59:48 +1000
-1431:Received: from iisesun.iise.CSIRO.AU (iisesun.iise.csiro.au [130.155.5.44])
-1432:	by earth.sun.com (8.8.8/8.8.8) with SMTP id BAA18609
-1433:	for <scott.seaton@aus.sun.com>; Fri, 10 Jul 1998 01:59:44 -0700 (PDT)
-1434:Received: from lists1.best.com (lists1.best.com [206.86.8.15]) by iisesun.iise.CSIRO.AU (SMI-8.6/8.6.12-IISE-SWA) with ESMTP id SAA25847 for <sseaton@iise.csiro.au>; Fri, 10 Jul 1998 18:49:31 +1000
-1435:Received: (from daemon@localhost) by lists1.best.com (8.9.0/8.8.BEST) id BAA15320 for icc11-list-errors@lists.best.com; Fri, 10 Jul 1998 01:04:34 -0700 (PDT)
-1436:Message-Id: <199807100804.BAA15320@lists1.best.com>
-1437:From: Christina Willrich & Richard Man <someone@imagecraft.com>
-1438:Subject: icc11 Handyboard library available
-1439:Date: Fri, 10 Jul 1998 00:58:49 -0700
-1440:BestServHost: lists.best.com
-1441:MIME-Version: 1.0
-1442:Content-Type: text/plain; charset="us-ascii"
-1443:Sender: icc11-list-errors@lists.best.com
-1444:Errors-To: icc11-list-errors@lists.best.com
-1445:Reply-To: icc11-list@lists.best.com
-1446:To: icc11-list@lists.best.com
-1447:content-length: 399
-1448:Status: RO
-1449:X-Status: $$$$
-1450:X-UID: 0000000001
+1398:
+1399:>Hello,
+1400:> I have a handy board with poloroid transducers and I am trying use the
+1401:>results of my distance measurments in a C++ program on the computer.  I
+1402:>have found programs on the handyboard web page that should alow the
+1403:>handyboard to transmit information over the serial line.  What I am looking
+1404:>for is if anyone knows were I could find a serial library for Microsofts
+1405:>Visual C++ 5.0.  I would like to find one that is free or sharware but any
+1406:>information on any serial librarys that will work would be appreciated.
+1407:>Thanks.
+1408:>Mark Wallace
+1409:>
+1410:> e-mail  mawalla3@vt.edu
+1411:> mwallace@sps1.phys.vt.edu
+1412:>web page http://sps1.phys.vt.ede/~mwallace
+1413:>
+1414:>"What a waist it would be after 4 billion tortuous years of evolution if
+1415:>the dominant organism contrived its own self-distruction"
+1416:> Carl Sagan
+1417:>
+1418:
+1419:From Scott.Seaton@Aus.Sun.COM  Thu Jul 16 03:42:38 1998
+1420:Received: from aleve.media.mit.edu by hub.media.mit.edu; (5.65v3.2/1.1/06Jun95-8.2MPM)
+1421:	id AA24945; Thu, 16 Jul 1998 03:42:38 -0400
+1422:Received: from mercury.Sun.COM (mercury.Sun.COM [192.9.25.1])
+1423:	by aleve.media.mit.edu (8.8.7/ML970927) with SMTP id CAA07415
+1424:	for <handyboard@media.mit.edu>; Thu, 16 Jul 1998 02:44:58 -0400 (EDT)
+1425:Received: from Aus.Sun.COM ([129.158.80.6]) by mercury.Sun.COM (SMI-8.6/mail.byaddr) with SMTP id XAA29734; Wed, 15 Jul 1998 23:44:52 -0700
+1426:Received: from war.Aus.Sun.COM by Aus.Sun.COM id QAA03011
+1427:	(SMI-8.6/SMI-4.1 for <>); Thu, 16 Jul 1998 16:44:50 +1000
+1428:Received: from drone by war.Aus.Sun.COM (SMI-8.6/SMI-SVR4)
+1429:	id QAA10921; Thu, 16 Jul 1998 16:44:20 +1000
+1430:Message-Id: <199807160644.QAA10921@war.Aus.Sun.COM>
+1431:Date: Thu, 16 Jul 1998 16:41:56 +1000 (EST)
+1432:From: Scott Seaton - Systems Consultant - ESG <Scott.Seaton@Aus.Sun.COM>
+1433:Reply-To: Scott Seaton - Systems Consultant - ESG <Scott.Seaton@Aus.Sun.COM>
+1434:Subject: Re: Handyboard/RWP without p-code
+1435:To: handyboard@media.mit.edu, rye@mech.eng.usyd.edu.au
+1436:Mime-Version: 1.0
+1437:Content-Type: MULTIPART/mixed; BOUNDARY=Troop_of_Baboons_752_000
+1438:X-Mailer: dtmail 1.2.0 CDE Version 1.2 SunOS 5.6 sun4u sparc 
+1439:
+1440:--Troop_of_Baboons_752_000
+1441:Content-Type: TEXT/plain; charset=us-ascii
+1442:Content-MD5: i/HKSIa/Vk0mZT5ml+q21A==
+1443:
+1444:Hi
+1445:
+1446:I suggest that you contact ImageCraft.
+1447:http://www.imagecraft.com/software/index.html  or  info@imagecraft.com 
+1448:
+1449:They have a C compiler for 68HC11 CPU's that will do what you want, including a
+1450:library for the HandyBoard (see attached e-mail) !
 1451:
-1452:At long last, I dusted off Chuck McManis Handyboard library and ported it
-1453:to V5. No reason why it can't work with V4.5 either ;-) Anyway, to try it
-1454:out, point your browser to
-1455:
-1456:ftp://ftp.imagecraft.com/pub/libhb.zip
-1457:
-1458:Chuck really did a great job with the LCD. There are commands to scroll,
-1459:move etc. Make sure you try the lcdtest2.c test.
-1460:
-1461:// richard
-1462:someone@imagecraft.com http://www.imagecraft.com
-1463:
-1464:
-1465:--Troop_of_Baboons_752_000--
+1452:I have no affiliation with ImageCraft (other than as a satisfied customer).
+1453:
+1454:Hope this helps
+1455:Scott
+1456:============================================================================== 
+1457: ,-_|\       Scott Seaton - Sun Enterprise Services -  Systems Consultant      
+1458:/     \  Sun Microsystems Australia Pty Ltd  E-mail : scott.seaton@aus.sun.com 
+1459:\_,-\_+  828 Pacific Highway                  Phone : +61 2 9844 5381          
+1460:     v   Gordon, N.S.W., 2072, AUSTRALIA        Fax : +61 2 9844 5161          
+1461:============================================================================== 
+1462:
+1463:--Troop_of_Baboons_752_000
+1464:Content-Type: MESSAGE/rfc822; name=Mailbox
+1465:Content-Description: Mailbox
 1466:
+1467:From someone@imagecraft.com  Fri Jul 10 18:59:26 1998
+1468:Return-Path: <icc11-list-errors@lists.best.com>
+1469:Received: from Aus.Sun.COM by war.Aus.Sun.COM (SMI-8.6/SMI-SVR4)
+1470:	id SAA14426; Fri, 10 Jul 1998 18:59:26 +1000
+1471:Received: from earth.sun.com by Aus.Sun.COM id SAA24238
+1472:	(SMI-8.6/SMI-4.1 for <<scott.seaton@aus.sun.com>>); Fri, 10 Jul 1998 18:59:48 +1000
+1473:Received: from iisesun.iise.CSIRO.AU (iisesun.iise.csiro.au [130.155.5.44])
+1474:	by earth.sun.com (8.8.8/8.8.8) with SMTP id BAA18609
+1475:	for <scott.seaton@aus.sun.com>; Fri, 10 Jul 1998 01:59:44 -0700 (PDT)
+1476:Received: from lists1.best.com (lists1.best.com [206.86.8.15]) by iisesun.iise.CSIRO.AU (SMI-8.6/8.6.12-IISE-SWA) with ESMTP id SAA25847 for <sseaton@iise.csiro.au>; Fri, 10 Jul 1998 18:49:31 +1000
+1477:Received: (from daemon@localhost) by lists1.best.com (8.9.0/8.8.BEST) id BAA15320 for icc11-list-errors@lists.best.com; Fri, 10 Jul 1998 01:04:34 -0700 (PDT)
+1478:Message-Id: <199807100804.BAA15320@lists1.best.com>
+1479:From: Christina Willrich & Richard Man <someone@imagecraft.com>
+1480:Subject: icc11 Handyboard library available
+1481:Date: Fri, 10 Jul 1998 00:58:49 -0700
+1482:BestServHost: lists.best.com
+1483:MIME-Version: 1.0
+1484:Content-Type: text/plain; charset="us-ascii"
+1485:Sender: icc11-list-errors@lists.best.com
+1486:Errors-To: icc11-list-errors@lists.best.com
+1487:Reply-To: icc11-list@lists.best.com
+1488:To: icc11-list@lists.best.com
+1489:content-length: 399
+1490:Status: RO
+1491:X-Status: $$$$
+1492:X-UID: 0000000001
+1493:
+1494:At long last, I dusted off Chuck McManis Handyboard library and ported it
+1495:to V5. No reason why it can't work with V4.5 either ;-) Anyway, to try it
+1496:out, point your browser to
+1497:
+1498:ftp://ftp.imagecraft.com/pub/libhb.zip
+1499:
+1500:Chuck really did a great job with the LCD. There are commands to scroll,
+1501:move etc. Make sure you try the lcdtest2.c test.
+1502:
+1503:// richard
+1504:someone@imagecraft.com http://www.imagecraft.com
+1505:
+1506:
+1507:--Troop_of_Baboons_752_000--
+1508:

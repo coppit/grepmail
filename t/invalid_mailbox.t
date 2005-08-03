@@ -124,7 +124,7 @@ sub TestIt
     copy($real_stderr, $modified_stderr_2);
   }
 
-  Do_Diff($modified_stdout,$test_stdout);
+  Do_Diff($test_stdout,$modified_stdout);
   Custom_Do_Diff($modified_stderr_1,$modified_stderr_2,$test_stderr);
 
   unlink $modified_stdout;

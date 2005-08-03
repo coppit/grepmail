@@ -8,14 +8,10 @@ logical operators.
 
 NEW IN THIS VERSION
 
-Version 5.3031: Mon Jun 6 2005
-- Fixed a bug that would cause the date_manip test to fail in some time zones.
-  (Thanks to Kurt Roeckx for the Debian bug report, and Joey Hess for
-  notifying me.)
-- Added a missing "use" statement in Test::Utils.
-- Improved date matching for mailboxes containing invalid dates. (Thanks to
-  Steve Revilak for the patch.)
-
+Version 5.3032: Tue Aug 3 2005
+- Fixed backwards diff in test cases
+- Updated Mail::Mbox::MessageParser dependency to latest version, and updated
+  test cases as well.
 
 SOME NOTES
 

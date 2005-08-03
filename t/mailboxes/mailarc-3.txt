@@ -509,7 +509,7 @@ void main(void) {
 
 //************** END: serial_HB.c
 
-From goldt@et.byu.edu  Tue Jul  7 20:33:03 1998
+From goldt@et.byu.edu  Tue Jul  7 20:33:03 1998 WETDST
 Received: from aleve.media.mit.edu by hub.media.mit.edu; (5.65v3.2/1.1/06Jun95-8.2MPM)
 	id AA32480; Tue, 7 Jul 1998 20:33:03 -0400
 Received: from wormwood.ee.byu.edu (wormwood.ee.byu.edu [128.187.30.54])
@@ -786,7 +786,7 @@ interrupt_code_exit:
 
 
 
-From aarone@sirius.com  Wed Jul  1 02:44:06 1998
+From aarone@sirius.com  Wed Jul  1 02:44:06 1998 MEST
 Received: from aleve.media.mit.edu by hub.media.mit.edu; (5.65v3.2/1.1/06Jun95-8.2MPM)
 	id AA22669; Wed, 1 Jul 1998 02:44:06 -0400
 Received: from mail3.sirius.com (mail3.sirius.com [205.134.253.133])
@@ -892,6 +892,87 @@ Scott
 --Troop_of_Baboons_752_000
 Content-Type: MESSAGE/rfc822; name=Mailbox
 Content-Description: Mailbox
+
+From someone@imagecraft.com  Fri Jul 10 18:59:26 1998
+Return-Path: <icc11-list-errors@lists.best.com>
+Received: from Aus.Sun.COM by war.Aus.Sun.COM (SMI-8.6/SMI-SVR4)
+	id SAA14426; Fri, 10 Jul 1998 18:59:26 +1000
+Received: from earth.sun.com by Aus.Sun.COM id SAA24238
+	(SMI-8.6/SMI-4.1 for <<scott.seaton@aus.sun.com>>); Fri, 10 Jul 1998 18:59:48 +1000
+Received: from iisesun.iise.CSIRO.AU (iisesun.iise.csiro.au [130.155.5.44])
+	by earth.sun.com (8.8.8/8.8.8) with SMTP id BAA18609
+	for <scott.seaton@aus.sun.com>; Fri, 10 Jul 1998 01:59:44 -0700 (PDT)
+Received: from lists1.best.com (lists1.best.com [206.86.8.15]) by iisesun.iise.CSIRO.AU (SMI-8.6/8.6.12-IISE-SWA) with ESMTP id SAA25847 for <sseaton@iise.csiro.au>; Fri, 10 Jul 1998 18:49:31 +1000
+Received: (from daemon@localhost) by lists1.best.com (8.9.0/8.8.BEST) id BAA15320 for icc11-list-errors@lists.best.com; Fri, 10 Jul 1998 01:04:34 -0700 (PDT)
+Message-Id: <199807100804.BAA15320@lists1.best.com>
+From: Christina Willrich & Richard Man <someone@imagecraft.com>
+Subject: icc11 Handyboard library available
+Date: Fri, 10 Jul 1998 00:58:49 -0700
+BestServHost: lists.best.com
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Sender: icc11-list-errors@lists.best.com
+Errors-To: icc11-list-errors@lists.best.com
+Reply-To: icc11-list@lists.best.com
+To: icc11-list@lists.best.com
+content-length: 399
+Status: RO
+X-Status: $$$$
+X-UID: 0000000001
+
+At long last, I dusted off Chuck McManis Handyboard library and ported it
+to V5. No reason why it can't work with V4.5 either ;-) Anyway, to try it
+out, point your browser to
+
+ftp://ftp.imagecraft.com/pub/libhb.zip
+
+Chuck really did a great job with the LCD. There are commands to scroll,
+move etc. Make sure you try the lcdtest2.c test.
+
+// richard
+someone@imagecraft.com http://www.imagecraft.com
+
+From someone2@imagecraft.com  Fri Jul 10 18:59:26 1998
+Return-Path: <icc11-list-errors@lists.best.com>
+Received: from Aus.Sun.COM by war.Aus.Sun.COM (SMI-8.6/SMI-SVR4)
+	id SAA14426; Fri, 10 Jul 1998 18:59:26 +1000
+Received: from earth.sun.com by Aus.Sun.COM id SAA24238
+	(SMI-8.6/SMI-4.1 for <<scott.seaton@aus.sun.com>>); Fri, 10 Jul 1998 18:59:48 +1000
+Received: from iisesun.iise.CSIRO.AU (iisesun.iise.csiro.au [130.155.5.44])
+	by earth.sun.com (8.8.8/8.8.8) with SMTP id BAA18609
+	for <scott.seaton@aus.sun.com>; Fri, 10 Jul 1998 01:59:44 -0700 (PDT)
+Received: from lists1.best.com (lists1.best.com [206.86.8.15]) by iisesun.iise.CSIRO.AU (SMI-8.6/8.6.12-IISE-SWA) with ESMTP id SAA25847 for <sseaton@iise.csiro.au>; Fri, 10 Jul 1998 18:49:31 +1000
+Received: (from daemon@localhost) by lists1.best.com (8.9.0/8.8.BEST) id BAA15320 for icc11-list-errors@lists.best.com; Fri, 10 Jul 1998 01:04:34 -0700 (PDT)
+Message-Id: <199807100804.BAA15320@lists1.best.com2>
+From: Christina Willrich & Richard Man <someone@imagecraft.com>
+Subject: icc11 Handyboard library available 2
+Date: Fri, 10 Jul 1998 00:58:49 -0700
+BestServHost: lists.best.com
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Sender: icc11-list-errors@lists.best.com
+Errors-To: icc11-list-errors@lists.best.com
+Reply-To: icc11-list@lists.best.com
+To: icc11-list@lists.best.com
+content-length: 399
+Status: RO
+X-Status: $$$$
+X-UID: 0000000001
+
+At long last, I dusted off Chuck McManis Handyboard library and ported it
+to V5. No reason why it can't work with V4.5 either ;-) Anyway, to try it
+out, point your browser to
+
+ftp://ftp.imagecraft.com/pub/libhb.zip
+
+Chuck really did a great job with the LCD. There are commands to scroll,
+move etc. Make sure you try the lcdtest2.c test.
+
+// richard
+someone@imagecraft.com http://www.imagecraft.com
+
+
+--Troop_of_Baboons_752_000--
 
 From dakott@alpha.delta.edu  Wed Jul  1 05:33:51 1998
 Received: from aleve.media.mit.edu by hub.media.mit.edu; (5.65v3.2/1.1/06Jun95-8.2MPM)

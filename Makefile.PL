@@ -24,7 +24,7 @@ build_requires    (
 requires          (
                     'perl' => '5.004',
                     'Date::Parse' => 0,
-                    'Mail::Mbox::MessageParser' => '1.2130',
+                    'Mail::Mbox::MessageParser' => '1.4001',
                   );
 
 postamble         (
