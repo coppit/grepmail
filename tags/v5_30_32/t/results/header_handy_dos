@@ -1,0 +1,222 @@
+From Scott.Seaton@Aus.Sun.COM  Thu Jul 16 03:42:38 1998
+Received: from aleve.media.mit.edu by hub.media.mit.edu; (5.65v3.2/1.1/06Jun95-8.2MPM)
+	id AA24945; Thu, 16 Jul 1998 03:42:38 -0400
+Received: from mercury.Sun.COM (mercury.Sun.COM [192.9.25.1])
+	by aleve.media.mit.edu (8.8.7/ML970927) with SMTP id CAA07415
+	for <handyboard@media.mit.edu>; Thu, 16 Jul 1998 02:44:58 -0400 (EDT)
+Received: from Aus.Sun.COM ([129.158.80.6]) by mercury.Sun.COM (SMI-8.6/mail.byaddr) with SMTP id XAA29734; Wed, 15 Jul 1998 23:44:52 -0700
+Received: from war.Aus.Sun.COM by Aus.Sun.COM id QAA03011
+	(SMI-8.6/SMI-4.1 for <>); Thu, 16 Jul 1998 16:44:50 +1000
+Received: from drone by war.Aus.Sun.COM (SMI-8.6/SMI-SVR4)
+	id QAA10921; Thu, 16 Jul 1998 16:44:20 +1000
+Message-Id: <199807160644.QAA10921@war.Aus.Sun.COM>
+Date: Thu, 16 Jul 1998 16:41:56 +1000 (EST)
+From: Scott Seaton - Systems Consultant - ESG <Scott.Seaton@Aus.Sun.COM>
+Reply-To: Scott Seaton - Systems Consultant - ESG <Scott.Seaton@Aus.Sun.COM>
+Subject: Re: Handyboard/RWP without p-code
+To: handyboard@media.mit.edu, rye@mech.eng.usyd.edu.au
+Mime-Version: 1.0
+Content-Type: MULTIPART/mixed; BOUNDARY=Troop_of_Baboons_752_000
+X-Mailer: dtmail 1.2.0 CDE Version 1.2 SunOS 5.6 sun4u sparc 
+
+--Troop_of_Baboons_752_000
+Content-Type: TEXT/plain; charset=us-ascii
+Content-MD5: i/HKSIa/Vk0mZT5ml+q21A==
+
+Hi
+
+I suggest that you contact ImageCraft.
+http://www.imagecraft.com/software/index.html  or  info@imagecraft.com 
+
+They have a C compiler for 68HC11 CPU's that will do what you want, including a
+library for the HandyBoard (see attached e-mail) !
+
+I have no affiliation with ImageCraft (other than as a satisfied customer).
+
+Hope this helps
+Scott
+============================================================================== 
+ ,-_|\       Scott Seaton - Sun Enterprise Services -  Systems Consultant      
+/     \  Sun Microsystems Australia Pty Ltd  E-mail : scott.seaton@aus.sun.com 
+\_,-\_+  828 Pacific Highway                  Phone : +61 2 9844 5381          
+     v   Gordon, N.S.W., 2072, AUSTRALIA        Fax : +61 2 9844 5161          
+============================================================================== 
+
+--Troop_of_Baboons_752_000
+Content-Type: MESSAGE/rfc822; name=Mailbox
+Content-Description: Mailbox
+
+From someone@imagecraft.com  Fri Jul 10 18:59:26 1998
+Return-Path: <icc11-list-errors@lists.best.com>
+Received: from Aus.Sun.COM by war.Aus.Sun.COM (SMI-8.6/SMI-SVR4)
+	id SAA14426; Fri, 10 Jul 1998 18:59:26 +1000
+Received: from earth.sun.com by Aus.Sun.COM id SAA24238
+	(SMI-8.6/SMI-4.1 for <<scott.seaton@aus.sun.com>>); Fri, 10 Jul 1998 18:59:48 +1000
+Received: from iisesun.iise.CSIRO.AU (iisesun.iise.csiro.au [130.155.5.44])
+	by earth.sun.com (8.8.8/8.8.8) with SMTP id BAA18609
+	for <scott.seaton@aus.sun.com>; Fri, 10 Jul 1998 01:59:44 -0700 (PDT)
+Received: from lists1.best.com (lists1.best.com [206.86.8.15]) by iisesun.iise.CSIRO.AU (SMI-8.6/8.6.12-IISE-SWA) with ESMTP id SAA25847 for <sseaton@iise.csiro.au>; Fri, 10 Jul 1998 18:49:31 +1000
+Received: (from daemon@localhost) by lists1.best.com (8.9.0/8.8.BEST) id BAA15320 for icc11-list-errors@lists.best.com; Fri, 10 Jul 1998 01:04:34 -0700 (PDT)
+Message-Id: <199807100804.BAA15320@lists1.best.com>
+From: Christina Willrich & Richard Man <someone@imagecraft.com>
+Subject: icc11 Handyboard library available
+Date: Fri, 10 Jul 1998 00:58:49 -0700
+BestServHost: lists.best.com
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Sender: icc11-list-errors@lists.best.com
+Errors-To: icc11-list-errors@lists.best.com
+Reply-To: icc11-list@lists.best.com
+To: icc11-list@lists.best.com
+content-length: 399
+Status: RO
+X-Status: $$$$
+X-UID: 0000000001
+
+At long last, I dusted off Chuck McManis Handyboard library and ported it
+to V5. No reason why it can't work with V4.5 either ;-) Anyway, to try it
+out, point your browser to
+
+ftp://ftp.imagecraft.com/pub/libhb.zip
+
+Chuck really did a great job with the LCD. There are commands to scroll,
+move etc. Make sure you try the lcdtest2.c test.
+
+// richard
+someone@imagecraft.com http://www.imagecraft.com
+
+
+--Troop_of_Baboons_752_000--
+
+From mawalla3@vt.edu  Wed Aug 12 13:10:06 1998
+Received: from aleve.media.mit.edu by hub.media.mit.edu; (5.65v3.2/1.1/06Jun95-8.2MPM)
+	id AA07529; Wed, 12 Aug 1998 13:10:06 -0400
+Received: from quackerjack.cc.vt.edu (root@quackerjack.cc.vt.edu [198.82.160.250])
+	by aleve.media.mit.edu (8.8.7/ML970927) with ESMTP id MAA05729
+	for <Handyboard@media.mit.edu>; Wed, 12 Aug 1998 12:13:53 -0400 (EDT)
+Received: from sable.cc.vt.edu (sable.cc.vt.edu [128.173.16.30])
+	by quackerjack.cc.vt.edu (8.8.8/8.8.8) with ESMTP id MAA20678
+	for <Handyboard@media.mit.edu>; Wed, 12 Aug 1998 12:20:09 -0400 (EDT)
+Received: from research10.phys.vt.edu (dhcp9.phys.vt.edu [128.173.176.166])
+	by sable.cc.vt.edu (8.8.8/8.8.8) with SMTP id MAA05159
+	for <Handyboard@media.mit.edu>; Wed, 12 Aug 1998 12:13:51 -0400 (EDT)
+Message-Id: <3.0.5.32.19980812121345.00796960@mail.vt.edu>
+X-Sender: mawalla3@mail.vt.edu (Unverified)
+X-Mailer: QUALCOMM Windows Eudora Light Version 3.0.5 (32)
+Date: Wed, 12 Aug 1998 12:13:45 -0400
+To: Handyboard@media.mit.edu
+From: Mark Wallace <mawalla3@vt.edu>
+Subject: serial library for C++ 
+Mime-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+
+Hello,
+	I have a handy board with poloroid transducers and I am trying use the
+results of my distance measurments in a C++ program on the computer.  I
+have found programs on the handyboard web page that should alow the
+handyboard to transmit information over the serial line.  What I am looking
+for is if anyone knows were I could find a serial for Microsofts
+Visual C++ 5.0.  I would like to find one that is free or sharware but any
+information on any serial that will work would be appreciated.
+Thanks.
+Mark Wallace
+
+ e-mail  mawalla3@vt.edu
+	 mwallace@sps1.phys.vt.edu
+web page http://sps1.phys.vt.ede/~mwallace
+
+"What a waist it would be after 4 billion tortuous years of evolution if
+the dominant organism contrived its own self-distruction"
+			Carl Sagan
+
+
+From Scott.Seaton@Aus.Sun.COM  Thu Jul 16 03:42:38 1998
+Received: from aleve.media.mit.edu by hub.media.mit.edu; (5.65v3.2/1.1/06Jun95-8.2MPM)
+	id AA24945; Thu, 16 Jul 1998 03:42:38 -0400
+Received: from mercury.Sun.COM (mercury.Sun.COM [192.9.25.1])
+	by aleve.media.mit.edu (8.8.7/ML970927) with SMTP id CAA07415
+	for <handyboard@media.mit.edu>; Thu, 16 Jul 1998 02:44:58 -0400 (EDT)
+Received: from Aus.Sun.COM ([129.158.80.6]) by mercury.Sun.COM (SMI-8.6/mail.byaddr) with SMTP id XAA29734; Wed, 15 Jul 1998 23:44:52 -0700
+Received: from war.Aus.Sun.COM by Aus.Sun.COM id QAA03011
+	(SMI-8.6/SMI-4.1 for <>); Thu, 16 Jul 1998 16:44:50 +1000
+Received: from drone by war.Aus.Sun.COM (SMI-8.6/SMI-SVR4)
+	id QAA10921; Thu, 16 Jul 1998 16:44:20 +1000
+Message-Id: <199807160644.QAA10921@war.Aus.Sun.COM>
+Date: Thu, 16 Jul 1998 16:41:56 +1000 (EST)
+From: Scott Seaton - Systems Consultant - ESG <Scott.Seaton@Aus.Sun.COM>
+Reply-To: Scott Seaton - Systems Consultant - ESG <Scott.Seaton@Aus.Sun.COM>
+Subject: Re: Handyboard/RWP without p-code
+To: handyboard@media.mit.edu, rye@mech.eng.usyd.edu.au
+Mime-Version: 1.0
+Content-Type: MULTIPART/mixed; BOUNDARY=Troop_of_Baboons_752_000
+X-Mailer: dtmail 1.2.0 CDE Version 1.2 SunOS 5.6 sun4u sparc 
+
+--Troop_of_Baboons_752_000
+Content-Type: TEXT/plain; charset=us-ascii
+Content-MD5: i/HKSIa/Vk0mZT5ml+q21A==
+
+Hi
+
+I suggest that you contact ImageCraft.
+http://www.imagecraft.com/software/index.html  or  info@imagecraft.com 
+
+They have a C compiler for 68HC11 CPU's that will do what you want, including a
+library for the HandyBoard (see attached e-mail) !
+
+I have no affiliation with ImageCraft (other than as a satisfied customer).
+
+Hope this helps
+Scott
+============================================================================== 
+ ,-_|\       Scott Seaton - Sun Enterprise Services -  Systems Consultant      
+/     \  Sun Microsystems Australia Pty Ltd  E-mail : scott.seaton@aus.sun.com 
+\_,-\_+  828 Pacific Highway                  Phone : +61 2 9844 5381          
+     v   Gordon, N.S.W., 2072, AUSTRALIA        Fax : +61 2 9844 5161          
+============================================================================== 
+
+--Troop_of_Baboons_752_000
+Content-Type: MESSAGE/rfc822; name=Mailbox
+Content-Description: Mailbox
+
+From someone@imagecraft.com  Fri Jul 10 18:59:26 1998
+Return-Path: <icc11-list-errors@lists.best.com>
+Received: from Aus.Sun.COM by war.Aus.Sun.COM (SMI-8.6/SMI-SVR4)
+	id SAA14426; Fri, 10 Jul 1998 18:59:26 +1000
+Received: from earth.sun.com by Aus.Sun.COM id SAA24238
+	(SMI-8.6/SMI-4.1 for <<scott.seaton@aus.sun.com>>); Fri, 10 Jul 1998 18:59:48 +1000
+Received: from iisesun.iise.CSIRO.AU (iisesun.iise.csiro.au [130.155.5.44])
+	by earth.sun.com (8.8.8/8.8.8) with SMTP id BAA18609
+	for <scott.seaton@aus.sun.com>; Fri, 10 Jul 1998 01:59:44 -0700 (PDT)
+Received: from lists1.best.com (lists1.best.com [206.86.8.15]) by iisesun.iise.CSIRO.AU (SMI-8.6/8.6.12-IISE-SWA) with ESMTP id SAA25847 for <sseaton@iise.csiro.au>; Fri, 10 Jul 1998 18:49:31 +1000
+Received: (from daemon@localhost) by lists1.best.com (8.9.0/8.8.BEST) id BAA15320 for icc11-list-errors@lists.best.com; Fri, 10 Jul 1998 01:04:34 -0700 (PDT)
+Message-Id: <199807100804.BAA15320@lists1.best.com>
+From: Christina Willrich & Richard Man <someone@imagecraft.com>
+Subject: icc11 Handyboard library available
+Date: Fri, 10 Jul 1998 00:58:49 -0700
+BestServHost: lists.best.com
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Sender: icc11-list-errors@lists.best.com
+Errors-To: icc11-list-errors@lists.best.com
+Reply-To: icc11-list@lists.best.com
+To: icc11-list@lists.best.com
+content-length: 399
+Status: RO
+X-Status: $$$$
+X-UID: 0000000001
+
+At long last, I dusted off Chuck McManis Handyboard library and ported it
+to V5. No reason why it can't work with V4.5 either ;-) Anyway, to try it
+out, point your browser to
+
+ftp://ftp.imagecraft.com/pub/libhb.zip
+
+Chuck really did a great job with the LCD. There are commands to scroll,
+move etc. Make sure you try the lcdtest2.c test.
+
+// richard
+someone@imagecraft.com http://www.imagecraft.com
+
+
+--Troop_of_Baboons_752_000--
+

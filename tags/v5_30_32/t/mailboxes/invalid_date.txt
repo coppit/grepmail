@@ -1,0 +1,13 @@
+From joe.user@example.com  Mon May 23 17:52:55 2005
+Return-Path: <joe.user@example.com>
+X-Original-To: joe.user@example.com
+Delivered-To: joe.user@example.com
+Received: by smtp.example.com (Postfix, from userid 1026)
+	id AF04B83C601; Mon, 23 May 2005 17:52:55 -0400 (EDT)
+To: joe.user@example.com
+Subject: test
+Message-Id: <20050523215255.AF04B83C601@smtp.example.com>
+Date: Mon, 11 May 2005 17:52:54 dR
+From: joe.user@example.com (Joe User)
+
+Mon May 23 17:52:55 EDT 2005
