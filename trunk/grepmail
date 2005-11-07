@@ -4,10 +4,9 @@
 
 $VERSION = sprintf "%d.%02d%02d", q/5.30.32/ =~ /(\d+)/g;
 
-# Grepmail searches a normal, gzip'd, tzip'd, or bzip2'd mailbox for a given
-# regular expression and returns those emails that match the query. It also
-# supports piped compressed or ascii input, and searches constrained by date
-# and size. 
+# Grepmail searches a normal, gzip'd, or bzip2'd mailbox for a given regular
+# expression and returns those emails that match the query. It also supports
+# piped compressed or ascii input, and searches constrained by date and size. 
 
 # Visit the grepmail project homepage at http://grepmail.sourceforge.net/
 # There you can join the announcements mailing list to be notified of updates,
@@ -242,7 +241,7 @@ sub Get_Options
   print "$VERSION\n" and exit(0) if grep { /^--version$/ } @ARGV;
 
   my @valid_options =
-    qw( a b B C d D e E f F i j h H l M m n q r R s S t T u v V w X Y Z );
+    qw( a b B C d D e E f F i j h H l L M m n q r R s S t T u v V w X Y Z );
 
   my %opts;
   my $pattern;
@@ -472,6 +471,8 @@ sub Get_Options
     }
   }
 
+  $opts{'R'} = 1 if $opts{'L'};
+
   $pattern = $NO_PATTERN if $pattern eq '()';
 
   return (\%opts, \@ARGV, $pattern);
@@ -555,13 +556,16 @@ sub Get_Files(@)
     {
       push @files, $arg;
     }
-    elsif( -d $arg)
+    elsif( -d $arg || -l $arg && $opts{'L'} )
     {
-      dprint "Recursing directory $arg looking for files...";
+      dprint "Recursing directory $arg looking for files..."
+        if -d $arg;
+      dprint "Following symbolic link $arg looking for files..."
+        if -l $arg;
 
       unless (eval "require File::Find;")
       {
-        Report_And_Exit("You specified -R, but do not have File::Find. " .
+        Report_And_Exit("You specified -R or -L, but do not have File::Find. " .
           "Get it from CPAN.\n");
       }
 
@@ -569,7 +573,16 @@ sub Get_Files(@)
 
       # Gets all plain files in directory and descendents. Puts them in @files
       $File::Find::name = '';
-      find(sub {push @files,"$File::Find::name" if -f $_}, $arg);
+
+      if ($opts{'L'})
+      {
+        find( { wanted => sub {push @files,"$File::Find::name" if -f $_},
+          follow => 1 }, $arg);
+      }
+      else
+      {
+        find(sub {push @files,"$File::Find::name" if -f $_}, $arg);
+      }
     }
     else
     {
@@ -2146,17 +2159,17 @@ grepmail $VERSION
 
 usage:
 
-  grepmail [--help|--version] [-abBDFhHilmrRuvVw] [-C <cache-file>]
+  grepmail [--help|--version] [-abBDFhHilLmrRuvVw] [-C <cache-file>]
     [-j <status>] [-s <sizespec>] [-d <date-specification>]
     [-X <signature-pattern>] [-Y <header-pattern>]
     [-e] <pattern> <files...>
 
-  grepmail [--help|--version] [-abBDFhHilmrRuvVw] [-C <cache-file>]
+  grepmail [--help|--version] [-abBDFhHilLmrRuvVw] [-C <cache-file>]
     [-j <status>] [-s <sizespec>] [-d <date-specification>]
     [-X <signature-pattern>] [-Y <header-pattern>]
     -E <expr> <files...>
 
-  grepmail [--help|--version] [-abBDFhHilmrRuvVw] [-C <cache-file>]
+  grepmail [--help|--version] [-abBDFhHilLmrRuvVw] [-C <cache-file>]
     [-j <status>] [-s <sizespec>] [-d <date-specification>]
     [-X <signature-pattern>] [-Y <header-pattern>]
     -f <pattern-file> <files...>
@@ -2164,9 +2177,9 @@ usage:
 At least one of -s, -d, -u, -e, and -E must be specified, and can appear in
 any relative order following the other flags. The -e flag is optional if
 pattern appears immediately before -s or -d. Files can be plain ASCII or ASCII
-files compressed with gzip, tzip, or bzip2. -E allows for complex pattern
-matches involving logical operators. If no file is provided, normal or
-compressed ASCII input is taken from STDIN.
+files compressed with gzip, or bzip2. -E allows for complex pattern matches
+involving logical operators. If no file is provided, normal or compressed
+ASCII input is taken from STDIN.
 
 -a Use received date instead of sent date for -d matching
 -b Search must match body
@@ -2183,6 +2196,7 @@ compressed ASCII input is taken from STDIN.
 -i Ignore case in the search expression
 -j Search must match status (A=answered, R=read, D=deleted, O=old, F=flagged)
 -l Output the names of files having an email matching the expression
+-L Follow symbolic links (implies -R)
 -M Do not search non-text mime attachments
 -m Append "X-Mailfolder: <folder>" to all headers to indicate in which folder
    the match occurred
@@ -2224,17 +2238,17 @@ grepmail - search mailboxes for mail matching a regular expression
 
 =head1 SYNOPSIS
 
-  grepmail [--help|--version] [-abBDFhHilmrRuvVw] [-C <cache-file>]
+  grepmail [--help|--version] [-abBDFhHilLmrRuvVw] [-C <cache-file>]
     [-j <status>] [-s <sizespec>] [-d <date-specification>]
     [-X <signature-pattern>] [-Y <header-pattern>]
     [-e] <pattern> <files...>
 
-  grepmail [--help|--version] [-abBDFhHilmrRuvVw] [-C <cache-file>]
+  grepmail [--help|--version] [-abBDFhHilLmrRuvVw] [-C <cache-file>]
     [-j <status>] [-s <sizespec>] [-d <date-specification>]
     [-X <signature-pattern>] [-Y <header-pattern>]
     -E <expr> <files...>
 
-  grepmail [--help|--version] [-abBDFhHilmrRuvVw] [-C <cache-file>]
+  grepmail [--help|--version] [-abBDFhHilLmrRuvVw] [-C <cache-file>]
     [-j <status>] [-s <sizespec>] [-d <date-specification>]
     [-X <signature-pattern>] [-Y <header-pattern>]
     -f <pattern-file> <files...>
@@ -2285,8 +2299,8 @@ initialize the cache without printing any output.
 =item B<mailbox>
 
 Mailboxes must be traditional, UNIX C</bin/mail> mailbox format.  The
-mailboxes may be compressed by gzip, tzip, or bzip2, in which case
-gunzip, tzip, or bzip2 must be installed on the system.
+mailboxes may be compressed by gzip, or bzip2, in which case gunzip, or bzip2
+must be installed on the system.
 
 If no mailbox is specified, takes input from stdin, which can be compressed or
 not. grepmail's behavior is undefined when ASCII and binary data is piped
@@ -2399,6 +2413,10 @@ which have been read and answered.
 Output the names of files having an email matching the expression, (by analogy
 to I<grep -l>).
 
+=item B<-L>
+
+Follow symbolic links. (Implies I<-R>)
+
 =item B<-M>
 
 Causes grepmail to ignore non-text MIME attachments. This removes false
@@ -2487,7 +2505,7 @@ follows:
 
 =over 2
 
-If the regular expression contains "^TO:" it will be  substituted by
+If the regular expression contains "^TO:" it will be substituted by
 
   ^((Original-)?(Resent-)?(To|Cc|Bcc)|(X-Envelope|Apparently(-Resent)?)-To):
 
@@ -2506,6 +2524,10 @@ If  the regular expression contains "^FROM_MAILER:" it will be substituted by
  
 (a stripped down version of "^FROM_DAEMON:"), which should catch mails coming
 from most mailer-daemons.
+
+So, to search for all emails to or from "Andy":
+
+  grepmail -Y '(^TO:|^From:)' Andy mailbox
 
 =back
 

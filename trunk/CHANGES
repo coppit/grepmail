@@ -3,6 +3,12 @@ Features which haven't made it in yet:
   <zbrown@tumblerings.org> for the excellent feature idea and a prototype
   implementation.)
 
+Version 3.3033:
+- Improved the documentation for -Y. (Thanks to Justin Gombos
+  <mindfuq@binghamtonwireless.com> for the suggestion.)
+- Dropped tzip support in Mail::Mbox::MessageParser
+- Added -L flag to follow symbolic links
+
 Version 5.3032: Tue Aug 2 2005
 - Fixed backwards diff in test cases
 - Updated Mail::Mbox::MessageParser dependency to latest version, and updated
