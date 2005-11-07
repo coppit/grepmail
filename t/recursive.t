@@ -7,12 +7,15 @@ use lib 't';
 use Test::Utils;
 use File::Spec::Functions qw( :ALL );
 use ExtUtils::Command;
+use Cwd;
 
 my %tests = (
 'grepmail -Rq Handy t/temp/directory'
   => ['recursive','none'],
 "grepmail -Rq -E $single_quote\$email =~ /Handy/$single_quote t/temp/directory"
   => ['recursive','none'],
+'grepmail -Lq Handy t/temp/directory_with_links'
+  => ['recursive2','none'],
 );
 
 my %expected_errors = (
@@ -24,10 +27,22 @@ mkdir 't/temp', 0700;
 # search directory. I could use File::Copy, but it doesn't support globbing
 # and multiple-file copying. :(
 {
-  mkdir 't/temp/directory', 0700;
   my @old_argv = @ARGV;
+  mkdir 't/temp/directory', 0700;
   @ARGV = ('t/mailboxes/directory/*txt*', 't/temp/directory');
   cp();
+  mkdir 't/temp/directory_with_links', 0700;
+  @ARGV = ('t/mailboxes/directory/*txt*', 't/temp/directory_with_links');
+  cp();
+
+  # Ignore the failed links. We'll let SetSkip deal with the test cases for
+  # systems that don't support it.
+  eval {
+    symlink(cwd() . "/t/temp/directory",
+      't/temp/directory_with_links/symlink');
+    link(cwd() . "/t/temp/directory",
+      't/temp/directory_with_links/link');
+  };
   @ARGV = @old_argv;
 }
 
@@ -111,6 +126,11 @@ sub SetSkip
   my %tests = %{ shift @_ };
 
   my %skip;
+
+  unless ( eval { symlink("",""); 1 } && eval { link("",""); 1} ) {
+    $skip{'grepmail -Rq Handy t/temp/directory_with_links'} =
+      'Links or symbolic links are not supported on this platform';
+  }
 
   return %skip;
 }

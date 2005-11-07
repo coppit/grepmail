@@ -31,7 +31,6 @@ else
 }
 
 %PROGRAMS = (
- 'tzip' => undef,
  'gzip' => '/usr/cs/contrib/bin/gzip',
  'compress' => '/usr/cs/contrib/bin/gzip',
  'bzip' => undef,

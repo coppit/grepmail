@@ -2,9 +2,8 @@ SUBJECT: grepmail 5.10 released
 
 Description:
 - grepmail is a Perl program that searches a normal or compressed mailbox
-  (gzip, bzip2, or tzip) for a given regular expression and returns those
-  emails that match the query. It also supports searches constrained by date
-  and size.
+  (gzip or bzip2) for a given regular expression and returns those emails that
+  match the query. It also supports searches constrained by date and size.
 
 Download:
 - You can download grepmail from CPAN:

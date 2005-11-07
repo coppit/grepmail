@@ -111,6 +111,7 @@ t/results/number_1_dos
 t/results/number_2
 t/results/number_append_header
 t/results/recursive
+t/results/recursive2
 t/results/ro_status
 t/results/sep_7_1998
 t/results/size_2
