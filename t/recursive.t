@@ -16,6 +16,8 @@ my %tests = (
   => ['recursive','none'],
 'grepmail -Lq Handy t/temp/directory_with_links'
   => ['recursive2','none'],
+'grepmail -Rq Handy t/temp/directory_with_links'
+  => ['recursive','none'],
 );
 
 my %expected_errors = (
