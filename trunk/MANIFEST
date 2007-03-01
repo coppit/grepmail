@@ -142,5 +142,14 @@ inc/Module/Install/Win32.pm
 inc/Module/Install/WriteAll.pm
 inc/Test/Builder.pm
 inc/Test/More.pm
+inc/base.pm
+inc/File/HomeDir/Darwin.pm
+inc/File/HomeDir/MacOS9.pm
+inc/File/HomeDir/Unix.pm
+inc/File/HomeDir/Windows.pm
+inc/File/Spec.pm
+inc/File/Spec/Unix.pm
+inc/Scalar/Util.pm
+inc/Test/Builder/Module.pm
 
 META.yml

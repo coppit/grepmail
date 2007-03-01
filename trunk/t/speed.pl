@@ -25,9 +25,9 @@ my $MAILBOX_SIZE = 10_000_000;
 my $TEMP_MAILBOX = 't/temp/bigmailbox.txt';
 
 my @IMPLEMENTATIONS_TO_TEST = (
-#'Perl',
-#'Grep',
-#'Cache Init',
+'Perl',
+'Grep',
+'Cache Init',
 'Cache Use',
 );
 
@@ -227,7 +227,7 @@ sub CollectData
 
       print "\n\n";
 
-      print $t->get_report($label);
+      print $t->report($label);
 
       # Fake a benchmark object so we can compare later using Benchmark
       $data{$label} = new Benchmark;

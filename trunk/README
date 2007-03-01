@@ -8,10 +8,16 @@ logical operators.
 
 NEW IN THIS VERSION
 
-Version 5.3032: Tue Aug 3 2005
-- Fixed backwards diff in test cases
-- Updated Mail::Mbox::MessageParser dependency to latest version, and updated
-  test cases as well.
+Version 5.3033: Thu Mar 1 2007
+- Improved the documentation for -Y. (Thanks to Justin Gombos
+  for the suggestion.)
+- Dropped tzip support in Mail::Mbox::MessageParser
+- Added -L flag to follow symbolic links. (Thanks to Peter Teuben
+  for prompting the idea.)
+- Fixed grepmail so that it works with Mail::Mbox::MessageParser 1.5000
+  (Thanks to Paul for the bug report, and Alexey Tourbin for the fix.)
+- Fixed testspeed.pl to properly call report() instead of get_report() on new
+  versions of Benchmark::Timer
 
 SOME NOTES
 

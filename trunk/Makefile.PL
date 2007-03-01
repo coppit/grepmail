@@ -30,8 +30,7 @@ requires          (
 postamble         (
 ' 
 testspeed :: pure_all
-        PERL_DL_NONLAZY=1 $(PERLRUN) "-I$(INST_LIB)" \
-          "-I$(INST_ARCHLIB)" t/speed.pl
+	PERL_DL_NONLAZY=1 $(PERLRUN) "-I$(INST_LIB)" "-I$(INST_ARCHLIB)" t/speed.pl
 '
 );
 
