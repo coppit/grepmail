@@ -2,7 +2,7 @@
 
 # grepmail
 
-$VERSION = sprintf "%d.%02d%02d", q/5.30.32/ =~ /(\d+)/g;
+$VERSION = sprintf "%d.%02d%02d", q/5.30.33/ =~ /(\d+)/g;
 
 # Grepmail searches a normal, gzip'd, or bzip2'd mailbox for a given regular
 # expression and returns those emails that match the query. It also supports
@@ -1164,9 +1164,7 @@ sub Process_Mail_File
   $modified_pattern =~ s#\$([^\w]|$)#$/$1#;
 
   # This is the main loop. It's executed once for each email
-  # Direct access for performance reasons
-  #while($folder_reader->end_of_file())
-  while(!$folder_reader->{'end_of_file'})
+  while(!$folder_reader->end_of_file())
   {
     dprint "Reading email" if $opts{'D'};
 
@@ -2241,17 +2239,7 @@ grepmail - search mailboxes for mail matching a regular expression
   grepmail [--help|--version] [-abBDFhHilLmrRuvVw] [-C <cache-file>]
     [-j <status>] [-s <sizespec>] [-d <date-specification>]
     [-X <signature-pattern>] [-Y <header-pattern>]
-    [-e] <pattern> <files...>
-
-  grepmail [--help|--version] [-abBDFhHilLmrRuvVw] [-C <cache-file>]
-    [-j <status>] [-s <sizespec>] [-d <date-specification>]
-    [-X <signature-pattern>] [-Y <header-pattern>]
-    -E <expr> <files...>
-
-  grepmail [--help|--version] [-abBDFhHilLmrRuvVw] [-C <cache-file>]
-    [-j <status>] [-s <sizespec>] [-d <date-specification>]
-    [-X <signature-pattern>] [-Y <header-pattern>]
-    -f <pattern-file> <files...>
+    [[-e] <pattern>|-E <expr>|-f <pattern-file>] <files...>
 
 =head1 DESCRIPTION
 
