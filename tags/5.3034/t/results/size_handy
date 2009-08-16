@@ -1,0 +1,42 @@
+From mawalla3@vt.edu  Wed Aug 12 13:10:06 1998
+Received: from aleve.media.mit.edu by hub.media.mit.edu; (5.65v3.2/1.1/06Jun95-8.2MPM)
+	id AA07529; Wed, 12 Aug 1998 13:10:06 -0400
+Received: from quackerjack.cc.vt.edu (root@quackerjack.cc.vt.edu [198.82.160.250])
+	by aleve.media.mit.edu (8.8.7/ML970927) with ESMTP id MAA05729
+	for <Handyboard@media.mit.edu>; Wed, 12 Aug 1998 12:13:53 -0400 (EDT)
+Received: from sable.cc.vt.edu (sable.cc.vt.edu [128.173.16.30])
+	by quackerjack.cc.vt.edu (8.8.8/8.8.8) with ESMTP id MAA20678
+	for <Handyboard@media.mit.edu>; Wed, 12 Aug 1998 12:20:09 -0400 (EDT)
+Received: from research10.phys.vt.edu (dhcp9.phys.vt.edu [128.173.176.166])
+	by sable.cc.vt.edu (8.8.8/8.8.8) with SMTP id MAA05159
+	for <Handyboard@media.mit.edu>; Wed, 12 Aug 1998 12:13:51 -0400 (EDT)
+Message-Id: <3.0.5.32.19980812121345.00796960@mail.vt.edu>
+X-Sender: mawalla3@mail.vt.edu (Unverified)
+X-Mailer: QUALCOMM Windows Eudora Light Version 3.0.5 (32)
+Date: Wed, 12 Aug 1998 12:13:45 -0400
+To: Handyboard@media.mit.edu
+From: Mark Wallace <mawalla3@vt.edu>
+Subject: serial library for C++ 
+Mime-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+
+Hello,
+	I have a handy board with poloroid transducers and I am trying use the
+results of my distance measurments in a C++ program on the computer.  I
+have found programs on the handyboard web page that should alow the
+handyboard to transmit information over the serial line.  What I am looking
+for is if anyone knows were I could find a serial for Microsofts
+Visual C++ 5.0.  I would like to find one that is free or sharware but any
+information on any serial that will work would be appreciated.
+Thanks.
+Mark Wallace
+
+ e-mail  mawalla3@vt.edu
+	 mwallace@sps1.phys.vt.edu
+web page http://sps1.phys.vt.ede/~mwallace
+
+"What a waist it would be after 4 billion tortuous years of evolution if
+the dominant organism contrived its own self-distruction"
+			Carl Sagan
+
+

@@ -1,0 +1,913 @@
+1:From dblank@comp.uark.edu  Wed Jul  1 13:17:17 1998
+2:Received: from aleve.media.mit.edu by hub.media.mit.edu; (5.65v3.2/1.1/06Jun95-8.2MPM)
+3:	id AA10324; Wed, 1 Jul 1998 13:17:17 -0400
+4:Received: from comp.uark.edu (root@comp.uark.edu [130.184.252.197])
+5:	by aleve.media.mit.edu (8.8.7/ML970927) with ESMTP id LAA00083
+6:	for <handyboard@media.mit.edu>; Wed, 1 Jul 1998 11:56:44 -0400 (EDT)
+7:Received: from comp.uark.edu (IDENT:dblank@dangermouse.uark.edu [130.184.201.233])
+8:	by comp.uark.edu (8.9.0/8.9.0) with ESMTP id KAA12202;
+9:	Wed, 1 Jul 1998 10:56:30 -0500 (CDT)
+10:Sender: dblank@comp.uark.edu
+11:Message-Id: <359A5C2E.202B4BA3@comp.uark.edu>
+12:Date: Wed, 01 Jul 1998 10:56:30 -0500
+13:From: Douglas Blank <dblank@comp.uark.edu>
+14:Organization: University of Arkansas, CS
+15:X-Mailer: Mozilla 4.04 [en] (X11; I; Linux 2.0.33 i686)
+16:Mime-Version: 1.0
+17:To: Aaron Edsinger <aarone@sirius.com>
+18:Cc: handy <handyboard@media.mit.edu>
+19:Subject: Re: Serial Interface
+20:References: <199807010601.XAA26862@mail3.sirius.com>
+21:Content-Type: text/plain; charset=us-ascii
+22:Content-Transfer-Encoding: 7bit
+23:
+24:Aaron Edsinger wrote:
+25: 
+26:> Hello,
+27:>         I've been having some problems using my HandyBoard to talk directly to my
+28:> PC via the serial interface.  I disable Interactive C and then Poke() and
+29:> Peek() as has been described on this list.  I  send short character strings
+30:> from my PC to the HandyBoard under Windows 95.  If I send strings longer
+31:> than 2 characters, it seems that some of the characters get lost. This
+32:> behavior seems to be affected by repositioning or slightly modifying the
+33:> code, suggesting perhaps a timing issue.
+34:
+35:Although there is the HEXMON program, I too, have been trying to do what
+36:you describe, and encountered the same problems. I found it to be a
+37:timing issue, and, through trial and error, have a found some settings
+38:that seem to work most of the time.
+39:
+40:My goal was to make C code that looked the same when compiled and run on
+41:the Host is the code that ran under IC. 
+42:
+43:I am including the host and HB programs here. If anyone knows of a
+44:better way of communicating, please let us know.
+45:
+46:-Doug Blank
+47: 
+48:=====================================================================
+49:dblank@comp.uark.edu            Douglas Blank, University of Arkansas
+50:Assistant Professor                                  Computer Science
+51:==================== http://www.uark.edu/~dblank ====================
+52:
+53:This code was written for MS C++4.0 running on Win95.
+54:
+55://************** BEGIN: serial_HOST.c
+56:
+57:/* VC++4.0 HandyBoard Host Programming System
+58:   Dr. Douglas S. Blank
+59:   University of Arkansas, Department of Computer Science
+60:   www.uark.edu/~dblank
+61:
+62:   This code runs on a host PC.
+63:*/
+64:
+65:#include <ctype.h>
+66:#include <conio.h>
+67:#include <stdlib.h>
+68:#include <stdio.h>
+69:
+70:#include "serial_HOST.h"
+71:
+72:void main(int argc, char *argv[])
+73:{
+74:        motor(0, 100);
+75:        motor(1, 100);
+76:        motor(2, 100);
+77:        motor(3, 100);
+78:        sleep(1000);
+79:        motor(0, -100); 
+80:        motor(1, -100);
+81:        motor(2, -100);
+82:        motor(3, -100);
+83:        sleep(1000); 
+84:        ao(); 
+85:        print("\nThis is a test");
+86:        printf("Knob is %d\n", knob() );
+87:        printf("Analog(0) is %d\n", analog(0));
+88:        printf("Digital(0) is %d\n", digital(0));
+89:        printf("Analog(1) is %d\n", analog(1));
+90:        printf("Digital(1) is %d\n", digital(1));
+91:        printf("Analog(2) is %d\n", analog(2));
+92:        printf("Digital(2) is %d\n", digital(2));
+93:        printf("Analog(3) is %d\n", analog(3));
+94:        printf("Digital(3) is %d\n", digital(3));
+95:        printf("Analog(4) is %d\n", analog(4));
+96:        printf("Digital(4) is %d\n", digital(4));
+97:        printf("Analog(5) is %d\n", analog(5));
+98:        printf("Digital(5) is %d\n", digital(5));
+99:        printf("Analog(6) is %d\n", analog(6));
+100:        printf("Digital(6) is %d\n", digital(6));
+101:        printf("Analog(7) is %d\n", analog(7));
+102:        printf("Digital(7) is %d\n", digital(7));
+103:        printf("Analog(8) is %d\n", analog(8));
+104:        printf("Digital(8) is %d\n", digital(8));
+105:        printf("Analog(9) is %d\n", analog(9));
+106:        printf("Digital(9) is %d\n", digital(9));
+107:        printf("Analog(10) is %d\n", analog(10));
+108:        printf("Digital(10) is %d\n", digital(10));
+109:        printf("Analog(11) is %d\n", analog(11));
+110:        printf("Digital(11) is %d\n", digital(11));
+111:        printf("Analog(12) is %d\n", analog(12));
+112:        printf("Digital(12) is %d\n", digital(12));
+113:        printf("Analog(13) is %d\n", analog(13));
+114:        printf("Digital(13) is %d\n", digital(13));
+115:        printf("Analog(14) is %d\n", analog(14));
+116:        printf("Digital(14) is %d\n", digital(14));
+117:        printf("Analog(15) is %d\n", analog(15));
+118:        printf("Digital(15) is %d\n", digital(15));
+119:        beep();
+120:        sleep(1000);
+121:        while (! stop_button() ) {
+122:                sprintf(buffer, "%d.0", (knob() * 10));
+123:                tone( buffer, "0.1");
+124:        }
+125:}
+126:
+127://************** END: serial_HOST.c
+128:
+129://************** BEGIN: serial_HOST.h
+130:
+131:/* VC++4.0 HandyBoard Host Programming System
+132:   Dr. Douglas S. Blank
+133:   University of Arkansas, Department of Computer Science
+134:   www.uark.edu/~dblank
+135:*/
+136:
+137:#define MOTOR     0
+138:#define AO        1
+139:#define ANALOG    2
+140:#define DIGITAL   3
+141:#define PRINTF    4
+142:#define KNOB      5
+143:#define BEEP      6
+144:#define TONE      7
+145:#define START_BUTTON 8
+146:#define STOP_BUTTON  9
+147:#define QUIT    113
+148:
+149:#define sleep(NUM) _sleep(NUM)
+150:#define SERIALWAIT  5
+151:
+152:unsigned short PORT = 0x3f8; // LPT1: 0x378 COM1: 0x3f8
+153:
+154:int send(int i) {
+155:        int retval;
+156:        retval = _outp( PORT, i);
+157:        _sleep(SERIALWAIT);
+158:        return retval;
+159:}
+160:
+161:int receive() {
+162:        int retval;
+163:        retval = _inp( PORT);
+164:        _sleep(SERIALWAIT);
+165:        retval = _inp( PORT);
+166:        return retval;
+167:}
+168:
+169:void hangup() {
+170:        send(QUIT);
+171:}
+172:
+173:void print(char buffer[]) {
+174:        int i;
+175:        send(PRINTF);
+176:        for (i = 0; buffer[i] != 0; i++)
+177:                send(buffer[i]);
+178:        send('\0');
+179:}
+180:
+181:void motor(int motornum, int power) {
+182:        send(MOTOR);
+183:        send(motornum);
+184:        send(power + 100); // taken off on the other end
+185:}
+186:
+187:int analog(int sensor) {
+188:        send(ANALOG);
+189:        send(sensor);
+190:        return receive();
+191:}
+192:
+193:int digital(int sensor) {
+194:        send(DIGITAL);
+195:        send(sensor);
+196:        return receive();
+197:}
+198:
+199:void ao() {
+200:        send(AO);
+201:}
+202:
+203:int knob() {
+204:        send(KNOB);
+205:        return receive();
+206:}
+207:
+208:void beep() {
+209:        send(BEEP);
+210:}
+211:
+212:void tone(char f1[], char f2[]) {
+213:        int i;
+214:        send(TONE);
+215:        for (i = 0; f1[i] != 0; i++)
+216:                send(f1[i]);
+217:        send('\0');
+218:        for (i = 0; f2[i] != 0; i++)
+219:                send(f2[i]);
+220:        send('\0');
+221:        _sleep((unsigned long) (atof(f2) * 1000)); // to keep from
+222:overflowing serial line
+223:}
+224:
+225:void interactive()
+226:{
+227:        char c;
+228:        char key = ' ';
+229:        while (key != 'q') {
+230:                key = getch();
+231:                send(key);
+232:                printf("Sent %c\n", key);
+233:                c = receive();
+234:                printf("Got %c as a return value\n", c);
+235:        }
+236:}
+237:
+238:int start_button() {
+239:        send(START_BUTTON);
+240:        return receive();
+241:}
+242:
+243:int stop_button() {
+244:        send(STOP_BUTTON);
+245:        return receive();
+246:}
+247://************** END: serial_HOST.h
+248:
+249://************** BEGIN: serial_HB.c
+250:
+251:/* VC++4.0 HandyBoard Programming System
+252:   (Parts taken from other HB programs)
+253:   Dr. Douglas S. Blank
+254:   University of Arkansas, Department of Computer Science
+255:   www.uark.edu/~dblank
+256:
+257:   This code runs on the HB
+258:*/
+259:
+260:#define MOTOR     0
+261:#define AO        1
+262:#define ANALOG    2
+263:#define DIGITAL   3
+264:#define PRINTF    4
+265:#define KNOB      5
+266:#define BEEP    6
+267:#define TONE    7
+268:#define START_BUTTON 8
+269:#define STOP_BUTTON  9
+270:#define QUIT    113
+271:
+272:int _isspace(int a)         /* returns 1 for space or tab, 0
+273:otherwise     */
+274:                            /* internal routine used by atof() and
+275:cgets() */
+276:
+277:{
+278:    return ((a == 32) || (a == 9));     /* 32 is space, 9 is tab */
+279:}
+280:
+281:/*****************************************************************************/
+282:
+283:int _isdigit(int a)         /* returns 1 if a digit 0-9, 0 otherwise */
+284:                            /* internal routine used by atof()       */
+285:
+286:{
+287:    return ((a >= 48) && (a <= 57));    /* 48 is '0', 57 is '9' */
+288:}
+289:
+290:float atof(char s[])    /* Convert a string containing a number in
+291:ASCII     */
+292:                        /* form (integer, float, or exponential float)
+293:to a  */
+294:                        /* float.  Strips whitespace characters (space
+295:and   */
+296:                        /* tab) from the front of the string, but
+297:stops      */
+298:                        /* parsing at the first (unexpected)
+299:non-numeric     */
+300:                        /* character if the string has garbage at the
+301:end.   */
+302:                        /* This means that "  34.3foo78" translates to
+303:34.3. */
+304:                        /* Modified from atof() function in the
+305:standard     */
+306:                        /* library of the Hi-Tec C compiler for
+307:CP/M.        */
+308:                        /* Note:  all string literals converted to
+309:decimal   */
+310:                        /* form because IC can't deal with string
+311:literals   */
+312:                        /* in math
+313:calculations.                             */
+314:                        /* Also note:  very ugly code because IC will
+315:not    */
+316:                        /* allow any math operations on pointers!  Thus,
+317:the */
+318:                        /* the number string has to be treated as an
+319:array!  */
+320:                        /* Also also note:  no error handling; assumes
+321:that  */
+322:                        /* the string is a valid representation of a
+323:number! */
+324:                        /* Valid range for exponential-format numbers
+325:is     */
+326:                        /* approximately 2.0e-38 to
+327:3.4e+38.                 */
+328:
+329:{
+330:    int     i=0;            /* index into string array */
+331:    int     sign=0;         /* mantissa sign flag:  0=positive,
+332:1=negative */
+333:    int     exp0=0;         /* mantissa exponent counter */
+334:    int     eexp=0;         /* E-form exponent counter */
+335:    int     expsign=0;      /* exponent sign flag:  0=positive,
+336:1=negative */
+337:    float   m=0.0;          /* mantissa accumulator */
+338:
+339:    /* skip any leading whitespace (space, tab) */
+340:    while (_isspace(s[i]))
+341:        i++;                                /* skip it */
+342:
+343:    /* check for mantissa sign */
+344:    if (s[i] == 45)                         /* 45 is '-' */
+345:    {
+346:        sign = 1;                           /* flag minus sign */
+347:        i++;                                /* point to next */
+348:    }
+349:    else if (s[i] == 43)                    /* 43 is '+' */
+350:        i++;                                /* point to next */
+351:
+352:    /* now get all digits up to either a decimal point or an e/E */
+353:    while (_isdigit(s[i]))
+354:    {
+355:        m = 10.0*m + (float)(s[i] - 48);    /* 48 is '0' */
+356:        i++;                                /* point to next */
+357:    }
+358:
+359:    /* no more digits, so check for decimal point */
+360:    if (s[i] == 46)                         /* 46 is '.' */
+361:    {
+362:        i++;                                /* point to next */
+363:        /* get all digits after decimal point */
+364:        while (_isdigit(s[i]))
+365:        {
+366:            exp0--;
+367:            m = 10.0*m + (float)(s[i] - 48);    /* 48 is '0' */
+368:            i++;                                /* point to next */
+369:        }
+370:    }
+371:
+372:    /* check for e/E exponential form */
+373:    if ((s[i] == 101) || (s[i] == 69))      /* 101 is 'e', 69 is 'E' */
+374:    {
+375:        i++;                                /* point to next */
+376:        /* check for exponent sign */
+377:        if (s[i] == 45)                     /* 45 is '-' */
+378:        {
+379:            expsign = 1;                    /* flag negative exponent */
+380:            i++;                            /* point to next */
+381:        }
+382:        else if (s[i] == 43)                /* 43 is '+' */
+383:            i++;                            /* point to next */
+384:
+385:        /* now get exponent */
+386:        while (_isdigit(s[i]))
+387:        {
+388:            eexp = eexp*10 + s[i] - 48;     /* 48 is '0' */
+389:            i++;                            /* point to next */
+390:        }
+391:
+392:        /* adjust exponent sign */
+393:        if (expsign)
+394:            eexp = -eexp;                   /* make it negative */
+395:    }
+396:
+397:    /* compute absolute value of final float */
+398:    exp0 += eexp;
+399:    while (exp0 < 0)                    /* for negative exponents */
+400:    {
+401:        m = m / 10.0;
+402:        exp0++;
+403:    }
+404:    while (exp0 > 0)                    /* for positive exponents */
+405:    {
+406:        m = m * 10.0;
+407:        exp0--;
+408:    }
+409:
+410:    /* adjust final float sign from mantissa */
+411:    if (sign)
+412:        return (-m);                    /* negative */
+413:    else
+414:        return (m);                     /* positive */
+415:}
+416:
+417:void disable_pcode_serial()
+418:/* necessary to receive characters using serial_getchar */
+419:{
+420:   poke(0x3c, 1);
+421:}
+422:
+423:void reenable_pcode_serial()
+424:/* necessary for IC to interact with board again */
+425:{
+426:   poke(0x3c, 0);
+427:}
+428:
+429:/*
+430:======================================================================
+431:For sending and receiving single bytes, you can use Randy's IC code:
+432:*/
+433:
+434:void serial_putchar(int c)
+435:{
+436:   while (!(peek(0x102e) & 0x80));  /* wait until serial transmit empty
+437:*/
+438:   poke(0x102f, c);  /* send character */
+439:}
+440:
+441:int serial_getchar()
+442:{
+443:   while (!(peek(0x102e) & 0x20)); /* wait for received character */
+444:   return peek(0x102f);
+445:}
+446:
+447:void main(void) {
+448:        int pos, c = ' ', var1, var2;
+449:        float f1, f2;
+450:        char buffer[80];
+451:        disable_pcode_serial();
+452:        beep();
+453:        printf("\nSerial IO Mode!");
+454:        printf("Listening...");
+455:        msleep(500L);
+456:        while (c != 'q') {
+457:                c = serial_getchar();
+458:/*              printf("[%d] ", c); */
+459:                if (c == MOTOR) {
+460:                        var1 = serial_getchar();
+461:                        var2 = serial_getchar() - 100;
+462:                        motor(var1, var2);
+463:                } else if (c == AO) {
+464:                        ao();
+465:                } else if (c == ANALOG) {
+466:                        var1 = serial_getchar();
+467:                        serial_putchar(analog(var1));
+468:                } else if (c == DIGITAL) {
+469:                        var1 = serial_getchar();
+470:                        serial_putchar(digital(var1));
+471:                } else if (c == PRINTF) {
+472:                        pos = 0;
+473:                        while (c != 0) {
+474:                                buffer[pos++] = c;
+475:                                c = serial_getchar();
+476:                        }
+477:                        buffer[pos] = '\0';
+478:                        printf(buffer);
+479:                } else if (c == TONE) {
+480:                        pos = 0;
+481:                        c = serial_getchar();
+482:                        while (c != 0) {
+483:                                buffer[pos++] = c;
+484:                                c = serial_getchar();
+485:                        }
+486:                        buffer[pos] = '\0';
+487:                        f1 = atof(buffer);
+488:                        pos = 0;
+489:                        c = serial_getchar();
+490:                        while (c != 0) {
+491:                                buffer[pos++] = c;
+492:                                c = serial_getchar();
+493:                        }
+494:                        buffer[pos] = '\0';
+495:                        f2 = atof(buffer);
+496:                        tone(f1, f2);
+497:                } else if (c == START_BUTTON) {
+498:                        serial_putchar(start_button());
+499:                } else if (c == STOP_BUTTON) {
+500:                        serial_putchar(stop_button());
+501:                } else if (c == BEEP) {
+502:                        beep();
+503:                } else if (c == KNOB) {
+504:                        serial_putchar(knob());
+505:                }
+506:      }
+507:        reenable_pcode_serial();
+508:        printf("\nHB Mode!");
+509:}
+510:
+511://************** END: serial_HB.c
+512:
+791:From aarone@sirius.com  Wed Jul  1 02:44:06 1998
+792:Received: from aleve.media.mit.edu by hub.media.mit.edu; (5.65v3.2/1.1/06Jun95-8.2MPM)
+793:	id AA22669; Wed, 1 Jul 1998 02:44:06 -0400
+794:Received: from mail3.sirius.com (mail3.sirius.com [205.134.253.133])
+795:	by aleve.media.mit.edu (8.8.7/ML970927) with ESMTP id CAA13214
+796:	for <handyboard@media.mit.edu>; Wed, 1 Jul 1998 02:01:55 -0400 (EDT)
+797:Received: from edsinger (ppp-asfm03--126.sirius.net [205.134.240.126])
+798:	by mail3.sirius.com (8.8.7/Sirius-8.8.7-97.08.12) with ESMTP id XAA26862
+799:	for <handyboard@media.mit.edu>; Tue, 30 Jun 1998 23:01:54 -0700 (PDT)
+800:Message-Id: <199807010601.XAA26862@mail3.sirius.com>
+801:From: "Aaron Edsinger" <aarone@sirius.com>
+802:To: "handy" <handyboard@media.mit.edu>
+803:Subject: Serial Interface
+804:Date: Wed, 1 Jul 1998 02:06:39 +0100
+805:X-Msmail-Priority: Normal
+806:X-Priority: 3
+807:X-Mailer: Microsoft Internet Mail 4.70.1162
+808:Mime-Version: 1.0
+809:Content-Type: text/plain; charset=ISO-8859-1
+810:Content-Transfer-Encoding: 7bit
+811:
+812:Hello,	
+813:	I've been having some problems using my HandyBoard to talk directly to my
+814:PC via the serial interface.  I disable Interactive C and then Poke() and
+815:Peek() as has been described on this list.  I  send short character strings
+816:from my PC to the HandyBoard under Windows 95.  If I send strings longer
+817:than 2 characters, it seems that some of the characters get lost. This
+818:behavior seems to be affected by repositioning or slightly modifying the
+819:code, suggesting perhaps a timing issue.
+820: 
+821:Why might this be?  Is there any way to check for an error situation?
+822:
+823:Thanks for any help,
+824:		Aaron
+825:From cmcmanis@freegate.com  Thu Jul 16 03:13:49 1998
+826:Received: from aleve.media.mit.edu by hub.media.mit.edu; (5.65v3.2/1.1/06Jun95-8.2MPM)
+827:	id AA23518; Thu, 16 Jul 1998 03:13:49 -0400
+828:Received: from hq.freegate.com ([208.226.86.1])
+829:	by aleve.media.mit.edu (8.8.7/ML970927) with SMTP id CAA18991
+830:	for <handyboard@media.mit.edu>; Thu, 16 Jul 1998 02:17:47 -0400 (EDT)
+831:Received: (qmail+freegate 6968 invoked by alias); 16 Jul 1998 06:17:38 -0000
+832:Received: from dialip-04.hq.freegate.com (HELO freegate.com) (208.226.86.222)
+833:  by hq.freegate.com with SMTP; 16 Jul 1998 06:17:38 -0000
+834:Message-Id: <35AD9BDA.3A9EC8F7@freegate.com>
+835:Date: Wed, 15 Jul 1998 23:21:14 -0700
+836:From: Chuck McManis <cmcmanis@freegate.com>
+837:Reply-To: cmcmanis@freegate.com
+838:Organization: Freegate Corporation
+839:X-Mailer: Mozilla 4.04 [en] (Win95; I)
+840:Mime-Version: 1.0
+841:To: David Rye <rye@mech.eng.usyd.edu.au>
+842:Cc: handyboard@media.mit.edu
+843:Subject: Re: Handyboard/RWP without p-code
+844:References: <3.0.32.19980716151646.00809d20@nemo.mech.eng.usyd.edu.au>
+845:Content-Type: text/plain; charset=us-ascii
+846:Content-Transfer-Encoding: 7bit
+847:
+848:Get a copy of icc11 v5.0 or later (from www.imagecraft.com) and use the
+849:handyboard library from their site. 
+850:
+851:--Chuck
+852:
+853:From Scott.Seaton@Aus.Sun.COM  Thu Jul 16 03:42:38 1998
+854:Received: from aleve.media.mit.edu by hub.media.mit.edu; (5.65v3.2/1.1/06Jun95-8.2MPM)
+855:	id AA24945; Thu, 16 Jul 1998 03:42:38 -0400
+856:Received: from mercury.Sun.COM (mercury.Sun.COM [192.9.25.1])
+857:	by aleve.media.mit.edu (8.8.7/ML970927) with SMTP id CAA07415
+858:	for <handyboard@media.mit.edu>; Thu, 16 Jul 1998 02:44:58 -0400 (EDT)
+859:Received: from Aus.Sun.COM ([129.158.80.6]) by mercury.Sun.COM (SMI-8.6/mail.byaddr) with SMTP id XAA29734; Wed, 15 Jul 1998 23:44:52 -0700
+860:Received: from war.Aus.Sun.COM by Aus.Sun.COM id QAA03011
+861:	(SMI-8.6/SMI-4.1 for <>); Thu, 16 Jul 1998 16:44:50 +1000
+862:Received: from drone by war.Aus.Sun.COM (SMI-8.6/SMI-SVR4)
+863:	id QAA10921; Thu, 16 Jul 1998 16:44:20 +1000
+864:Message-Id: <199807160644.QAA10921@war.Aus.Sun.COM>
+865:Date: Thu, 16 Jul 1998 16:41:56 +1000 (EST)
+866:From: Scott Seaton - Systems Consultant - ESG <Scott.Seaton@Aus.Sun.COM>
+867:Reply-To: Scott Seaton - Systems Consultant - ESG <Scott.Seaton@Aus.Sun.COM>
+868:Subject: Re: Handyboard/RWP without p-code
+869:To: handyboard@media.mit.edu, rye@mech.eng.usyd.edu.au
+870:Mime-Version: 1.0
+871:Content-Type: MULTIPART/mixed; BOUNDARY=Troop_of_Baboons_752_000
+872:X-Mailer: dtmail 1.2.0 CDE Version 1.2 SunOS 5.6 sun4u sparc 
+873:
+874:--Troop_of_Baboons_752_000
+875:Content-Type: TEXT/plain; charset=us-ascii
+876:Content-MD5: i/HKSIa/Vk0mZT5ml+q21A==
+877:
+878:Hi
+879:
+880:I suggest that you contact ImageCraft.
+881:http://www.imagecraft.com/software/index.html  or  info@imagecraft.com 
+882:
+883:They have a C compiler for 68HC11 CPU's that will do what you want, including a
+884:library for the HandyBoard (see attached e-mail) !
+885:
+886:I have no affiliation with ImageCraft (other than as a satisfied customer).
+887:
+888:Hope this helps
+889:Scott
+890:============================================================================== 
+891: ,-_|\       Scott Seaton - Sun Enterprise Services -  Systems Consultant      
+892:/     \  Sun Microsystems Australia Pty Ltd  E-mail : scott.seaton@aus.sun.com 
+893:\_,-\_+  828 Pacific Highway                  Phone : +61 2 9844 5381          
+894:     v   Gordon, N.S.W., 2072, AUSTRALIA        Fax : +61 2 9844 5161          
+895:============================================================================== 
+896:
+897:--Troop_of_Baboons_752_000
+898:Content-Type: MESSAGE/rfc822; name=Mailbox
+899:Content-Description: Mailbox
+900:
+901:From someone@imagecraft.com  Fri Jul 10 18:59:26 1998
+902:Return-Path: <icc11-list-errors@lists.best.com>
+903:Received: from Aus.Sun.COM by war.Aus.Sun.COM (SMI-8.6/SMI-SVR4)
+904:	id SAA14426; Fri, 10 Jul 1998 18:59:26 +1000
+905:Received: from earth.sun.com by Aus.Sun.COM id SAA24238
+906:	(SMI-8.6/SMI-4.1 for <<scott.seaton@aus.sun.com>>); Fri, 10 Jul 1998 18:59:48 +1000
+907:Received: from iisesun.iise.CSIRO.AU (iisesun.iise.csiro.au [130.155.5.44])
+908:	by earth.sun.com (8.8.8/8.8.8) with SMTP id BAA18609
+909:	for <scott.seaton@aus.sun.com>; Fri, 10 Jul 1998 01:59:44 -0700 (PDT)
+910:Received: from lists1.best.com (lists1.best.com [206.86.8.15]) by iisesun.iise.CSIRO.AU (SMI-8.6/8.6.12-IISE-SWA) with ESMTP id SAA25847 for <sseaton@iise.csiro.au>; Fri, 10 Jul 1998 18:49:31 +1000
+911:Received: (from daemon@localhost) by lists1.best.com (8.9.0/8.8.BEST) id BAA15320 for icc11-list-errors@lists.best.com; Fri, 10 Jul 1998 01:04:34 -0700 (PDT)
+912:Message-Id: <199807100804.BAA15320@lists1.best.com>
+913:From: Christina Willrich & Richard Man <someone@imagecraft.com>
+914:Subject: icc11 Handyboard library available
+915:Date: Fri, 10 Jul 1998 00:58:49 -0700
+916:BestServHost: lists.best.com
+917:MIME-Version: 1.0
+918:Content-Type: text/plain; charset="us-ascii"
+919:Sender: icc11-list-errors@lists.best.com
+920:Errors-To: icc11-list-errors@lists.best.com
+921:Reply-To: icc11-list@lists.best.com
+922:To: icc11-list@lists.best.com
+923:content-length: 399
+924:Status: RO
+925:X-Status: $$$$
+926:X-UID: 0000000001
+927:
+928:At long last, I dusted off Chuck McManis Handyboard library and ported it
+929:to V5. No reason why it can't work with V4.5 either ;-) Anyway, to try it
+930:out, point your browser to
+931:
+932:ftp://ftp.imagecraft.com/pub/libhb.zip
+933:
+934:Chuck really did a great job with the LCD. There are commands to scroll,
+935:move etc. Make sure you try the lcdtest2.c test.
+936:
+937:// richard
+938:someone@imagecraft.com http://www.imagecraft.com
+939:
+940:
+941:--Troop_of_Baboons_752_000--
+942:
+1142:From wallace@theory.phys.vt.edu  Mon Jul 27 18:34:05 1998
+1143:Received: from aleve.media.mit.edu by hub.media.mit.edu; (5.65v3.2/1.1/06Jun95-8.2MPM)
+1144:	id AA00723; Mon, 27 Jul 1998 18:34:05 -0400
+1145:Received: from theory.phys.vt.edu (theory.phys.vt.edu [128.173.176.33])
+1146:	by aleve.media.mit.edu (8.8.7/ML970927) with ESMTP id RAA19984
+1147:	for <handyboard@media.mit.edu>; Mon, 27 Jul 1998 17:22:26 -0400 (EDT)
+1148:Received: from localhost (wallace@localhost)
+1149:	by theory.phys.vt.edu (8.8.5/8.8.5) with SMTP id RAA00312
+1150:	for <handyboard@media.mit.edu>; Mon, 27 Jul 1998 17:22:24 -0400 (EDT)
+1151:Date: Mon, 27 Jul 1998 17:22:24 -0400 (EDT)
+1152:From: Mark Wallace <wallace@theory.phys.vt.edu>
+1153:To: handyboard@media.mit.edu
+1154:Subject: sonar.c for the handyboard
+1155:Message-Id: <Pine.SOL.3.92.980727164935.159A-100000@theory.phys.vt.edu>
+1156:Mime-Version: 1.0
+1157:Content-Type: TEXT/PLAIN; charset=US-ASCII
+1158:
+1159:Hello,
+1160:	I have a handyboard and 6500 series poloroid ultrasonic ranging
+1161:system.  I have downloaded the sonar.c programs used to drive the
+1162:transducer for distance measurements.  There appears to be a problem, or
+1163:atleast I think there is, with it.  The sonar device is supposed to give
+1164:distances of up to 35ft but the TCNC time register is 16 bit and in the
+1165:program it says "if ((peekwork(0x100e)-start_time) < 0)" too much time has
+1166:elapsed and it returns -1.  Therefore as soon as about 32700 counts goes
+1167:by, that value will go negative. I believe hex goes from 0 to 32768 then
+1168:-32768 to -1. In this case the difference will be < 0 if the object
+1169:is greater then about 9 ft.  I have taken this out of the program and can
+1170:get accurate measurements up to atleast 30 ft but I have to look at the
+1171:value given and add multiples of 2^16 to it to figure out where it is.
+1172:Taking this out of the program also can get you stuck if you really are
+1173:out of range.
+1174:	I have looked on the motorola web pages to see about this clock
+1175:and it says that the clock goes till it reachs $ffff and then flags
+1176:somewhere that there is an overflow and then starts over.  I don't know
+1177:how to find out were in the chip this information might be stored.  I know
+1178:the TCNT time register is at 0x100e from the notes on Simplified Sonar for
+1179:the Handy Board but I don't know where that overflow flag is stored.  I
+1180:thought that maybe by setting this flag and using it in the loop you might
+1181:be about to get a greater distance out of you measurement.
+1182:	Another question I have is about IC.  I would like to display
+1183:numbers greater then 32000 and right now there are several int type
+1184:variables and normal C comands don't seem to work to make a "long" or any
+1185:other type that are larger then 32000.  How does IC handle larger numbers?
+1186:	I am only a student and don't have much experience with this stuff
+1187:so I would appreciate any feedback I can get on either of these problems.
+1188:Thanks.
+1189:
+1190:Mark Wallace
+1191:
+1192: e-mail  mawalla3@vt.edu
+1193:         wallace@astro.phys.vt.edu
+1194:Web page http://sps1.phys.vt.edu/~mwallace/index.html
+1195:
+1196:"What a waste it would be after 4 billion tortuous years of evolution if
+1197:the dominant organism contrived its own self-destruction"
+1198:                                        Carl Sagan
+1199:
+1200:
+1274:From mawalla3@vt.edu  Wed Aug 12 13:10:06 1998
+1275:Received: from aleve.media.mit.edu by hub.media.mit.edu; (5.65v3.2/1.1/06Jun95-8.2MPM)
+1276:	id AA07529; Wed, 12 Aug 1998 13:10:06 -0400
+1277:Received: from quackerjack.cc.vt.edu (root@quackerjack.cc.vt.edu [198.82.160.250])
+1278:	by aleve.media.mit.edu (8.8.7/ML970927) with ESMTP id MAA05729
+1279:	for <Handyboard@media.mit.edu>; Wed, 12 Aug 1998 12:13:53 -0400 (EDT)
+1280:Received: from sable.cc.vt.edu (sable.cc.vt.edu [128.173.16.30])
+1281:	by quackerjack.cc.vt.edu (8.8.8/8.8.8) with ESMTP id MAA20678
+1282:	for <Handyboard@media.mit.edu>; Wed, 12 Aug 1998 12:20:09 -0400 (EDT)
+1283:Received: from research10.phys.vt.edu (dhcp9.phys.vt.edu [128.173.176.166])
+1284:	by sable.cc.vt.edu (8.8.8/8.8.8) with SMTP id MAA05159
+1285:	for <Handyboard@media.mit.edu>; Wed, 12 Aug 1998 12:13:51 -0400 (EDT)
+1286:Message-Id: <3.0.5.32.19980812121345.00796960@mail.vt.edu>
+1287:X-Sender: mawalla3@mail.vt.edu (Unverified)
+1288:X-Mailer: QUALCOMM Windows Eudora Light Version 3.0.5 (32)
+1289:Date: Wed, 12 Aug 1998 12:13:45 -0400
+1290:To: Handyboard@media.mit.edu
+1291:From: Mark Wallace <mawalla3@vt.edu>
+1292:Subject: serial library for C++ 
+1293:Mime-Version: 1.0
+1294:Content-Type: text/plain; charset="us-ascii"
+1295:
+1296:Hello,
+1297:	I have a handy board with poloroid transducers and I am trying use the
+1298:results of my distance measurments in a C++ program on the computer.  I
+1299:have found programs on the handyboard web page that should alow the
+1300:handyboard to transmit information over the serial line.  What I am looking
+1301:for is if anyone knows were I could find a serial for Microsofts
+1302:Visual C++ 5.0.  I would like to find one that is free or sharware but any
+1303:information on any serial that will work would be appreciated.
+1304:Thanks.
+1305:Mark Wallace
+1306:
+1307: e-mail  mawalla3@vt.edu
+1308:	 mwallace@sps1.phys.vt.edu
+1309:web page http://sps1.phys.vt.ede/~mwallace
+1310:
+1311:"What a waist it would be after 4 billion tortuous years of evolution if
+1312:the dominant organism contrived its own self-distruction"
+1313:			Carl Sagan
+1314:
+1315:
+1361:From aarone@sirius.com  Wed Aug 12 13:42:19 1998
+1362:Received: from aleve.media.mit.edu by hub.media.mit.edu; (5.65v3.2/1.1/06Jun95-8.2MPM)
+1363:	id AA13439; Wed, 12 Aug 1998 13:42:19 -0400
+1364:Received: from mail3.sirius.com (mail3.sirius.com [205.134.253.133])
+1365:	by aleve.media.mit.edu (8.8.7/ML970927) with ESMTP id MAA10630
+1366:	for <handyboard@media.mit.edu>; Wed, 12 Aug 1998 12:48:27 -0400 (EDT)
+1367:Received: from aarone (ppp-asfm05--041.sirius.net [205.134.241.41])
+1368:	by mail3.sirius.com (8.8.7/Sirius-8.8.7-97.08.12) with SMTP id JAA20821;
+1369:	Wed, 12 Aug 1998 09:48:24 -0700 (PDT)
+1370:Message-Id: <004401bdc62a$e8ecc8c0$70f086cd@aarone.sirius.com>
+1371:From: "Aaron Edsinger" <aarone@sirius.com>
+1372:To: "Mark Wallace" <mawalla3@vt.edu>
+1373:Cc: "handy" <handyboard@media.mit.edu>
+1374:Subject: Re: serial library for C++ 
+1375:Date: Wed, 12 Aug 1998 12:53:41 -0700
+1376:Mime-Version: 1.0
+1377:Content-Type: text/plain;
+1378:	charset="iso-8859-1"
+1379:Content-Transfer-Encoding: 7bit
+1380:X-Priority: 3
+1381:X-Msmail-Priority: Normal
+1382:X-Mailer: Microsoft Outlook Express 4.72.2106.4
+1383:X-Mimeole: Produced By Microsoft MimeOLE V4.72.2106.4
+1384:
+1385:
+1386:  Check out this site.  It works well.  The only problem I had was timing
+1387:issues when trying to read and write to the port too quickly.
+1388:
+1389:http://www.codeguru.com/show.cgi?general=/misc/misc_toc.shtml
+1390:
+1391:
+1392:-----Original Message-----
+1393:From: Mark Wallace <mawalla3@vt.edu>
+1394:To: Handyboard@media.mit.edu <Handyboard@media.mit.edu>
+1395:Date: Wednesday, August 12, 1998 9:25 AM
+1396:Subject: serial library for C++
+1397:
+1398:
+1399:>Hello,
+1400:> I have a handy board with poloroid transducers and I am trying use the
+1401:>results of my distance measurments in a C++ program on the computer.  I
+1402:>have found programs on the handyboard web page that should alow the
+1403:>handyboard to transmit information over the serial line.  What I am looking
+1404:>for is if anyone knows were I could find a serial library for Microsofts
+1405:>Visual C++ 5.0.  I would like to find one that is free or sharware but any
+1406:>information on any serial librarys that will work would be appreciated.
+1407:>Thanks.
+1408:>Mark Wallace
+1409:>
+1410:> e-mail  mawalla3@vt.edu
+1411:> mwallace@sps1.phys.vt.edu
+1412:>web page http://sps1.phys.vt.ede/~mwallace
+1413:>
+1414:>"What a waist it would be after 4 billion tortuous years of evolution if
+1415:>the dominant organism contrived its own self-distruction"
+1416:> Carl Sagan
+1417:>
+1418:
+1419:From Scott.Seaton@Aus.Sun.COM  Thu Jul 16 03:42:38 1998
+1420:Received: from aleve.media.mit.edu by hub.media.mit.edu; (5.65v3.2/1.1/06Jun95-8.2MPM)
+1421:	id AA24945; Thu, 16 Jul 1998 03:42:38 -0400
+1422:Received: from mercury.Sun.COM (mercury.Sun.COM [192.9.25.1])
+1423:	by aleve.media.mit.edu (8.8.7/ML970927) with SMTP id CAA07415
+1424:	for <handyboard@media.mit.edu>; Thu, 16 Jul 1998 02:44:58 -0400 (EDT)
+1425:Received: from Aus.Sun.COM ([129.158.80.6]) by mercury.Sun.COM (SMI-8.6/mail.byaddr) with SMTP id XAA29734; Wed, 15 Jul 1998 23:44:52 -0700
+1426:Received: from war.Aus.Sun.COM by Aus.Sun.COM id QAA03011
+1427:	(SMI-8.6/SMI-4.1 for <>); Thu, 16 Jul 1998 16:44:50 +1000
+1428:Received: from drone by war.Aus.Sun.COM (SMI-8.6/SMI-SVR4)
+1429:	id QAA10921; Thu, 16 Jul 1998 16:44:20 +1000
+1430:Message-Id: <199807160644.QAA10921@war.Aus.Sun.COM>
+1431:Date: Thu, 16 Jul 1998 16:41:56 +1000 (EST)
+1432:From: Scott Seaton - Systems Consultant - ESG <Scott.Seaton@Aus.Sun.COM>
+1433:Reply-To: Scott Seaton - Systems Consultant - ESG <Scott.Seaton@Aus.Sun.COM>
+1434:Subject: Re: Handyboard/RWP without p-code
+1435:To: handyboard@media.mit.edu, rye@mech.eng.usyd.edu.au
+1436:Mime-Version: 1.0
+1437:Content-Type: MULTIPART/mixed; BOUNDARY=Troop_of_Baboons_752_000
+1438:X-Mailer: dtmail 1.2.0 CDE Version 1.2 SunOS 5.6 sun4u sparc 
+1439:
+1440:--Troop_of_Baboons_752_000
+1441:Content-Type: TEXT/plain; charset=us-ascii
+1442:Content-MD5: i/HKSIa/Vk0mZT5ml+q21A==
+1443:
+1444:Hi
+1445:
+1446:I suggest that you contact ImageCraft.
+1447:http://www.imagecraft.com/software/index.html  or  info@imagecraft.com 
+1448:
+1449:They have a C compiler for 68HC11 CPU's that will do what you want, including a
+1450:library for the HandyBoard (see attached e-mail) !
+1451:
+1452:I have no affiliation with ImageCraft (other than as a satisfied customer).
+1453:
+1454:Hope this helps
+1455:Scott
+1456:============================================================================== 
+1457: ,-_|\       Scott Seaton - Sun Enterprise Services -  Systems Consultant      
+1458:/     \  Sun Microsystems Australia Pty Ltd  E-mail : scott.seaton@aus.sun.com 
+1459:\_,-\_+  828 Pacific Highway                  Phone : +61 2 9844 5381          
+1460:     v   Gordon, N.S.W., 2072, AUSTRALIA        Fax : +61 2 9844 5161          
+1461:============================================================================== 
+1462:
+1463:--Troop_of_Baboons_752_000
+1464:Content-Type: MESSAGE/rfc822; name=Mailbox
+1465:Content-Description: Mailbox
+1466:
+1467:From someone@imagecraft.com  Fri Jul 10 18:59:26 1998
+1468:Return-Path: <icc11-list-errors@lists.best.com>
+1469:Received: from Aus.Sun.COM by war.Aus.Sun.COM (SMI-8.6/SMI-SVR4)
+1470:	id SAA14426; Fri, 10 Jul 1998 18:59:26 +1000
+1471:Received: from earth.sun.com by Aus.Sun.COM id SAA24238
+1472:	(SMI-8.6/SMI-4.1 for <<scott.seaton@aus.sun.com>>); Fri, 10 Jul 1998 18:59:48 +1000
+1473:Received: from iisesun.iise.CSIRO.AU (iisesun.iise.csiro.au [130.155.5.44])
+1474:	by earth.sun.com (8.8.8/8.8.8) with SMTP id BAA18609
+1475:	for <scott.seaton@aus.sun.com>; Fri, 10 Jul 1998 01:59:44 -0700 (PDT)
+1476:Received: from lists1.best.com (lists1.best.com [206.86.8.15]) by iisesun.iise.CSIRO.AU (SMI-8.6/8.6.12-IISE-SWA) with ESMTP id SAA25847 for <sseaton@iise.csiro.au>; Fri, 10 Jul 1998 18:49:31 +1000
+1477:Received: (from daemon@localhost) by lists1.best.com (8.9.0/8.8.BEST) id BAA15320 for icc11-list-errors@lists.best.com; Fri, 10 Jul 1998 01:04:34 -0700 (PDT)
+1478:Message-Id: <199807100804.BAA15320@lists1.best.com>
+1479:From: Christina Willrich & Richard Man <someone@imagecraft.com>
+1480:Subject: icc11 Handyboard library available
+1481:Date: Fri, 10 Jul 1998 00:58:49 -0700
+1482:BestServHost: lists.best.com
+1483:MIME-Version: 1.0
+1484:Content-Type: text/plain; charset="us-ascii"
+1485:Sender: icc11-list-errors@lists.best.com
+1486:Errors-To: icc11-list-errors@lists.best.com
+1487:Reply-To: icc11-list@lists.best.com
+1488:To: icc11-list@lists.best.com
+1489:content-length: 399
+1490:Status: RO
+1491:X-Status: $$$$
+1492:X-UID: 0000000001
+1493:
+1494:At long last, I dusted off Chuck McManis Handyboard library and ported it
+1495:to V5. No reason why it can't work with V4.5 either ;-) Anyway, to try it
+1496:out, point your browser to
+1497:
+1498:ftp://ftp.imagecraft.com/pub/libhb.zip
+1499:
+1500:Chuck really did a great job with the LCD. There are commands to scroll,
+1501:move etc. Make sure you try the lcdtest2.c test.
+1502:
+1503:// richard
+1504:someone@imagecraft.com http://www.imagecraft.com
+1505:
+1506:
+1507:--Troop_of_Baboons_752_000--
+1508:

@@ -1,0 +1,72 @@
+grepmail 5.3034
+
+usage:
+
+  grepmail [--help|--version] [-abBDFhHilLmrRuvVw] [-C <cache-file>]
+    [-j <status>] [-s <sizespec>] [-d <date-specification>]
+    [-X <signature-pattern>] [-Y <header-pattern>]
+    [-e] <pattern> <files...>
+
+  grepmail [--help|--version] [-abBDFhHilLmrRuvVw] [-C <cache-file>]
+    [-j <status>] [-s <sizespec>] [-d <date-specification>]
+    [-X <signature-pattern>] [-Y <header-pattern>]
+    -E <expr> <files...>
+
+  grepmail [--help|--version] [-abBDFhHilLmrRuvVw] [-C <cache-file>]
+    [-j <status>] [-s <sizespec>] [-d <date-specification>]
+    [-X <signature-pattern>] [-Y <header-pattern>]
+    -f <pattern-file> <files...>
+
+At least one of -s, -d, -u, -e, and -E must be specified, and can appear in
+any relative order following the other flags. The -e flag is optional if
+pattern appears immediately before -s or -d. Files can be plain ASCII or ASCII
+files compressed with gzip, or bzip2. -E allows for complex pattern matches
+involving logical operators. If no file is provided, normal or compressed
+ASCII input is taken from STDIN.
+
+-a Use received date instead of sent date for -d matching
+-b Search must match body
+-B Print message bodies but with only limited headers
+-C Specify the location of the cache file
+-d Specify a required date range (see below)
+-D Debug mode
+-e Explicitly name pattern (when searching for strings beginning with "-")
+-E Specify a complex search expression
+-f Read patterns from a file
+-F Force processing of all data as mailboxes
+-h Search must match header
+-H Print headers but not bodies of matching emails
+-i Ignore case in the search expression
+-j Search must match status (A=answered, R=read, D=deleted, O=old, F=flagged)
+-l Output the names of files having an email matching the expression
+-L Follow symbolic links (implies -R)
+-M Do not search non-text mime attachments
+-m Append "X-Mailfolder: <folder>" to all headers to indicate in which folder
+   the match occurred
+-n Print the line number info (and filename if necessary) for the emails
+-q Quiet mode -- don't output warnings
+-r Output the names of the files and the number of emails matching the
+   expression
+-R Recurse directories
+-s Specify a size range in bytes (see below)
+-S Ignore signatures
+-u Ensure that no duplicate emails are output
+-v Output emails that don't match the expression
+-V Display the version number
+-w Match word boundaries
+-X Specify a regular expression for the signature separator
+-Y Specify a header to search (implies -h)
+--help Print a help message
+
+Date constraints require Date::Parse. Date specifications must be of the
+form of:
+- a date like "today", "1st thursday in June 1992" (requires Date::Manip),
+  "05/18/93", "12:30 Dec 12th 1880", "8:00pm december tenth",
+- "before", "after", or "since", followed by a date as defined above,
+- "between <date> and <date>", where <date> is defined as above.
+
+Size constraints must be of the form of:
+- 12345: match size of exactly 12345
+- <12345, <=12345, >12345, >=12345: match size less than, less than or equal,
+  greater than, or greater than or equal to 12345
+- 10000-12345: match size between 10000 and 12345 inclusive

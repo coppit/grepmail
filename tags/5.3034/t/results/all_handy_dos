@@ -1,0 +1,913 @@
+From dblank@comp.uark.edu  Wed Jul  1 13:17:17 1998
+Received: from aleve.media.mit.edu by hub.media.mit.edu; (5.65v3.2/1.1/06Jun95-8.2MPM)
+	id AA10324; Wed, 1 Jul 1998 13:17:17 -0400
+Received: from comp.uark.edu (root@comp.uark.edu [130.184.252.197])
+	by aleve.media.mit.edu (8.8.7/ML970927) with ESMTP id LAA00083
+	for <handyboard@media.mit.edu>; Wed, 1 Jul 1998 11:56:44 -0400 (EDT)
+Received: from comp.uark.edu (IDENT:dblank@dangermouse.uark.edu [130.184.201.233])
+	by comp.uark.edu (8.9.0/8.9.0) with ESMTP id KAA12202;
+	Wed, 1 Jul 1998 10:56:30 -0500 (CDT)
+Sender: dblank@comp.uark.edu
+Message-Id: <359A5C2E.202B4BA3@comp.uark.edu>
+Date: Wed, 01 Jul 1998 10:56:30 -0500
+From: Douglas Blank <dblank@comp.uark.edu>
+Organization: University of Arkansas, CS
+X-Mailer: Mozilla 4.04 [en] (X11; I; Linux 2.0.33 i686)
+Mime-Version: 1.0
+To: Aaron Edsinger <aarone@sirius.com>
+Cc: handy <handyboard@media.mit.edu>
+Subject: Re: Serial Interface
+References: <199807010601.XAA26862@mail3.sirius.com>
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+
+Aaron Edsinger wrote:
+ 
+> Hello,
+>         I've been having some problems using my HandyBoard to talk directly to my
+> PC via the serial interface.  I disable Interactive C and then Poke() and
+> Peek() as has been described on this list.  I  send short character strings
+> from my PC to the HandyBoard under Windows 95.  If I send strings longer
+> than 2 characters, it seems that some of the characters get lost. This
+> behavior seems to be affected by repositioning or slightly modifying the
+> code, suggesting perhaps a timing issue.
+
+Although there is the HEXMON program, I too, have been trying to do what
+you describe, and encountered the same problems. I found it to be a
+timing issue, and, through trial and error, have a found some settings
+that seem to work most of the time.
+
+My goal was to make C code that looked the same when compiled and run on
+the Host is the code that ran under IC. 
+
+I am including the host and HB programs here. If anyone knows of a
+better way of communicating, please let us know.
+
+-Doug Blank
+ 
+=====================================================================
+dblank@comp.uark.edu            Douglas Blank, University of Arkansas
+Assistant Professor                                  Computer Science
+==================== http://www.uark.edu/~dblank ====================
+
+This code was written for MS C++4.0 running on Win95.
+
+//************** BEGIN: serial_HOST.c
+
+/* VC++4.0 HandyBoard Host Programming System
+   Dr. Douglas S. Blank
+   University of Arkansas, Department of Computer Science
+   www.uark.edu/~dblank
+
+   This code runs on a host PC.
+*/
+
+#include <ctype.h>
+#include <conio.h>
+#include <stdlib.h>
+#include <stdio.h>
+
+#include "serial_HOST.h"
+
+void main(int argc, char *argv[])
+{
+        motor(0, 100);
+        motor(1, 100);
+        motor(2, 100);
+        motor(3, 100);
+        sleep(1000);
+        motor(0, -100); 
+        motor(1, -100);
+        motor(2, -100);
+        motor(3, -100);
+        sleep(1000); 
+        ao(); 
+        print("\nThis is a test");
+        printf("Knob is %d\n", knob() );
+        printf("Analog(0) is %d\n", analog(0));
+        printf("Digital(0) is %d\n", digital(0));
+        printf("Analog(1) is %d\n", analog(1));
+        printf("Digital(1) is %d\n", digital(1));
+        printf("Analog(2) is %d\n", analog(2));
+        printf("Digital(2) is %d\n", digital(2));
+        printf("Analog(3) is %d\n", analog(3));
+        printf("Digital(3) is %d\n", digital(3));
+        printf("Analog(4) is %d\n", analog(4));
+        printf("Digital(4) is %d\n", digital(4));
+        printf("Analog(5) is %d\n", analog(5));
+        printf("Digital(5) is %d\n", digital(5));
+        printf("Analog(6) is %d\n", analog(6));
+        printf("Digital(6) is %d\n", digital(6));
+        printf("Analog(7) is %d\n", analog(7));
+        printf("Digital(7) is %d\n", digital(7));
+        printf("Analog(8) is %d\n", analog(8));
+        printf("Digital(8) is %d\n", digital(8));
+        printf("Analog(9) is %d\n", analog(9));
+        printf("Digital(9) is %d\n", digital(9));
+        printf("Analog(10) is %d\n", analog(10));
+        printf("Digital(10) is %d\n", digital(10));
+        printf("Analog(11) is %d\n", analog(11));
+        printf("Digital(11) is %d\n", digital(11));
+        printf("Analog(12) is %d\n", analog(12));
+        printf("Digital(12) is %d\n", digital(12));
+        printf("Analog(13) is %d\n", analog(13));
+        printf("Digital(13) is %d\n", digital(13));
+        printf("Analog(14) is %d\n", analog(14));
+        printf("Digital(14) is %d\n", digital(14));
+        printf("Analog(15) is %d\n", analog(15));
+        printf("Digital(15) is %d\n", digital(15));
+        beep();
+        sleep(1000);
+        while (! stop_button() ) {
+                sprintf(buffer, "%d.0", (knob() * 10));
+                tone( buffer, "0.1");
+        }
+}
+
+//************** END: serial_HOST.c
+
+//************** BEGIN: serial_HOST.h
+
+/* VC++4.0 HandyBoard Host Programming System
+   Dr. Douglas S. Blank
+   University of Arkansas, Department of Computer Science
+   www.uark.edu/~dblank
+*/
+
+#define MOTOR     0
+#define AO        1
+#define ANALOG    2
+#define DIGITAL   3
+#define PRINTF    4
+#define KNOB      5
+#define BEEP      6
+#define TONE      7
+#define START_BUTTON 8
+#define STOP_BUTTON  9
+#define QUIT    113
+
+#define sleep(NUM) _sleep(NUM)
+#define SERIALWAIT  5
+
+unsigned short PORT = 0x3f8; // LPT1: 0x378 COM1: 0x3f8
+
+int send(int i) {
+        int retval;
+        retval = _outp( PORT, i);
+        _sleep(SERIALWAIT);
+        return retval;
+}
+
+int receive() {
+        int retval;
+        retval = _inp( PORT);
+        _sleep(SERIALWAIT);
+        retval = _inp( PORT);
+        return retval;
+}
+
+void hangup() {
+        send(QUIT);
+}
+
+void print(char buffer[]) {
+        int i;
+        send(PRINTF);
+        for (i = 0; buffer[i] != 0; i++)
+                send(buffer[i]);
+        send('\0');
+}
+
+void motor(int motornum, int power) {
+        send(MOTOR);
+        send(motornum);
+        send(power + 100); // taken off on the other end
+}
+
+int analog(int sensor) {
+        send(ANALOG);
+        send(sensor);
+        return receive();
+}
+
+int digital(int sensor) {
+        send(DIGITAL);
+        send(sensor);
+        return receive();
+}
+
+void ao() {
+        send(AO);
+}
+
+int knob() {
+        send(KNOB);
+        return receive();
+}
+
+void beep() {
+        send(BEEP);
+}
+
+void tone(char f1[], char f2[]) {
+        int i;
+        send(TONE);
+        for (i = 0; f1[i] != 0; i++)
+                send(f1[i]);
+        send('\0');
+        for (i = 0; f2[i] != 0; i++)
+                send(f2[i]);
+        send('\0');
+        _sleep((unsigned long) (atof(f2) * 1000)); // to keep from
+overflowing serial line
+}
+
+void interactive()
+{
+        char c;
+        char key = ' ';
+        while (key != 'q') {
+                key = getch();
+                send(key);
+                printf("Sent %c\n", key);
+                c = receive();
+                printf("Got %c as a return value\n", c);
+        }
+}
+
+int start_button() {
+        send(START_BUTTON);
+        return receive();
+}
+
+int stop_button() {
+        send(STOP_BUTTON);
+        return receive();
+}
+//************** END: serial_HOST.h
+
+//************** BEGIN: serial_HB.c
+
+/* VC++4.0 HandyBoard Programming System
+   (Parts taken from other HB programs)
+   Dr. Douglas S. Blank
+   University of Arkansas, Department of Computer Science
+   www.uark.edu/~dblank
+
+   This code runs on the HB
+*/
+
+#define MOTOR     0
+#define AO        1
+#define ANALOG    2
+#define DIGITAL   3
+#define PRINTF    4
+#define KNOB      5
+#define BEEP    6
+#define TONE    7
+#define START_BUTTON 8
+#define STOP_BUTTON  9
+#define QUIT    113
+
+int _isspace(int a)         /* returns 1 for space or tab, 0
+otherwise     */
+                            /* internal routine used by atof() and
+cgets() */
+
+{
+    return ((a == 32) || (a == 9));     /* 32 is space, 9 is tab */
+}
+
+/*****************************************************************************/
+
+int _isdigit(int a)         /* returns 1 if a digit 0-9, 0 otherwise */
+                            /* internal routine used by atof()       */
+
+{
+    return ((a >= 48) && (a <= 57));    /* 48 is '0', 57 is '9' */
+}
+
+float atof(char s[])    /* Convert a string containing a number in
+ASCII     */
+                        /* form (integer, float, or exponential float)
+to a  */
+                        /* float.  Strips whitespace characters (space
+and   */
+                        /* tab) from the front of the string, but
+stops      */
+                        /* parsing at the first (unexpected)
+non-numeric     */
+                        /* character if the string has garbage at the
+end.   */
+                        /* This means that "  34.3foo78" translates to
+34.3. */
+                        /* Modified from atof() function in the
+standard     */
+                        /* library of the Hi-Tec C compiler for
+CP/M.        */
+                        /* Note:  all string literals converted to
+decimal   */
+                        /* form because IC can't deal with string
+literals   */
+                        /* in math
+calculations.                             */
+                        /* Also note:  very ugly code because IC will
+not    */
+                        /* allow any math operations on pointers!  Thus,
+the */
+                        /* the number string has to be treated as an
+array!  */
+                        /* Also also note:  no error handling; assumes
+that  */
+                        /* the string is a valid representation of a
+number! */
+                        /* Valid range for exponential-format numbers
+is     */
+                        /* approximately 2.0e-38 to
+3.4e+38.                 */
+
+{
+    int     i=0;            /* index into string array */
+    int     sign=0;         /* mantissa sign flag:  0=positive,
+1=negative */
+    int     exp0=0;         /* mantissa exponent counter */
+    int     eexp=0;         /* E-form exponent counter */
+    int     expsign=0;      /* exponent sign flag:  0=positive,
+1=negative */
+    float   m=0.0;          /* mantissa accumulator */
+
+    /* skip any leading whitespace (space, tab) */
+    while (_isspace(s[i]))
+        i++;                                /* skip it */
+
+    /* check for mantissa sign */
+    if (s[i] == 45)                         /* 45 is '-' */
+    {
+        sign = 1;                           /* flag minus sign */
+        i++;                                /* point to next */
+    }
+    else if (s[i] == 43)                    /* 43 is '+' */
+        i++;                                /* point to next */
+
+    /* now get all digits up to either a decimal point or an e/E */
+    while (_isdigit(s[i]))
+    {
+        m = 10.0*m + (float)(s[i] - 48);    /* 48 is '0' */
+        i++;                                /* point to next */
+    }
+
+    /* no more digits, so check for decimal point */
+    if (s[i] == 46)                         /* 46 is '.' */
+    {
+        i++;                                /* point to next */
+        /* get all digits after decimal point */
+        while (_isdigit(s[i]))
+        {
+            exp0--;
+            m = 10.0*m + (float)(s[i] - 48);    /* 48 is '0' */
+            i++;                                /* point to next */
+        }
+    }
+
+    /* check for e/E exponential form */
+    if ((s[i] == 101) || (s[i] == 69))      /* 101 is 'e', 69 is 'E' */
+    {
+        i++;                                /* point to next */
+        /* check for exponent sign */
+        if (s[i] == 45)                     /* 45 is '-' */
+        {
+            expsign = 1;                    /* flag negative exponent */
+            i++;                            /* point to next */
+        }
+        else if (s[i] == 43)                /* 43 is '+' */
+            i++;                            /* point to next */
+
+        /* now get exponent */
+        while (_isdigit(s[i]))
+        {
+            eexp = eexp*10 + s[i] - 48;     /* 48 is '0' */
+            i++;                            /* point to next */
+        }
+
+        /* adjust exponent sign */
+        if (expsign)
+            eexp = -eexp;                   /* make it negative */
+    }
+
+    /* compute absolute value of final float */
+    exp0 += eexp;
+    while (exp0 < 0)                    /* for negative exponents */
+    {
+        m = m / 10.0;
+        exp0++;
+    }
+    while (exp0 > 0)                    /* for positive exponents */
+    {
+        m = m * 10.0;
+        exp0--;
+    }
+
+    /* adjust final float sign from mantissa */
+    if (sign)
+        return (-m);                    /* negative */
+    else
+        return (m);                     /* positive */
+}
+
+void disable_pcode_serial()
+/* necessary to receive characters using serial_getchar */
+{
+   poke(0x3c, 1);
+}
+
+void reenable_pcode_serial()
+/* necessary for IC to interact with board again */
+{
+   poke(0x3c, 0);
+}
+
+/*
+======================================================================
+For sending and receiving single bytes, you can use Randy's IC code:
+*/
+
+void serial_putchar(int c)
+{
+   while (!(peek(0x102e) & 0x80));  /* wait until serial transmit empty
+*/
+   poke(0x102f, c);  /* send character */
+}
+
+int serial_getchar()
+{
+   while (!(peek(0x102e) & 0x20)); /* wait for received character */
+   return peek(0x102f);
+}
+
+void main(void) {
+        int pos, c = ' ', var1, var2;
+        float f1, f2;
+        char buffer[80];
+        disable_pcode_serial();
+        beep();
+        printf("\nSerial IO Mode!");
+        printf("Listening...");
+        msleep(500L);
+        while (c != 'q') {
+                c = serial_getchar();
+/*              printf("[%d] ", c); */
+                if (c == MOTOR) {
+                        var1 = serial_getchar();
+                        var2 = serial_getchar() - 100;
+                        motor(var1, var2);
+                } else if (c == AO) {
+                        ao();
+                } else if (c == ANALOG) {
+                        var1 = serial_getchar();
+                        serial_putchar(analog(var1));
+                } else if (c == DIGITAL) {
+                        var1 = serial_getchar();
+                        serial_putchar(digital(var1));
+                } else if (c == PRINTF) {
+                        pos = 0;
+                        while (c != 0) {
+                                buffer[pos++] = c;
+                                c = serial_getchar();
+                        }
+                        buffer[pos] = '\0';
+                        printf(buffer);
+                } else if (c == TONE) {
+                        pos = 0;
+                        c = serial_getchar();
+                        while (c != 0) {
+                                buffer[pos++] = c;
+                                c = serial_getchar();
+                        }
+                        buffer[pos] = '\0';
+                        f1 = atof(buffer);
+                        pos = 0;
+                        c = serial_getchar();
+                        while (c != 0) {
+                                buffer[pos++] = c;
+                                c = serial_getchar();
+                        }
+                        buffer[pos] = '\0';
+                        f2 = atof(buffer);
+                        tone(f1, f2);
+                } else if (c == START_BUTTON) {
+                        serial_putchar(start_button());
+                } else if (c == STOP_BUTTON) {
+                        serial_putchar(stop_button());
+                } else if (c == BEEP) {
+                        beep();
+                } else if (c == KNOB) {
+                        serial_putchar(knob());
+                }
+      }
+        reenable_pcode_serial();
+        printf("\nHB Mode!");
+}
+
+//************** END: serial_HB.c
+
+From aarone@sirius.com  Wed Jul  1 02:44:06 1998
+Received: from aleve.media.mit.edu by hub.media.mit.edu; (5.65v3.2/1.1/06Jun95-8.2MPM)
+	id AA22669; Wed, 1 Jul 1998 02:44:06 -0400
+Received: from mail3.sirius.com (mail3.sirius.com [205.134.253.133])
+	by aleve.media.mit.edu (8.8.7/ML970927) with ESMTP id CAA13214
+	for <handyboard@media.mit.edu>; Wed, 1 Jul 1998 02:01:55 -0400 (EDT)
+Received: from edsinger (ppp-asfm03--126.sirius.net [205.134.240.126])
+	by mail3.sirius.com (8.8.7/Sirius-8.8.7-97.08.12) with ESMTP id XAA26862
+	for <handyboard@media.mit.edu>; Tue, 30 Jun 1998 23:01:54 -0700 (PDT)
+Message-Id: <199807010601.XAA26862@mail3.sirius.com>
+From: "Aaron Edsinger" <aarone@sirius.com>
+To: "handy" <handyboard@media.mit.edu>
+Subject: Serial Interface
+Date: Wed, 1 Jul 1998 02:06:39 +0100
+X-Msmail-Priority: Normal
+X-Priority: 3
+X-Mailer: Microsoft Internet Mail 4.70.1162
+Mime-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+
+Hello,	
+	I've been having some problems using my HandyBoard to talk directly to my
+PC via the serial interface.  I disable Interactive C and then Poke() and
+Peek() as has been described on this list.  I  send short character strings
+from my PC to the HandyBoard under Windows 95.  If I send strings longer
+than 2 characters, it seems that some of the characters get lost. This
+behavior seems to be affected by repositioning or slightly modifying the
+code, suggesting perhaps a timing issue.
+ 
+Why might this be?  Is there any way to check for an error situation?
+
+Thanks for any help,
+		Aaron
+From cmcmanis@freegate.com  Thu Jul 16 03:13:49 1998
+Received: from aleve.media.mit.edu by hub.media.mit.edu; (5.65v3.2/1.1/06Jun95-8.2MPM)
+	id AA23518; Thu, 16 Jul 1998 03:13:49 -0400
+Received: from hq.freegate.com ([208.226.86.1])
+	by aleve.media.mit.edu (8.8.7/ML970927) with SMTP id CAA18991
+	for <handyboard@media.mit.edu>; Thu, 16 Jul 1998 02:17:47 -0400 (EDT)
+Received: (qmail+freegate 6968 invoked by alias); 16 Jul 1998 06:17:38 -0000
+Received: from dialip-04.hq.freegate.com (HELO freegate.com) (208.226.86.222)
+  by hq.freegate.com with SMTP; 16 Jul 1998 06:17:38 -0000
+Message-Id: <35AD9BDA.3A9EC8F7@freegate.com>
+Date: Wed, 15 Jul 1998 23:21:14 -0700
+From: Chuck McManis <cmcmanis@freegate.com>
+Reply-To: cmcmanis@freegate.com
+Organization: Freegate Corporation
+X-Mailer: Mozilla 4.04 [en] (Win95; I)
+Mime-Version: 1.0
+To: David Rye <rye@mech.eng.usyd.edu.au>
+Cc: handyboard@media.mit.edu
+Subject: Re: Handyboard/RWP without p-code
+References: <3.0.32.19980716151646.00809d20@nemo.mech.eng.usyd.edu.au>
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+
+Get a copy of icc11 v5.0 or later (from www.imagecraft.com) and use the
+handyboard library from their site. 
+
+--Chuck
+
+From Scott.Seaton@Aus.Sun.COM  Thu Jul 16 03:42:38 1998
+Received: from aleve.media.mit.edu by hub.media.mit.edu; (5.65v3.2/1.1/06Jun95-8.2MPM)
+	id AA24945; Thu, 16 Jul 1998 03:42:38 -0400
+Received: from mercury.Sun.COM (mercury.Sun.COM [192.9.25.1])
+	by aleve.media.mit.edu (8.8.7/ML970927) with SMTP id CAA07415
+	for <handyboard@media.mit.edu>; Thu, 16 Jul 1998 02:44:58 -0400 (EDT)
+Received: from Aus.Sun.COM ([129.158.80.6]) by mercury.Sun.COM (SMI-8.6/mail.byaddr) with SMTP id XAA29734; Wed, 15 Jul 1998 23:44:52 -0700
+Received: from war.Aus.Sun.COM by Aus.Sun.COM id QAA03011
+	(SMI-8.6/SMI-4.1 for <>); Thu, 16 Jul 1998 16:44:50 +1000
+Received: from drone by war.Aus.Sun.COM (SMI-8.6/SMI-SVR4)
+	id QAA10921; Thu, 16 Jul 1998 16:44:20 +1000
+Message-Id: <199807160644.QAA10921@war.Aus.Sun.COM>
+Date: Thu, 16 Jul 1998 16:41:56 +1000 (EST)
+From: Scott Seaton - Systems Consultant - ESG <Scott.Seaton@Aus.Sun.COM>
+Reply-To: Scott Seaton - Systems Consultant - ESG <Scott.Seaton@Aus.Sun.COM>
+Subject: Re: Handyboard/RWP without p-code
+To: handyboard@media.mit.edu, rye@mech.eng.usyd.edu.au
+Mime-Version: 1.0
+Content-Type: MULTIPART/mixed; BOUNDARY=Troop_of_Baboons_752_000
+X-Mailer: dtmail 1.2.0 CDE Version 1.2 SunOS 5.6 sun4u sparc 
+
+--Troop_of_Baboons_752_000
+Content-Type: TEXT/plain; charset=us-ascii
+Content-MD5: i/HKSIa/Vk0mZT5ml+q21A==
+
+Hi
+
+I suggest that you contact ImageCraft.
+http://www.imagecraft.com/software/index.html  or  info@imagecraft.com 
+
+They have a C compiler for 68HC11 CPU's that will do what you want, including a
+library for the HandyBoard (see attached e-mail) !
+
+I have no affiliation with ImageCraft (other than as a satisfied customer).
+
+Hope this helps
+Scott
+============================================================================== 
+ ,-_|\       Scott Seaton - Sun Enterprise Services -  Systems Consultant      
+/     \  Sun Microsystems Australia Pty Ltd  E-mail : scott.seaton@aus.sun.com 
+\_,-\_+  828 Pacific Highway                  Phone : +61 2 9844 5381          
+     v   Gordon, N.S.W., 2072, AUSTRALIA        Fax : +61 2 9844 5161          
+============================================================================== 
+
+--Troop_of_Baboons_752_000
+Content-Type: MESSAGE/rfc822; name=Mailbox
+Content-Description: Mailbox
+
+From someone@imagecraft.com  Fri Jul 10 18:59:26 1998
+Return-Path: <icc11-list-errors@lists.best.com>
+Received: from Aus.Sun.COM by war.Aus.Sun.COM (SMI-8.6/SMI-SVR4)
+	id SAA14426; Fri, 10 Jul 1998 18:59:26 +1000
+Received: from earth.sun.com by Aus.Sun.COM id SAA24238
+	(SMI-8.6/SMI-4.1 for <<scott.seaton@aus.sun.com>>); Fri, 10 Jul 1998 18:59:48 +1000
+Received: from iisesun.iise.CSIRO.AU (iisesun.iise.csiro.au [130.155.5.44])
+	by earth.sun.com (8.8.8/8.8.8) with SMTP id BAA18609
+	for <scott.seaton@aus.sun.com>; Fri, 10 Jul 1998 01:59:44 -0700 (PDT)
+Received: from lists1.best.com (lists1.best.com [206.86.8.15]) by iisesun.iise.CSIRO.AU (SMI-8.6/8.6.12-IISE-SWA) with ESMTP id SAA25847 for <sseaton@iise.csiro.au>; Fri, 10 Jul 1998 18:49:31 +1000
+Received: (from daemon@localhost) by lists1.best.com (8.9.0/8.8.BEST) id BAA15320 for icc11-list-errors@lists.best.com; Fri, 10 Jul 1998 01:04:34 -0700 (PDT)
+Message-Id: <199807100804.BAA15320@lists1.best.com>
+From: Christina Willrich & Richard Man <someone@imagecraft.com>
+Subject: icc11 Handyboard library available
+Date: Fri, 10 Jul 1998 00:58:49 -0700
+BestServHost: lists.best.com
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Sender: icc11-list-errors@lists.best.com
+Errors-To: icc11-list-errors@lists.best.com
+Reply-To: icc11-list@lists.best.com
+To: icc11-list@lists.best.com
+content-length: 399
+Status: RO
+X-Status: $$$$
+X-UID: 0000000001
+
+At long last, I dusted off Chuck McManis Handyboard library and ported it
+to V5. No reason why it can't work with V4.5 either ;-) Anyway, to try it
+out, point your browser to
+
+ftp://ftp.imagecraft.com/pub/libhb.zip
+
+Chuck really did a great job with the LCD. There are commands to scroll,
+move etc. Make sure you try the lcdtest2.c test.
+
+// richard
+someone@imagecraft.com http://www.imagecraft.com
+
+
+--Troop_of_Baboons_752_000--
+
+From wallace@theory.phys.vt.edu  Mon Jul 27 18:34:05 1998
+Received: from aleve.media.mit.edu by hub.media.mit.edu; (5.65v3.2/1.1/06Jun95-8.2MPM)
+	id AA00723; Mon, 27 Jul 1998 18:34:05 -0400
+Received: from theory.phys.vt.edu (theory.phys.vt.edu [128.173.176.33])
+	by aleve.media.mit.edu (8.8.7/ML970927) with ESMTP id RAA19984
+	for <handyboard@media.mit.edu>; Mon, 27 Jul 1998 17:22:26 -0400 (EDT)
+Received: from localhost (wallace@localhost)
+	by theory.phys.vt.edu (8.8.5/8.8.5) with SMTP id RAA00312
+	for <handyboard@media.mit.edu>; Mon, 27 Jul 1998 17:22:24 -0400 (EDT)
+Date: Mon, 27 Jul 1998 17:22:24 -0400 (EDT)
+From: Mark Wallace <wallace@theory.phys.vt.edu>
+To: handyboard@media.mit.edu
+Subject: sonar.c for the handyboard
+Message-Id: <Pine.SOL.3.92.980727164935.159A-100000@theory.phys.vt.edu>
+Mime-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+
+Hello,
+	I have a handyboard and 6500 series poloroid ultrasonic ranging
+system.  I have downloaded the sonar.c programs used to drive the
+transducer for distance measurements.  There appears to be a problem, or
+atleast I think there is, with it.  The sonar device is supposed to give
+distances of up to 35ft but the TCNC time register is 16 bit and in the
+program it says "if ((peekwork(0x100e)-start_time) < 0)" too much time has
+elapsed and it returns -1.  Therefore as soon as about 32700 counts goes
+by, that value will go negative. I believe hex goes from 0 to 32768 then
+-32768 to -1. In this case the difference will be < 0 if the object
+is greater then about 9 ft.  I have taken this out of the program and can
+get accurate measurements up to atleast 30 ft but I have to look at the
+value given and add multiples of 2^16 to it to figure out where it is.
+Taking this out of the program also can get you stuck if you really are
+out of range.
+	I have looked on the motorola web pages to see about this clock
+and it says that the clock goes till it reachs $ffff and then flags
+somewhere that there is an overflow and then starts over.  I don't know
+how to find out were in the chip this information might be stored.  I know
+the TCNT time register is at 0x100e from the notes on Simplified Sonar for
+the Handy Board but I don't know where that overflow flag is stored.  I
+thought that maybe by setting this flag and using it in the loop you might
+be about to get a greater distance out of you measurement.
+	Another question I have is about IC.  I would like to display
+numbers greater then 32000 and right now there are several int type
+variables and normal C comands don't seem to work to make a "long" or any
+other type that are larger then 32000.  How does IC handle larger numbers?
+	I am only a student and don't have much experience with this stuff
+so I would appreciate any feedback I can get on either of these problems.
+Thanks.
+
+Mark Wallace
+
+ e-mail  mawalla3@vt.edu
+         wallace@astro.phys.vt.edu
+Web page http://sps1.phys.vt.edu/~mwallace/index.html
+
+"What a waste it would be after 4 billion tortuous years of evolution if
+the dominant organism contrived its own self-destruction"
+                                        Carl Sagan
+
+
+From mawalla3@vt.edu  Wed Aug 12 13:10:06 1998
+Received: from aleve.media.mit.edu by hub.media.mit.edu; (5.65v3.2/1.1/06Jun95-8.2MPM)
+	id AA07529; Wed, 12 Aug 1998 13:10:06 -0400
+Received: from quackerjack.cc.vt.edu (root@quackerjack.cc.vt.edu [198.82.160.250])
+	by aleve.media.mit.edu (8.8.7/ML970927) with ESMTP id MAA05729
+	for <Handyboard@media.mit.edu>; Wed, 12 Aug 1998 12:13:53 -0400 (EDT)
+Received: from sable.cc.vt.edu (sable.cc.vt.edu [128.173.16.30])
+	by quackerjack.cc.vt.edu (8.8.8/8.8.8) with ESMTP id MAA20678
+	for <Handyboard@media.mit.edu>; Wed, 12 Aug 1998 12:20:09 -0400 (EDT)
+Received: from research10.phys.vt.edu (dhcp9.phys.vt.edu [128.173.176.166])
+	by sable.cc.vt.edu (8.8.8/8.8.8) with SMTP id MAA05159
+	for <Handyboard@media.mit.edu>; Wed, 12 Aug 1998 12:13:51 -0400 (EDT)
+Message-Id: <3.0.5.32.19980812121345.00796960@mail.vt.edu>
+X-Sender: mawalla3@mail.vt.edu (Unverified)
+X-Mailer: QUALCOMM Windows Eudora Light Version 3.0.5 (32)
+Date: Wed, 12 Aug 1998 12:13:45 -0400
+To: Handyboard@media.mit.edu
+From: Mark Wallace <mawalla3@vt.edu>
+Subject: serial library for C++ 
+Mime-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+
+Hello,
+	I have a handy board with poloroid transducers and I am trying use the
+results of my distance measurments in a C++ program on the computer.  I
+have found programs on the handyboard web page that should alow the
+handyboard to transmit information over the serial line.  What I am looking
+for is if anyone knows were I could find a serial for Microsofts
+Visual C++ 5.0.  I would like to find one that is free or sharware but any
+information on any serial that will work would be appreciated.
+Thanks.
+Mark Wallace
+
+ e-mail  mawalla3@vt.edu
+	 mwallace@sps1.phys.vt.edu
+web page http://sps1.phys.vt.ede/~mwallace
+
+"What a waist it would be after 4 billion tortuous years of evolution if
+the dominant organism contrived its own self-distruction"
+			Carl Sagan
+
+
+From aarone@sirius.com  Wed Aug 12 13:42:19 1998
+Received: from aleve.media.mit.edu by hub.media.mit.edu; (5.65v3.2/1.1/06Jun95-8.2MPM)
+	id AA13439; Wed, 12 Aug 1998 13:42:19 -0400
+Received: from mail3.sirius.com (mail3.sirius.com [205.134.253.133])
+	by aleve.media.mit.edu (8.8.7/ML970927) with ESMTP id MAA10630
+	for <handyboard@media.mit.edu>; Wed, 12 Aug 1998 12:48:27 -0400 (EDT)
+Received: from aarone (ppp-asfm05--041.sirius.net [205.134.241.41])
+	by mail3.sirius.com (8.8.7/Sirius-8.8.7-97.08.12) with SMTP id JAA20821;
+	Wed, 12 Aug 1998 09:48:24 -0700 (PDT)
+Message-Id: <004401bdc62a$e8ecc8c0$70f086cd@aarone.sirius.com>
+From: "Aaron Edsinger" <aarone@sirius.com>
+To: "Mark Wallace" <mawalla3@vt.edu>
+Cc: "handy" <handyboard@media.mit.edu>
+Subject: Re: serial library for C++ 
+Date: Wed, 12 Aug 1998 12:53:41 -0700
+Mime-Version: 1.0
+Content-Type: text/plain;
+	charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+X-Priority: 3
+X-Msmail-Priority: Normal
+X-Mailer: Microsoft Outlook Express 4.72.2106.4
+X-Mimeole: Produced By Microsoft MimeOLE V4.72.2106.4
+
+
+  Check out this site.  It works well.  The only problem I had was timing
+issues when trying to read and write to the port too quickly.
+
+http://www.codeguru.com/show.cgi?general=/misc/misc_toc.shtml
+
+
+-----Original Message-----
+From: Mark Wallace <mawalla3@vt.edu>
+To: Handyboard@media.mit.edu <Handyboard@media.mit.edu>
+Date: Wednesday, August 12, 1998 9:25 AM
+Subject: serial library for C++
+
+
+>Hello,
+> I have a handy board with poloroid transducers and I am trying use the
+>results of my distance measurments in a C++ program on the computer.  I
+>have found programs on the handyboard web page that should alow the
+>handyboard to transmit information over the serial line.  What I am looking
+>for is if anyone knows were I could find a serial library for Microsofts
+>Visual C++ 5.0.  I would like to find one that is free or sharware but any
+>information on any serial librarys that will work would be appreciated.
+>Thanks.
+>Mark Wallace
+>
+> e-mail  mawalla3@vt.edu
+> mwallace@sps1.phys.vt.edu
+>web page http://sps1.phys.vt.ede/~mwallace
+>
+>"What a waist it would be after 4 billion tortuous years of evolution if
+>the dominant organism contrived its own self-distruction"
+> Carl Sagan
+>
+
+From Scott.Seaton@Aus.Sun.COM  Thu Jul 16 03:42:38 1998
+Received: from aleve.media.mit.edu by hub.media.mit.edu; (5.65v3.2/1.1/06Jun95-8.2MPM)
+	id AA24945; Thu, 16 Jul 1998 03:42:38 -0400
+Received: from mercury.Sun.COM (mercury.Sun.COM [192.9.25.1])
+	by aleve.media.mit.edu (8.8.7/ML970927) with SMTP id CAA07415
+	for <handyboard@media.mit.edu>; Thu, 16 Jul 1998 02:44:58 -0400 (EDT)
+Received: from Aus.Sun.COM ([129.158.80.6]) by mercury.Sun.COM (SMI-8.6/mail.byaddr) with SMTP id XAA29734; Wed, 15 Jul 1998 23:44:52 -0700
+Received: from war.Aus.Sun.COM by Aus.Sun.COM id QAA03011
+	(SMI-8.6/SMI-4.1 for <>); Thu, 16 Jul 1998 16:44:50 +1000
+Received: from drone by war.Aus.Sun.COM (SMI-8.6/SMI-SVR4)
+	id QAA10921; Thu, 16 Jul 1998 16:44:20 +1000
+Message-Id: <199807160644.QAA10921@war.Aus.Sun.COM>
+Date: Thu, 16 Jul 1998 16:41:56 +1000 (EST)
+From: Scott Seaton - Systems Consultant - ESG <Scott.Seaton@Aus.Sun.COM>
+Reply-To: Scott Seaton - Systems Consultant - ESG <Scott.Seaton@Aus.Sun.COM>
+Subject: Re: Handyboard/RWP without p-code
+To: handyboard@media.mit.edu, rye@mech.eng.usyd.edu.au
+Mime-Version: 1.0
+Content-Type: MULTIPART/mixed; BOUNDARY=Troop_of_Baboons_752_000
+X-Mailer: dtmail 1.2.0 CDE Version 1.2 SunOS 5.6 sun4u sparc 
+
+--Troop_of_Baboons_752_000
+Content-Type: TEXT/plain; charset=us-ascii
+Content-MD5: i/HKSIa/Vk0mZT5ml+q21A==
+
+Hi
+
+I suggest that you contact ImageCraft.
+http://www.imagecraft.com/software/index.html  or  info@imagecraft.com 
+
+They have a C compiler for 68HC11 CPU's that will do what you want, including a
+library for the HandyBoard (see attached e-mail) !
+
+I have no affiliation with ImageCraft (other than as a satisfied customer).
+
+Hope this helps
+Scott
+============================================================================== 
+ ,-_|\       Scott Seaton - Sun Enterprise Services -  Systems Consultant      
+/     \  Sun Microsystems Australia Pty Ltd  E-mail : scott.seaton@aus.sun.com 
+\_,-\_+  828 Pacific Highway                  Phone : +61 2 9844 5381          
+     v   Gordon, N.S.W., 2072, AUSTRALIA        Fax : +61 2 9844 5161          
+============================================================================== 
+
+--Troop_of_Baboons_752_000
+Content-Type: MESSAGE/rfc822; name=Mailbox
+Content-Description: Mailbox
+
+From someone@imagecraft.com  Fri Jul 10 18:59:26 1998
+Return-Path: <icc11-list-errors@lists.best.com>
+Received: from Aus.Sun.COM by war.Aus.Sun.COM (SMI-8.6/SMI-SVR4)
+	id SAA14426; Fri, 10 Jul 1998 18:59:26 +1000
+Received: from earth.sun.com by Aus.Sun.COM id SAA24238
+	(SMI-8.6/SMI-4.1 for <<scott.seaton@aus.sun.com>>); Fri, 10 Jul 1998 18:59:48 +1000
+Received: from iisesun.iise.CSIRO.AU (iisesun.iise.csiro.au [130.155.5.44])
+	by earth.sun.com (8.8.8/8.8.8) with SMTP id BAA18609
+	for <scott.seaton@aus.sun.com>; Fri, 10 Jul 1998 01:59:44 -0700 (PDT)
+Received: from lists1.best.com (lists1.best.com [206.86.8.15]) by iisesun.iise.CSIRO.AU (SMI-8.6/8.6.12-IISE-SWA) with ESMTP id SAA25847 for <sseaton@iise.csiro.au>; Fri, 10 Jul 1998 18:49:31 +1000
+Received: (from daemon@localhost) by lists1.best.com (8.9.0/8.8.BEST) id BAA15320 for icc11-list-errors@lists.best.com; Fri, 10 Jul 1998 01:04:34 -0700 (PDT)
+Message-Id: <199807100804.BAA15320@lists1.best.com>
+From: Christina Willrich & Richard Man <someone@imagecraft.com>
+Subject: icc11 Handyboard library available
+Date: Fri, 10 Jul 1998 00:58:49 -0700
+BestServHost: lists.best.com
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Sender: icc11-list-errors@lists.best.com
+Errors-To: icc11-list-errors@lists.best.com
+Reply-To: icc11-list@lists.best.com
+To: icc11-list@lists.best.com
+content-length: 399
+Status: RO
+X-Status: $$$$
+X-UID: 0000000001
+
+At long last, I dusted off Chuck McManis Handyboard library and ported it
+to V5. No reason why it can't work with V4.5 either ;-) Anyway, to try it
+out, point your browser to
+
+ftp://ftp.imagecraft.com/pub/libhb.zip
+
+Chuck really did a great job with the LCD. There are commands to scroll,
+move etc. Make sure you try the lcdtest2.c test.
+
+// richard
+someone@imagecraft.com http://www.imagecraft.com
+
+
+--Troop_of_Baboons_752_000--
+

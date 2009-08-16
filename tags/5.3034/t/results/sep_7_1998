@@ -1,0 +1,278 @@
+From goldt@et.byu.edu  Tue Jul  7 20:33:03 1998
+Received: from aleve.media.mit.edu by hub.media.mit.edu; (5.65v3.2/1.1/06Jun95-8.2MPM)
+	id AA32480; Tue, 7 Jul 1998 20:33:03 -0400
+Received: from wormwood.ee.byu.edu (wormwood.ee.byu.edu [128.187.30.54])
+	by aleve.media.mit.edu (8.8.7/ML970927) with ESMTP id TAA30127
+	for <handyboard@media.mit.edu>; Tue, 7 Jul 1998 19:48:43 -0400 (EDT)
+Received: from wormwood (localhost [127.0.0.1]) by wormwood.ee.byu.edu with SMTP (8.7.6/8.7.1) id RAA26916 for <handyboard@media.mit.edu>; Tue, 7 Jul 1998 17:48:42 -0600 (MDT)
+Sender: goldt@ee.byu.edu
+Message-Id: <35A2B3D9.1260@et.byu.edu>
+Date: Tue, 07 Jul 1998 17:48:41 -0600
+From: "Timothy B. Gold" <goldt@et.byu.edu>
+X-Mailer: Mozilla 3.04Gold (X11; I; HP-UX B.10.20 9000/780)
+Mime-Version: 1.0
+To: handyboard@media.mit.edu
+Subject: Interrupt Handler for Serial communication
+Content-Type: multipart/mixed; boundary="------------18CC6AC44E2E"
+
+This is a multi-part message in MIME format.
+
+--------------18CC6AC44E2E
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+
+Here's a bit of code that will buffer incoming serial information so
+that no information will be lost when transmitting to the handy board. 
+There are two files: serial_isr.c and serial_isr.asm.  You'll need to
+assemble the .asm file using as11_ic, and then both the .c file and the
+.icb file need to be loaded onto the handy board.  I'm sure improvements
+could be made to the code to clean it up a little, but it's a start (and
+I haven't had any problems with it yet).  Enjoy!
+
+--------------18CC6AC44E2E
+Content-Type: text/plain; charset=us-ascii; name="serial_isr.c"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline; filename="serial_isr.c"
+
+/* C program to read serial port with interrupt service routine */
+/* First version:  Written by Anton Wirsch   20 Nov 1997 */
+
+/*
+
+   Second Version: Written by Tim Gold   27 May 1998
+                              BYU Robotics Lab
+			      goldt@et.byu.edu        
+
+     Really, the only thing left from the original code are a few
+     lines in the .asm file.  Everything else I pretty much had to
+     rewrite from scratch to get it to work the way I wanted to.
+     But the orignal code by Anton was a very helpful starting point.
+
+  Needed files:   serial_isr.c
+                  serial_isr.icb
+		  serial_isr.asm (needed to change the buffer size)
+
+  The buffer size here is 32 bytes (probably much larger than it needs
+  to be.)  To change the buffer size, do the following:
+              1. Change the BUFFER_SIZE constant below to the
+	         desired number of bytes.
+	      2. Edit the line(s) in the serial_isr.asm which contain
+	         the word "EDIT" in the comment so that the value
+		 matches that of BUFFER_SIZE.
+	      3. Recreate the serial_isr.icb file by typing the following:
+	         > as11_ic serial_isr.asm 
+
+ */
+
+
+
+
+#define BUFFER_SIZE 32  /* change buffer size here  -- see above */
+
+/* various constants used by the program... */
+#define BAUD 0x102b   /* baud rate set to 9600 */
+#define SCCR2 0x102d
+#define SCCR1 0x102c
+#define SCSR 0x102e
+#define SCDR 0x102f
+
+int buffer[BUFFER_SIZE]; /* this is the actual buffer */
+
+
+void initSerial()
+{
+  /* Call this routine to activate the serial interrupt handler. */
+  int i,temp;
+
+  /* clear out buffer */
+  for(i=0; i<BUFFER_SIZE; i++)
+    buffer[i] = 0;
+
+  /* clear vairous flags */
+  DATA_FLAG = 0;
+  INCOMING = 0;
+  CURRENT = 0;
+
+  /* pass address of buffer to interrupt routine */
+  buffer_ptr = (int) buffer; 
+  BASE_ADDR = (int) buffer;
+  
+  /* activate interrupt routine */
+  temp = peek(SCCR2);
+  temp |= 0x24;
+  poke(SCCR2, temp);
+  poke(0x3c, 1);
+}
+
+void closeSerial() 
+{
+  int temp;
+  
+  /* deactivate the interrupt routine */
+  temp = peek(SCCR2);
+  temp &= 0xdf;
+  poke(SCCR2, temp);
+  READ_SERIAL = 0x0000;
+  poke(0x3c, 0);
+
+}
+
+void serialPutChar(int c)
+{
+  /* call this function to write a character to the serial port */
+
+  while (!(peek(0x102e) & 0x80));
+  poke(0x102f, c);               
+
+}
+
+
+int dataAvailable()
+{
+  /* This function can be used to check to see if any data is available */
+  return DATA_FLAG;
+}
+
+
+int serialGetChar()
+{
+  /* Create blocking getchar for serial port... */
+  int return_char;
+  
+  /* loop until data is available */
+  while(!DATA_FLAG);
+
+  /* get the character to return */
+  return_char = buffer[CURRENT];
+
+  /* check for wrap around... */
+  CURRENT++;
+  if(CURRENT == BUFFER_SIZE)
+    CURRENT = 0;
+  if(CURRENT == INCOMING)
+    DATA_FLAG = 0;
+  return return_char;
+
+}
+
+
+
+
+
+--------------18CC6AC44E2E
+Content-Type: text/plain; charset=us-ascii; name="serial_isr.asm"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline; filename="serial_isr.asm"
+
+/* This sets up the serial interrupt service routine */
+/* First Version:	Written by Anton L. Wirsch  20 Nov 1997 */
+/* Second Version: Written by Tim Gold   27 May 1998
+                              BYU Robotics Lab
+		              goldt@et.byu.edu        
+
+     Really, the only thing left from the original code are a few
+     lines in the .asm file.  Everything else I pretty much had to
+     rewrite from scratch to get it to work the way I wanted to.
+     But the orignal code by Anton was a very helpful starting point.
+
+  Needed files:   serial_isr.c
+                  serial_isr.icb
+		  serial_isr.asm (needed to change the buffer size)
+
+  The buffer size here is 32 bytes (probably much larger than it needs
+  to be.)  To change the buffer size, do the following:
+              1. Change the BUFFER_SIZE constant in serial_isr.c to the
+	         desired number of bytes.
+	      2. Edit the line in this fils which contains
+	         the word "EDIT" in the comment so that the value
+		 matches that of BUFFER_SIZE.
+	      3. Recreate the serial_isr.icb file by typing the following:
+	         > as11_ic serial_isr.asm 
+*/
+
+
+/* change this line to match your library path... */
+#include "/usr/local/ic/libs/6811regs.asm"
+
+        ORG MAIN_START
+variable_CURRENT:
+	FDB    00        * ptr to next data to be read by user
+	
+variable_INCOMING:
+        FDB    00        * number of bytes received (circular count)
+
+variable_BASE_ADDR:
+	FDB    00        * base address of buffer (to be set by init routine)
+	
+variable_DATA_FLAG:
+        FDB    00        * flag set when data is available
+
+variable_buffer_ptr:     
+        FDB    00        * pointer to CURRENT buffer
+
+subroutine_initialize_module:
+/* change this line to match your library path... */
+#include "/usr/local/ic/libs/ldxibase.asm"
+
+        ldd     SCIINT,X
+        std     interrupt_code_exit+1
+        ldd     #interrupt_code_start
+        std     SCIINT,X
+        
+	rts
+
+interrupt_code_start:
+        ldad    variable_INCOMING       * store INCOMING into AB
+        cmpb    #00                     * compare B with 0
+        bhi     skip                    * goto "skip" if (B > 0)
+        ldx     variable_BASE_ADDR      * STORE ADDRESS OF ARRY IN X
+        inx                             * SKIP THE FIRST (?)
+        inx                             * TWO BYTES      (?)
+        inx                             * OFFSET TO THE HIGHER BYTE (?)
+        stx     variable_buffer_ptr     * SAVE PTR VALUE 
+        bra     cont
+
+skip:
+        ldx     variable_buffer_ptr     * load buffer pointer into x
+cont:
+        ldad    variable_INCOMING       * load INCOMING into AB
+        incb                            * increment INCOMING
+	cmpb    #32                     * compare B and 32   --EDIT TO CHANGE BUFFER SIZE--
+	beq     reset_count             * if a=32, goto reset_count
+	bra     cont1
+reset_count:
+	ldad    #00                     * set count to zero
+cont1:	
+        stad    variable_INCOMING       * store AB into INCOMING
+        
+        ldab    SCSR                    * load SCSR (SCI status register) into B (why?)
+        ldab    SCDR                    * load SCSR (SCI data register) into B
+
+        stab    ,X                      * store data in array
+        inx                             * increment by two bytes
+        inx                             
+        stx     variable_buffer_ptr     * save the pointer value
+	ldad    #01                     * load 1 into AB
+	stad    variable_DATA_FLAG      * store AB into DATA_FLAG (indicating data is available)
+interrupt_code_exit:
+        jmp     $0000
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+--------------18CC6AC44E2E--
+
+
+
