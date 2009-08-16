@@ -1,9 +1,19 @@
-Features which haven't made it in yet:
-- Support for searches on email threads. (Thanks to Zack Brown
-  <zbrown@tumblerings.org> for the excellent feature idea and a prototype
-  implementation.)
+Version 5.3034: Sun Aug 16 2009
+- Fixed man page year typo. Closes: Debian bug #428973 (Thanks to Joes Hess
+	<joeyh@debian.org> for the patch)
+- Updated to the latest version of Module::Install
+- Moved hosting to Google Code
+- Added my old TODO to the distribution, adding a number of feature requests
+	from SourceForge
+- Fixed a bug where grepmail would abort if the links traversed with -L caused
+	a directory to be encountered more than once.
+- Fixed a bug in the -R test that would cause the test to fail when it should
+	not.
+- Fixed uninitialized variable warnings for emails missing the Date:,
+	Subject:, or From: headers (Thanks to Steven W. Orr <steveo@syslang.net> for
+	the bug report.)
 
-Version 5.3033:
+Version 5.3033: Thu Mar 01 2007
 - Improved the documentation for -Y. (Thanks to Justin Gombos
   <mindfuq@binghamtonwireless.com> for the suggestion.)
 - Dropped tzip support in Mail::Mbox::MessageParser

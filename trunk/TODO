@@ -1,0 +1,187 @@
+- Support for searches on email threads. (Thanks to Zack Brown
+	<zbrown@tumblerings.org> for the excellent feature idea and a prototype
+	implementation.)
+- implement unimplemented code
+- update anonymize_mailbox to anonymize more of the header, and handle
+	attachments.
+- Add mbx format support (email request)
+- Improve unique to avoid X-MimeOLE, X-MozillaStatus, and
+	Content-Type/boundary differences. (Maybe just hash on the received
+	headers?) Skye Otten <skizye@fastmail.fm>
+- Interpret transfer encodings to search the actual content of emails (SF
+	102207)
+- IMAP URLs (SF 894486)
+- grepmailrc
+	- override system paths to decompressor programs
+	- set flags
+- Decode different transfer encodings before checking the pattern
+	- Then support charset-independent patterns and mailboxes
+		https://sourceforge.net/tracker/?func=detail&atid=102207&aid=1058206&group_id=2207
+- Newest 25 messages. (Beth Scaer <bscaer@yahoo.com>)
+- grepmail -D --help doesn't display debug info.
+- -D should print module versions
+- Support ^M as a line terminator. Requested by Giovanni Bechis
+	(https://sourceforge.net/users/gbechis).
+	https://sourceforge.net/tracker/?func=detail&aid=1789911&group_id=2207&atid=352207
+- Emit an X-UID header with an IMAP URL. Requested by Bart Schaefer
+	(https://sourceforge.net/users/barts).
+	https://sourceforge.net/tracker/index.php?func=detail&aid=894486&group_id=2207&atid=352207
+
+------------------------------------------------------------------------------
+
+From Egmont Koblinger (https://sourceforge.net/users/egmont):
+
+- grepmail should operate at a higher level of semantics, interpreting the
+	mbox format to extract the real text of the email for searching.
+
+Details, including sample code is here:
+https://sourceforge.net/tracker/?func=detail&aid=1058206&group_id=2207&atid=352207
+
+Hi,
+
+I'm new to grepmail and tried it to see whether it fits my needs.
+Unfortunately it doesn't really. My problem is that grepmail performs the grep
+on the low level mailbox files, this way it is not *much* more than a simple
+grep, though definitely it is more.
+
+Basically I mean there are two problems: neither transfer encoding nor
+character set encodings are taken into accont.
+
+Mailbox format is a very complicated format which converts between human
+readable texts and byte sequences. The same human readable content can usually
+be converted into mailbox format more ways: there are more character set
+conversions (iso- 8859-1, iso-8859-2, koi8-r, utf-8...) and more transfer
+encodings (8- bit, base64, quoted-printable...) to choose from.
+
+I think that greping the low level mailbox doesn't make much sense, since I
+really don't care what charset or transfer encoding a message is encoded in.
+I'd like to grep in the _meaning_, the interpretation of each particular
+message. I'd like to find all letters where the sender typed a certain
+human-readable word.
+
+If a word in message body is split over multiple lines, for example, it is
+encoded in quoted-printable the mailbox file and there's an equal sign at the
+end of a line such as this:
+
+... this is an examp=
+le to show what I'm talking about
+
+then I see the "example" word in my mail client without being wrapped, but
+`grepmail example' doesn't find it matching.
+
+Similarly, `grepmail 8859' matches every letter encoded in some of the
+iso-8859-* charsets, but hey, I don't care what encoding a message uses, I'm
+interested in whether the real content of what my friend typed includes the
+number 8859.
+
+And greping for accented letters is nearly impossible as each letter uses
+different character set encodings, but I don't want to find a particular byte
+sequence, I want to find a particular sequence of human-visible characters, no
+matter what encodings they use.
+
+So this is what IMHO grepmail should use:
+
+- convert the pattern it founds on the command line from my locale to utf-8,
+- for each message found in the mailbox, separately, first decode it from its
+	transfer encoding (quoted-printable, base64...) and then iconv it from its
+	charset to utf-8, specially taking care of the complicated encodings used in
+	the header fields such as Subjec,
+- and after all these it should perform the greping, and for matching messages
+	it should print their original (unconverted) raw mailbox version.
+
+------------------------------------------------------------------------------
+
+- Revise -E functionality. (Thanks to Vadim <vadim@genego.com> for the
+	feedback and suggestions)
+
+Dear David,
+
+in the README of your 'grepmail' I found that you are looking for
+feedback on the '-E' option. So I decided do comment on it.
+
+I like this feature and I want to use all the power of perl
+here, so there is no need for alternatives. But I think something
+can be improved. First of all the variable names '$email_header'
+'$email_body' and '$email' are too long for command-line option. I
+would prefer to use for example '$h', '$b' and '$a' instead.
+
+I would also suggest to add an option (say -A) similar to perl's
+'-M' to allow including any perl module, so the complex conditions
+like
+  grepmail -E 'use Foo::Bar; ...'
+may be simplified to
+  grepmail -AFoo::Bar -E '...'
+
+Also I think that modification and compilation of user's pattern
+for every e-mail (in function Do_Complex_Pattern_Matching) is not
+an efficient way to allow complex matching. I would suggest to
+compile user's pattern once into anonymous subroutine and call that
+subroutine for each e-mail. Probably it's a good idea to use
+Data::Alias module to avoid extra copying. Let me summarize in
+pseudocode:
+
+  use Data::Alias;
+  our $h;           # $a and $b are always present
+
+  #...
+  my $sub_ref;
+  if ( $opts{'E'} ) {
+      $sub_ref = eval "sub { $opts{'E'} }" or die "...";
+  }
+
+  # Before calling Do_Complex_Pattern_Matching
+  alias local $a = $email;
+  alias local $h = $email_header;
+  alias local $b = $email_body;
+  ... = Do_Complex_Pattern_Matching(...);
+
+  # In Do_Complex_Pattern_Matching
+  if( $sub_ref ) {
+      $matchesEmail = $sub_ref->();
+  }
+
+Thank you for 'grepmail' and I hope you will find something useful
+in my feedback.
+
+Vadim.
+
+------------------------------------------------------------------------------
+
+- Add UTF mime support. (Thanks to Peter Jakobi <jakobi@acm.org> for the
+	feature suggestion and patch.)
+
+See email and grepmail.jakobi*
+
+Hi,
+
+given the recent increase in utf mime mails, I was a bit annoyed at grepmail's
+lack of support.
+
+And living in Germany, the few umlauts make it far more likely to
+write/receive/archive mimed-email. From header =?...?= to real mimes.
+
+And encountering old latin1 umlauts in source, filenames and stuff on an utf-8
+system is nice. Nearly as nice as not having set LC_COLLATE and wondering why
+[a-z]* suddenly likes to match uppercase on a new ubuntu box.
+
+Anyway, annoyance breeds code, and code lacks testing. I'd love if you could
+take a look at this, as I don't have enough interesting test cases on my own.
+Worse, as it works for me more or less now, the annoyance level is too low to
+properly maintain and bulletproof the patch.
+
+The basic idea is: grep a mangled mail version on -z, but return the valid one
+on output. Furthermore, I'm not that much interested in anything but German
+umlauts and the most common European one, and I want to grep for words
+containing them in Plain-Ascii (i.e. the eMail is mangled to Ue instead of
+uppercase U diaeris), where latin1==ascii==utf-8, so this kind of allows
+skipping the whole thorny $LANG issue during grep.  As the mangled version
+isn't for output, this allowed to add on a basic de-html and paragraph mode to
+ease grepping. My few test cases were in simple mode, but as I'm outside the
+grep functions, -E queries should also behave.
+
+See attachments; patch is against ubuntu7.10beta's take on the ancient stable
+version of grepmail.
+
+what do you think?
+
+------------------------------------------------------------------------------
