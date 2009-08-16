@@ -6,19 +6,6 @@ allowed, and date and size restrictions are supported, as are searches using
 logical operators.
 
 
-NEW IN THIS VERSION
-
-Version 5.3033: Thu Mar 1 2007
-- Improved the documentation for -Y. (Thanks to Justin Gombos
-  for the suggestion.)
-- Dropped tzip support in Mail::Mbox::MessageParser
-- Added -L flag to follow symbolic links. (Thanks to Peter Teuben
-  for prompting the idea.)
-- Fixed grepmail so that it works with Mail::Mbox::MessageParser 1.5000
-  (Thanks to Paul for the bug report, and Alexey Tourbin for the fix.)
-- Fixed testspeed.pl to properly call report() instead of get_report() on new
-  versions of Benchmark::Timer
-
 SOME NOTES
 
 perl version:
@@ -77,8 +64,9 @@ To use this program, you will need to install:
   you are checking for unique emails (-u) and your emails don't have a
   Message-Id header
 
-You should be prompted to install modules automatically when you run "perl
-Makefile.PL".
+To test this module, you will need to install:
+
+- Test::More
 
 
 INSTALLATION
@@ -153,8 +141,11 @@ Just "perldoc grepmail". After installation on Unix systems, you can also do
 
 HOMEPAGE
 
-Visit http://grepmail.sourceforge.net/ for the latest version, mailing lists,
-discussion forums, CVS access, cool utilities, and more.
+The CPAN Page:
+http://search.cpan.org/dist/grepmail/
+
+The Google Code page:
+http://code.google.com/p/grepmail/
 
 
 TODO/WISHLIST
@@ -167,8 +158,9 @@ TODO/WISHLIST
 
 REPORTING BUGS
 
-You can report bugs at http://sourceforge.net/bugs/?group_id=2207.  Please
-attach the output of running grepmail with the -D switch. If the bug is
+http://code.google.com/p/grepmail/issues/entry
+
+Please attach the output of running grepmail with the -D switch. If the bug is
 related to processing of a particular mailbox, try to trim the mailbox to the
 smallest set of emails that still exhibit the problem.  Then use the
 "anonymize_mailbox" program that comes with grepmail to remove any sensitive
@@ -183,8 +175,9 @@ Coppit. All rights reserved, save those granted by the license.
 
 LICENSE
 
-This code is distributed under the GNU General Public License (GPL).  See
-the file LICENSE included in the distribution.
+This code is distributed under the GNU General Public License (GPL). See the
+file LICENSE in the distribution, http://www.opensource.org/gpl-license.html,
+and http://www.opensource.org/.
 
 
 AUTHOR

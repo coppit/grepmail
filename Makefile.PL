@@ -1,65 +1,49 @@
 #!/usr/bin/perl
 
 use strict;
+
 # For PRIVATE Module::Install extensions
 use lib 'lib';
+
 use inc::Module::Install;
 
-Check_Custom_Installation();
+# Do all_from first to get the required perl version before
+# check_custom_installation runs
+name            ('grepmail');
+all_from        ('grepmail');
 
-print "\n", '-'x78, "\n\n";
+check_custom_installation();
 
-name              ('grepmail');
-author            ('David Coppit <david@coppit.org>');
-abstract_from     ('grepmail');
-version_from      ('grepmail');
-license           ('gpl');
+install_script  ('grepmail');
 
-install_script    ('grepmail');
-
-build_requires    (
-                    'Test::More' => 0,
-                  );
-
-requires          (
-                    'perl' => '5.004',
+requires        (
                     'Date::Parse' => 0,
                     'Mail::Mbox::MessageParser' => '1.4001',
-                  );
+                );
 
-postamble         (
-' 
+test_requires   (
+                    'Test::More' => 0,
+                );
+
+sub MY::postamble {
+  return &Module::AutoInstall::postamble . <<'EOF';
 testspeed :: pure_all
-	PERL_DL_NONLAZY=1 $(PERLRUN) "-I$(INST_LIB)" "-I$(INST_ARCHLIB)" t/speed.pl
-'
-);
+	PERL_DL_NONLAZY=1 $(PERLRUN) "-I$(INST_LIB)" \
+	  "-I$(INST_ARCHLIB)" t/speed.pl
+EOF
+}
 
-# Optional features and their modules
-features          (
-                    'Reduced Memory Consumption for -u' => [
-                      -default => 0,
-                      recommends( 'Digest::MD5' => 0 ),
-                    ],
-                    'Complex Date Patterns' => [
-                      -default => 1,
-                      recommends( 'Date::Manip' => 0 ),
-                    ],
-                    'Speed Tests' => [
-                      -default => 0,
-                      recommends( 'Benchmark::Timer' => '0.7100' ),
-                    ],
-                  );
+check_optional( 'Digest::MD5' => 0,
+  "Digest::MD5 reduces memory consumption for the -u (unique) option\n");
 
-include           ('ExtUtils/AutoInstall.pm');
+check_optional( 'Date::Manip' => 0,
+  "Date::Manip allows you to use complex date patterns for the -d option\n");
 
-clean_files       ('t/temp');
+check_optional( 'Benchmark::Timer' => 0,
+  "Benchmark::Timer is required for speed tests\n");
 
-auto_include_deps ( );
-auto_install      ( );
+clean_files     ('t/temp');
+
 WriteAll();
 
-print "\n", '-'x78, "\n\n";
-
 Update_Test_Version('grepmail','t/results/help');
-
-exit;

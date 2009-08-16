@@ -2,7 +2,7 @@
 
 # grepmail
 
-$VERSION = sprintf "%d.%02d%02d", q/5.30.33/ =~ /(\d+)/g;
+$VERSION = sprintf "%d.%02d%02d", q/5.30.34/ =~ /(\d+)/g;
 
 # Grepmail searches a normal, gzip'd, or bzip2'd mailbox for a given regular
 # expression and returns those emails that match the query. It also supports
@@ -20,10 +20,7 @@ $VERSION = sprintf "%d.%02d%02d", q/5.30.33/ =~ /(\d+)/g;
 # debugging and patching by others -- see the CHANGES file for a complete
 # list.
 
-# This code is distributed under the GNU General Public License (GPL). See
-# http://www.opensource.org/gpl-license.html and http://www.opensource.org/.
-
-require 5.00396;
+use 5.005;
 
 use vars qw( %opts $commandLine $VERSION %message_ids_seen
              $USE_CACHING $USE_GREP );
@@ -574,14 +571,15 @@ sub Get_Files(@)
       # Gets all plain files in directory and descendents. Puts them in @files
       $File::Find::name = '';
 
+      my $wanted = sub { push @files,$File::Find::name if -f $_ };
+
       if ($opts{'L'})
       {
-        find( { wanted => sub {push @files,"$File::Find::name" if -f $_},
-          follow => 1 }, $arg);
+        find({ wanted => $wanted, follow => 1, follow_skip => 2 }, $arg);
       }
       else
       {
-        find(sub {push @files,"$File::Find::name" if -f $_}, $arg);
+        find({ wanted => $wanted }, $arg);
       }
     }
     else
@@ -1658,9 +1656,16 @@ sub Print_Email
     if ($opts{'B'})
     {
       print Get_Header_Field($email_header,'From ',$endline);
-      print Get_Header_Field($email_header,'Date:',$endline);
-      print Get_Header_Field($email_header,'From:',$endline);
-      print Get_Header_Field($email_header,'Subject:',$endline);
+
+      my $date_header = Get_Header_Field($email_header,'Date:',$endline);
+      print $date_header if defined $date_header;
+
+      my $from_header = Get_Header_Field($email_header,'From:',$endline);
+      print $from_header if defined $from_header;
+
+      my $subject_header = Get_Header_Field($email_header,'Subject:',$endline);
+      print $subject_header if defined $subject_header;
+
       print "X-Mailfolder: ".Get_Filename($fileName)."$endline$endline" if $opts{'m'};
     }
     else
@@ -2546,12 +2551,12 @@ Get all email that you mailed yesterday
 Get all email that you mailed before the first thursday in June 1998 that
 pertains to research (requires Date::Manip):
 
-  grepmail research -d "before 1st thursday in June 1992" sent-mail
+  grepmail research -d "before 1st thursday in June 1998" sent-mail
 
 Get all email that you mailed before the first of June 1998 that
 pertains to research:
 
-  grepmail research -d "before 6/1/92" sent-mail
+  grepmail research -d "before 6/1/98" sent-mail
 
 Get all email you received since 8/20/98 that wasn't about research or your
 job, ignoring case:
@@ -2649,9 +2654,15 @@ pattern.
 
 =back
 
+=head1 LICENSE
+
+This code is distributed under the GNU General Public License (GPL). See the
+file LICENSE in the distribution, http://www.opensource.org/gpl-license.html,
+and http://www.opensource.org/.
+
 =head1 AUTHOR
 
-David Coppit, <david@coppit.org>, http://coppit.org/
+David Coppit E<lt>david@coppit.orgE<gt>
 
 =head1 SEE ALSO
 
