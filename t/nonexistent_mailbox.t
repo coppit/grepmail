@@ -14,23 +14,11 @@ my $path_to_perl = $Config{perlpath};
 my %tests = (
 'grepmail pattern no_such_file'
   => ['none','no_such_file'],
-"$path_to_perl -MExtUtils::Command -e cat no_such_file 2>" . devnull() .
-  " | grepmail pattern"
-  => ['none','no_data'],
 "grepmail -E $single_quote\$email =~ /pattern/$single_quote no_such_file"
   => ['none','no_such_file'],
-"$path_to_perl -MExtUtils::Command -e cat no_such_file 2>" . devnull() .
-  " | grepmail -E $single_quote\$email =~ /pattern/$single_quote"
-  => ['none','no_data'],
 );
 
 my %expected_errors = (
-"$path_to_perl -MExtUtils::Command -e cat no_such_file 2>" . devnull() .
-  " | grepmail pattern"
-  => 1,
-"$path_to_perl -MExtUtils::Command -e cat no_such_file 2>" . devnull() .
-  " | grepmail -E $single_quote\$email =~ /pattern/$single_quote"
-  => 1,
 );
 
 my %localization = (
