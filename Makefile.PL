@@ -7,6 +7,8 @@ use lib 'lib';
 
 use inc::Module::Install;
 
+BEGIN { makemaker_args( NORECURS => 1 ) }
+
 # Do all_from first to get the required perl version before
 # check_custom_installation runs
 name            ('grepmail');
