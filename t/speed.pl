@@ -200,7 +200,7 @@ sub CollectData
       my $label = "$old_or_new $impl";
 
       my $new_test = $test;
-      $new_test =~ s/\bgrepmail\b/$^X $grepmail/g;
+      $new_test =~ s/\bgrepmail\b/$path_to_perl $grepmail/g;
 
       print "$impl ($old_or_new)\n";
 

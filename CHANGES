@@ -5,21 +5,23 @@ Version 5.3035: Mon Mar 23 2015
   <cristian.ionescu-idbohrn@axis.com> for the bug report via Debian's bug
   tracker.)
 - Add POD test
+- Update tests to use Config{perlpath} for better compatibility with automated
+  testing.
 
 Version 5.3034: Sun Aug 16 2009
 - Fixed man page year typo. Closes: Debian bug #428973 (Thanks to Joes Hess
-	<joeyh@debian.org> for the patch)
+  <joeyh@debian.org> for the patch)
 - Updated to the latest version of Module::Install
 - Moved hosting to Google Code
 - Added my old TODO to the distribution, adding a number of feature requests
-	from SourceForge
+  from SourceForge
 - Fixed a bug where grepmail would abort if the links traversed with -L caused
-	a directory to be encountered more than once.
+  a directory to be encountered more than once.
 - Fixed a bug in the -R test that would cause the test to fail when it should
-	not.
+  not.
 - Fixed uninitialized variable warnings for emails missing the Date:,
-	Subject:, or From: headers (Thanks to Steven W. Orr <steveo@syslang.net> for
-	the bug report.)
+  Subject:, or From: headers (Thanks to Steven W. Orr <steveo@syslang.net> for
+  the bug report.)
 
 Version 5.3033: Thu Mar 01 2007
 - Improved the documentation for -Y. (Thanks to Justin Gombos
@@ -28,10 +30,10 @@ Version 5.3033: Thu Mar 01 2007
 - Added -L flag to follow symbolic links. (Thanks to Peter Teuben
   <teuben@astro.umd.edu> for prompting the idea.)
 - Fixed grepmail so that it works with Mail::Mbox::MessageParser 1.5000
-	(Thanks to Paul <paul@city-fan.org> for the bug report, and Alexey Tourbin
-	for the fix.)
+  (Thanks to Paul <paul@city-fan.org> for the bug report, and Alexey Tourbin
+  for the fix.)
 - Fixed testspeed.pl to properly call report() instead of get_report() on new
-	versions of Benchmark::Timer
+  versions of Benchmark::Timer
 
 Version 5.3032: Tue Aug 2 2005
 - Fixed backwards diff in test cases

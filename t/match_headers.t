@@ -6,6 +6,9 @@ use Test::More;
 use lib 't';
 use Test::Utils;
 use File::Spec::Functions qw( :ALL );
+use Config;
+
+my $path_to_perl = $Config{perlpath};
 
 my %tests = (
 "grepmail -Y $single_quote(^From:|^TO:)$single_quote Edsinger t/mailboxes/mailarc-1.txt"
@@ -55,7 +58,7 @@ sub TestIt
   $testname =~ s#\.t##;
 
   {
-    my @standard_inc = split /###/, `perl -e '\$" = "###";print "\@INC"'`;
+    my @standard_inc = split /###/, `$path_to_perl -e '\$" = "###";print "\@INC"'`;
     my @extra_inc;
     foreach my $inc (@INC)
     {
@@ -66,11 +69,11 @@ sub TestIt
     local $" = ' -I';
     if (@extra_inc)
     {
-      $test =~ s#\bgrepmail\s#$^X -I@extra_inc blib/script/grepmail -C t/temp/cache #g;
+      $test =~ s#\bgrepmail\s#$path_to_perl -I@extra_inc blib/script/grepmail -C t/temp/cache #g;
     }
     else
     {
-      $test =~ s#\bgrepmail\s#$^X blib/script/grepmail -C t/temp/cache #g;
+      $test =~ s#\bgrepmail\s#$path_to_perl blib/script/grepmail -C t/temp/cache #g;
     }
   }
 
