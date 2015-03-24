@@ -3,6 +3,8 @@
 \bCVS\b
 ,v$
 \B\.svn\b
+\B\.git\b
+^\.gitignore$
 
 # Makemaker generated files and dirs.
 ^MANIFEST\.
@@ -25,8 +27,10 @@
 ^DEVELOPERNOTES$
 ^announce.sample$
 ^old/
+^experiments/
 \.tar\.gz$
 t/temp/
+^MYMETA.(json|yml)
 
 # grepmail extra files
 ^misc/
@@ -35,3 +39,4 @@ t/temp/
 ^grepmail\.
 ^windows/
 ^lib/Module/Install/
+^rfc2822.txt$

@@ -129,6 +129,17 @@ t/results/unique_handy
 
 # Module::Install extensions
 inc/File/HomeDir.pm
+inc/File/HomeDir/Darwin.pm
+inc/File/HomeDir/Darwin/Carbon.pm
+inc/File/HomeDir/Darwin/Cocoa.pm
+inc/File/HomeDir/Driver.pm
+inc/File/HomeDir/FreeDesktop.pm
+inc/File/HomeDir/MacOS9.pm
+inc/File/HomeDir/Test.pm
+inc/File/HomeDir/Unix.pm
+inc/File/HomeDir/Windows.pm
+inc/File/Temp.pm
+inc/File/Which.pm
 inc/Module/Install.pm
 inc/Module/Install/Base.pm
 inc/Module/Install/Can.pm
@@ -142,9 +153,6 @@ inc/Module/Install/PRIVATE/Update_Test_Version.pm
 inc/Module/Install/Scripts.pm
 inc/Module/Install/Win32.pm
 inc/Module/Install/WriteAll.pm
-inc/File/HomeDir/Darwin.pm
-inc/File/HomeDir/MacOS9.pm
-inc/File/HomeDir/Unix.pm
-inc/File/HomeDir/Windows.pm
+inc/Scalar/Util.pm
 
 META.yml
