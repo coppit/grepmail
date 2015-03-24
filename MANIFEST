@@ -42,6 +42,7 @@ t/not_match_uncompressed.t
 t/pattern_file.t
 t/pipe_compressed.t
 t/pipe_uncompressed.t
+t/pod.t
 t/received_date.t
 t/recursive.t
 t/size.t

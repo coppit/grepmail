@@ -4,6 +4,7 @@ Version 5.3035: Mon Mar 23 2015
   match emails properly. (Thanks to Cristian Ionescu-Idbohrn
   <cristian.ionescu-idbohrn@axis.com> for the bug report via Debian's bug
   tracker.)
+- Add POD test
 
 Version 5.3034: Sun Aug 16 2009
 - Fixed man page year typo. Closes: Debian bug #428973 (Thanks to Joes Hess
