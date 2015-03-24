@@ -10,6 +10,7 @@ Version 5.3035: Mon Mar 23 2015
 - Prevent MakeMaker from recursing into any "old" directory
 - Fix t/invalid_date.t to work even when Date::Manip is not installed.
 - Fix t/nonexistent_mailbox.t -- broken STDIN does not cause $SIG{PIPE}
+- Dropped tzip support
 
 Version 5.3034: Sun Aug 16 2009
 - Fixed man page year typo. Closes: Debian bug #428973 (Thanks to Joes Hess

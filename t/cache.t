@@ -17,8 +17,6 @@ my %tests = (
   => ['all_handy','none'],
 'grepmail Handy t/mailboxes/mailarc-1.txt.bz2'
   => ['all_handy','none'],
-'grepmail Handy t/mailboxes/mailarc-1.txt.tz'
-  => ['all_handy','none'],
 'grepmail -e Handy t/mailboxes/mailarc-1.txt'
   => ['all_handy','none'],
 'grepmail Handy t/mailboxes/mailarc-1-dos.txt'
@@ -123,12 +121,6 @@ sub SetSkip
   {
     $skip{'grepmail Handy t/mailboxes/mailarc-1.txt.bz2'}
       = 'bzip2 support not enabled in Mail::Mbox::MessageParser';
-  }
-
-  unless (defined $Mail::Mbox::MessageParser::Config{'programs'}{'tzip'})
-  {
-    $skip{'grepmail Handy t/mailboxes/mailarc-1.txt.tz'}
-      = 'tzip support not enabled in Mail::Mbox::MessageParser';
   }
 
   return %skip;

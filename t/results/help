@@ -1,4 +1,4 @@
-grepmail 5.3034
+grepmail 5.3035
 
 usage:
 
@@ -20,7 +20,7 @@ usage:
 At least one of -s, -d, -u, -e, and -E must be specified, and can appear in
 any relative order following the other flags. The -e flag is optional if
 pattern appears immediately before -s or -d. Files can be plain ASCII or ASCII
-files compressed with gzip, or bzip2. -E allows for complex pattern matches
+files compressed with gzip or bzip2. -E allows for complex pattern matches
 involving logical operators. If no file is provided, normal or compressed
 ASCII input is taken from STDIN.
 
