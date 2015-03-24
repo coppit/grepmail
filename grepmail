@@ -2,7 +2,7 @@
 
 # grepmail
 
-$VERSION = sprintf "%d.%02d%02d", q/5.30.34/ =~ /(\d+)/g;
+$VERSION = sprintf "%d.%02d%02d", q/5.30.35/ =~ /(\d+)/g;
 
 # Grepmail searches a normal, gzip'd, or bzip2'd mailbox for a given regular
 # expression and returns those emails that match the query. It also supports
@@ -988,7 +988,7 @@ sub Do_Complex_Pattern_Matching
 
   $modified_pattern =~ s/\$email_header\b/\$\$email_header/g;
   $modified_pattern =~ s/\$email_body\b/\$\$email_body/g;
-  $modified_pattern =~ s#(=~\s*)/([^/]*)/#$1/$2/om#g;
+  $modified_pattern =~ s#(=~\s*)/(.*?(?<!\\))/#$1/$2/om#g;
 
   my $matchesEmail;
 

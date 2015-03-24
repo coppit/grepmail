@@ -1,5 +1,9 @@
 Version 5.3035: Mon Mar 23 2015
 - Move code to github
+- Fixed a bug where complex -E search patterns containing '\/' would fail to
+  match emails properly. (Thanks to Cristian Ionescu-Idbohrn
+  <cristian.ionescu-idbohrn@axis.com> for the bug report via Debian's bug
+  tracker.)
 
 Version 5.3034: Sun Aug 16 2009
 - Fixed man page year typo. Closes: Debian bug #428973 (Thanks to Joes Hess
