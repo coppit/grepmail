@@ -19,6 +19,8 @@ my %tests = (
   => ['all_handy','none'],
 'grepmail Handy t/mailboxes/mailarc-1.txt.lz'
   => ['all_handy','none'],
+'grepmail Handy t/mailboxes/mailarc-1.txt.xz'
+  => ['all_handy','none'],
 'grepmail -e Handy t/mailboxes/mailarc-1.txt'
   => ['all_handy','none'],
 'grepmail Handy t/mailboxes/mailarc-1-dos.txt'
@@ -129,6 +131,12 @@ sub SetSkip
   {
     $skip{'grepmail Handy t/mailboxes/mailarc-1.txt.lz'}
       = 'lzip support not enabled in Mail::Mbox::MessageParser';
+  }
+
+  unless (defined $Mail::Mbox::MessageParser::Config{'programs'}{'xz'})
+  {
+    $skip{'grepmail Handy t/mailboxes/mailarc-1.txt.xz'}
+      = 'xz support not enabled in Mail::Mbox::MessageParser';
   }
 
   return %skip;

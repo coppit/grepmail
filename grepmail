@@ -4,16 +4,6 @@
 
 $VERSION = sprintf "%d.%02d%02d", q/5.31.0/ =~ /(\d+)/g;
 
-# Grepmail searches a normal, gzip'd, bzip2'd or lzip'd mailbox for a given
-# regular expression and returns those emails that match the query. It also
-# supports piped compressed or ascii input, and searches constrained by date
-# and size.
-
-# Visit the grepmail project homepage at http://grepmail.sourceforge.net/
-# There you can join the announcements mailing list to be notified of updates,
-# grab the development environment via CVS, participate in chats and mailing
-# lists, report bugs, submit patches, etc.
-
 # Do a pod2text on this file to get full documentation, or pod2man to get
 # man pages.
 
@@ -2181,7 +2171,7 @@ usage:
 At least one of -s, -d, -u, -e, and -E must be specified, and can appear in
 any relative order following the other flags. The -e flag is optional if
 pattern appears immediately before -s or -d. Files can be plain ASCII or ASCII
-files compressed with gzip, bzip2 or lzip. -E allows for complex pattern
+files compressed with gzip, bzip2, lzip, or xz. -E allows for complex pattern
 matches involving logical operators. If no file is provided, normal or
 compressed ASCII input is taken from STDIN.
 
@@ -2293,8 +2283,10 @@ initialize the cache without printing any output.
 =item B<mailbox>
 
 Mailboxes must be traditional, UNIX C</bin/mail> mailbox format.  The
-mailboxes may be compressed by gzip, bzip2 or lzip, in which case
-gunzip, bzip2 or lzip must be installed on the system.
+mailboxes may be compressed by gzip, bzip2, lzip or xz, in which case the
+associated compression tool must be installed on the system, as well as a
+recent version of the Mail::Mbox::MessageParser Perl module that supports the
+format.
 
 If no mailbox is specified, takes input from stdin, which can be compressed or
 not. grepmail's behavior is undefined when ASCII and binary data is piped

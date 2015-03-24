@@ -58,6 +58,7 @@ t/mailboxes/mailarc-1-dos.txt
 t/mailboxes/mailarc-1.txt.bz2
 t/mailboxes/mailarc-1.txt.gz
 t/mailboxes/mailarc-1.txt.lz
+t/mailboxes/mailarc-1.txt.xz
 t/mailboxes/mailarc-2.txt
 t/mailboxes/mailarc-3.txt
 t/mailboxes/non-mailbox.txt.gz

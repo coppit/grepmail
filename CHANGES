@@ -13,6 +13,7 @@ Version 5.3100: Mon Mar 23 2015
 - Dropped tzip support
 - Added lzip support. http://sourceforge.net/p/grepmail/patches/8/
   Thanks to the anonymous contributor.
+- Added xz support.
 
 Version 5.3034: Sun Aug 16 2009
 - Fixed man page year typo. Closes: Debian bug #428973 (Thanks to Joes Hess

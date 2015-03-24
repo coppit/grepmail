@@ -1,10 +1,9 @@
 grepmail - search mailboxes for a particular email
 
-Grepmail searches a normal, gzip'd, bzip2'd or lzip'd mailbox for a given
-regular expression, and returns those emails that match it. Piped input is
-allowed, and date and size restrictions are supported, as are searches using
-logical operators.
-
+Grepmail searches a mailbox for a given regular expression, and returns those
+emails that match it. Piped input is allowed, and date and size restrictions
+are supported, as are searches using logical operators. Grepmail also supports
+a variety of compression formats: gzip, bzip2, lzip, and xz.
 
 SOME NOTES
 

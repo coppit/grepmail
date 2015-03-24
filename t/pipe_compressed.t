@@ -17,11 +17,15 @@ my %tests = (
   => ['all_handy','none'],
 'cat t/mailboxes/mailarc-1.txt.lz' . ' | grepmail Handy'
   => ['all_handy','none'],
+'cat t/mailboxes/mailarc-1.txt.xz' . ' | grepmail Handy'
+  => ['all_handy','none'],
 'cat t/mailboxes/mailarc-1.txt.gz' . " | grepmail -v -E $single_quote\$email =~ /Handy/$single_quote"
   => ['not_handy','none'],
 'cat t/mailboxes/mailarc-1.txt.bz2' . " | grepmail -v -E $single_quote\$email =~ /Handy/$single_quote"
   => ['not_handy','none'],
 'cat t/mailboxes/mailarc-1.txt.lz' . " | grepmail -v -E $single_quote\$email =~ /Handy/$single_quote"
+  => ['not_handy','none'],
+'cat t/mailboxes/mailarc-1.txt.xz' . " | grepmail -v -E $single_quote\$email =~ /Handy/$single_quote"
   => ['not_handy','none'],
 );
 
@@ -133,6 +137,14 @@ sub SetSkip
       = 'lzip support not enabled in Mail::Mbox::MessageParser';
     $skip{'cat t/mailboxes/mailarc-1.txt.lz' . " | grepmail -v -E $single_quote\$email =~ /Handy/$single_quote"}
       = 'lzip support not enabled in Mail::Mbox::MessageParser';
+  }
+
+  unless (defined $Mail::Mbox::MessageParser::Config{'programs'}{'xz'})
+  {
+    $skip{'cat t/mailboxes/mailarc-1.txt.xz' . ' | grepmail Handy'}
+      = 'xz support not enabled in Mail::Mbox::MessageParser';
+    $skip{'cat t/mailboxes/mailarc-1.txt.xz' . " | grepmail -v -E $single_quote\$email =~ /Handy/$single_quote"}
+      = 'xz support not enabled in Mail::Mbox::MessageParser';
   }
 
   return %skip;
