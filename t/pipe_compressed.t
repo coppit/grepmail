@@ -15,9 +15,13 @@ my %tests = (
   => ['all_handy','none'],
 'cat t/mailboxes/mailarc-1.txt.bz2' . ' | grepmail Handy'
   => ['all_handy','none'],
+'cat t/mailboxes/mailarc-1.txt.lz' . ' | grepmail Handy'
+  => ['all_handy','none'],
 'cat t/mailboxes/mailarc-1.txt.gz' . " | grepmail -v -E $single_quote\$email =~ /Handy/$single_quote"
   => ['not_handy','none'],
 'cat t/mailboxes/mailarc-1.txt.bz2' . " | grepmail -v -E $single_quote\$email =~ /Handy/$single_quote"
+  => ['not_handy','none'],
+'cat t/mailboxes/mailarc-1.txt.lz' . " | grepmail -v -E $single_quote\$email =~ /Handy/$single_quote"
   => ['not_handy','none'],
 );
 
@@ -121,6 +125,14 @@ sub SetSkip
       = 'bzip2 support not enabled in Mail::Mbox::MessageParser';
     $skip{'cat t/mailboxes/mailarc-1.txt.bz2' . " | grepmail -v -E $single_quote\$email =~ /Handy/$single_quote"}
       = 'bzip2 support not enabled in Mail::Mbox::MessageParser';
+  }
+
+  unless (defined $Mail::Mbox::MessageParser::Config{'programs'}{'lzip'})
+  {
+    $skip{'cat t/mailboxes/mailarc-1.txt.lz' . ' | grepmail Handy'}
+      = 'lzip support not enabled in Mail::Mbox::MessageParser';
+    $skip{'cat t/mailboxes/mailarc-1.txt.lz' . " | grepmail -v -E $single_quote\$email =~ /Handy/$single_quote"}
+      = 'lzip support not enabled in Mail::Mbox::MessageParser';
   }
 
   return %skip;

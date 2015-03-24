@@ -35,6 +35,7 @@ else
  'compress' => '/usr/cs/contrib/bin/gzip',
  'bzip' => undef,
  'bzip2' => undef,
+ 'lzip' => undef,
 );
 
 # ---------------------------------------------------------------------------
