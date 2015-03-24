@@ -1,4 +1,4 @@
-Version 5.3100: Mon Mar 23 2015
+Version 5.3100: Tue Mar 24 2015
 - Move code to github
 - Fixed a bug where complex -E search patterns containing '\/' would fail to
   match emails properly. (Thanks to Cristian Ionescu-Idbohrn
@@ -14,6 +14,9 @@ Version 5.3100: Mon Mar 23 2015
 - Added lzip support. http://sourceforge.net/p/grepmail/patches/8/
   Thanks to the anonymous contributor.
 - Added xz support.
+- Fix incompatibility with newer versions of Date::Manip.
+  https://rt.cpan.org/Ticket/Display.html?id=54621
+  Thanks to paul@city-fan.org for the report and patch.
 
 Version 5.3034: Sun Aug 16 2009
 - Fixed man page year typo. Closes: Debian bug #428973 (Thanks to Joes Hess

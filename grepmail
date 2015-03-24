@@ -385,7 +385,7 @@ sub Get_Options
     if (eval 'require Date::Manip')
     {
       my ($version_number) = $Date::Manip::VERSION =~ /^(\d+\.\d+)/;
-      Date::Manip::Date_Init("TodayIsMidnight=1") if $version_number >= 5.43;
+      Date::Manip::Date_Init("TodayIsMidnight=1") if ($version_number >= 5.43 && $version_number < 6);
     }
   }
 
