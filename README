@@ -144,8 +144,8 @@ HOMEPAGE
 The CPAN Page:
 http://search.cpan.org/dist/grepmail/
 
-The Google Code page:
-http://code.google.com/p/grepmail/
+The GitHub page:
+https://github.com/coppit/grepmail/
 
 
 TODO/WISHLIST
@@ -158,7 +158,7 @@ TODO/WISHLIST
 
 REPORTING BUGS
 
-http://code.google.com/p/grepmail/issues/entry
+https://github.com/coppit/grepmail/issues
 
 Please attach the output of running grepmail with the -D switch. If the bug is
 related to processing of a particular mailbox, try to trim the mailbox to the
@@ -169,7 +169,7 @@ information, and attach the mailbox to the bug report.
 
 COPYRIGHT
 
-Copyright (c) 1998-Sep 1 2000 Broc Seib. Copyright (c) Sep 1 2000-2004 David
+Copyright (c) 1998-Sep 1 2000 Broc Seib. Copyright (c) Sep 1 2000-2015 David
 Coppit. All rights reserved, save those granted by the license.
 
 
