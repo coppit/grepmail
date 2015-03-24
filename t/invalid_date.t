@@ -10,8 +10,13 @@ use Config;
 
 my $path_to_perl = $Config{perlpath};
 
+my $today = "";
+
+my ($day, $month, $year) = (localtime)[3,4,5];
+my $today = ($year+1900) . "/" . ($month+1) . "/$day";
+
 my %tests = (
-'grepmail -d "before today" t/mailboxes/invalid_date.txt'
+qq#grepmail -d "before $today" t/mailboxes/invalid_date.txt#
   => ['date_invalid','none'],
 );
 
