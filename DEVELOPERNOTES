@@ -35,3 +35,5 @@ Checklist for a release:
   $ git push
 - Make a backup in old
   $ rm -rf old; rsync -r --cvs-exclude --exclude=.git * old
+- Copy the grepmail file for speed tests:
+  $ cp grepmail grepmail.old
