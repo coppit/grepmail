@@ -27,7 +27,10 @@ BEGIN
 my $MAILBOX_SIZE = 10_000_000;
 my $TEMP_MAILBOX = 't/temp/bigmailbox.txt';
 
-my $CONFIDENCE = 99.9;
+my $SKIP = 5;
+my $MINIMUM = 10;
+my $CONFIDENCE = 99;
+my $ERROR = 1;
 
 my @IMPLEMENTATIONS_TO_TEST = (
 'Perl',
@@ -219,11 +222,12 @@ sub CollectData
       Test::ConfigureGrepmail::Set_Caching_And_Grep($grepmail,
         @{$settings{$impl}});
 
-      my $t = new Benchmark::Timer(skip => 1, confidence => $CONFIDENCE, error => 2);
+      my $t = new Benchmark::Timer(skip => $SKIP, minimum => $MINIMUM,
+        confidence => $CONFIDENCE, error => $ERROR);
 
       # Need enough for the statistics to be valid
       my $count = 1;
-      while ($count <= 10 || $t->need_more_samples($label))
+      while ($t->need_more_samples($label))
       {
         print ".";
 
@@ -249,7 +253,7 @@ sub CollectData
       my $benchmark = new Benchmark;
       die "Benchmark object doesn't look right" unless @$benchmark == 6;
       # Assign our total to the CPU entry, since that what the module compares.
-      @$benchmark = ( $sum, 0, 0, $sum, 0, $count );
+      @$benchmark = ( $sum, 0, 0, $sum, 0, scalar @{$results{$label}} );
       $data{$label} = $benchmark;
     }
   }
