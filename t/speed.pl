@@ -14,6 +14,9 @@ use FileHandle;
 use Test::ConfigureGrepmail;
 use File::Copy;
 use File::Spec;
+use Config;
+
+my $path_to_perl = $Config{perlpath};
 
 BEGIN
 {
