@@ -188,7 +188,7 @@ sub CollectData
     'Cache Use' => [1,0],
   );
 
-  foreach my $old_or_new qw(New Old)
+  foreach my $old_or_new (qw(New Old))
   {
     my $grepmail = 't/temp/grepmail';
     $grepmail .= '.old' if $old_or_new eq 'Old';
