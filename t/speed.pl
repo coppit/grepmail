@@ -232,11 +232,16 @@ sub CollectData
 
       print $t->report($label);
 
+      my $sum = 0;
+      my %results = $t->data();
+      map { $sum += $_ } @{$results{$label}};
+
       # Fake a benchmark object so we can compare later using Benchmark
-      $data{$label} = new Benchmark;
-      $data{$label}[5] = 1;
-      $data{$label}[1] = $t->result($label);
-      $data{$label}[2] = 0;
+      my $benchmark = new Benchmark;
+      die "Benchmark object doesn't look right" unless @$benchmark == 6;
+      # Assign our total to the CPU entry, since that what the module compares.
+      @$benchmark = ( $sum, 0, 0, $sum, 0, $count );
+      $data{$label} = $benchmark;
     }
   }
 
