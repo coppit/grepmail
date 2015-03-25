@@ -210,8 +210,8 @@ sub CollectData
       my $t = new Benchmark::Timer(skip => 1, confidence => 97.5, error => 2);
 
       # Need enough for the statistics to be valid
-      my $count = 0;
-      while ($count - 1 < 10 || $t->need_more_samples($label))
+      my $count = 1;
+      while ($count <= 10 || $t->need_more_samples($label))
       {
         print ".";
 
