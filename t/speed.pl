@@ -27,6 +27,8 @@ BEGIN
 my $MAILBOX_SIZE = 10_000_000;
 my $TEMP_MAILBOX = 't/temp/bigmailbox.txt';
 
+my $CONFIDENCE = 99.9;
+
 my @IMPLEMENTATIONS_TO_TEST = (
 'Perl',
 'Grep',
@@ -35,29 +37,32 @@ my @IMPLEMENTATIONS_TO_TEST = (
 );
 
 my %TESTS = (
-'SIMPLE' => "grepmail library $TEMP_MAILBOX",
-#'DATE' => "grepmail library -d \"before oct 15 1998\" $TEMP_MAILBOX",
-'COMPRESSED' => "grepmail library $TEMP_MAILBOX.gz",
-#'HEADER' => "grepmail -h library $TEMP_MAILBOX",
-#'BODY' => "grepmail -b library $TEMP_MAILBOX",
-#'BODY & HEADER' => "grepmail -bh library $TEMP_MAILBOX",
-#'PIPE' => "cat $TEMP_MAILBOX | grepmail library",
+'SIMPLE' => "grepmail library \$TEMP_MAILBOX",
+#'DATE' => "grepmail library -d \"before oct 15 1998\" \$TEMP_MAILBOX",
+'COMPRESSED' => "grepmail library \$TEMP_MAILBOX",
+#'HEADER' => "grepmail -h library \$TEMP_MAILBOX",
+#'BODY' => "grepmail -b library \$TEMP_MAILBOX",
+#'BODY & HEADER' => "grepmail -bh library \$TEMP_MAILBOX",
+#'PIPE' => "cat \$TEMP_MAILBOX | grepmail library",
 );
 
 mkdir 't/temp';
 
-CreateInputFiles($TEMP_MAILBOX);
+my $filename = CreateInputFiles();
 
 foreach my $label (keys %TESTS)
 {
   print "\n";
 
-  print "Executing speed test \"$label\":\n$TESTS{$label}\n\n";
+  my $new_filename = $filename;
+  $new_filename .= ".gz" if $label =~ /COMPRESS/;
 
-  my $mailbox = $TEMP_MAILBOX;
-  $mailbox .= '.gz' if $label =~ /COMPRESS/;
+  my $test = $TESTS{$label};
+  $test =~ s/\$TEMP_MAILBOX/$new_filename/g;
 
-  my $data = CollectData($mailbox, $TESTS{$label});
+  print "Executing speed test \"$label\":\n$test\n\n";
+
+  my $data = CollectData($test);
 
   print "=========================================\n";
 
@@ -89,9 +94,11 @@ sub RemoveInputFile
 
 sub CreateInputFiles
 {
-  my $filename = shift;
+  my $filename = $TEMP_MAILBOX;
 
   my @mailboxes;
+
+  my @letters = 'a'..'z';
 
   unless(-e $filename && abs((-s $filename) - $MAILBOX_SIZE) <= $MAILBOX_SIZE*.1)
   {
@@ -145,7 +152,10 @@ Content-Disposition: attachment; filename="foo.tar.gz"
 
 EOF
 
-      print FILE (('x' x 74 . "\n" ) x (1_000_000 / 74));
+      for (1 .. 1_000_000/75) {
+        print FILE @letters[rand(26)] for 1..74;
+        print FILE "\n";
+      }
 
       print FILE "--873612032-418625252-1050794990=:31078--\n\n";
     }
@@ -153,20 +163,19 @@ EOF
     close FILE;
   }
 
-  unlink "$filename.gz" if -e "$filename.gz";
-
   print "Making compressed input file.\n";
+
+  unlink "$filename.gz";
 
   system "gzip -c --force --best $filename > $filename.gz";
 
-  return ($filename, "$filename.gz");
+  return $filename;
 }
 
 ################################################################################
 
 sub CollectData
 {
-  my $filename = shift;
   my $test = shift;
 
   print "Collecting data...\n\n";
@@ -210,7 +219,7 @@ sub CollectData
       Test::ConfigureGrepmail::Set_Caching_And_Grep($grepmail,
         @{$settings{$impl}});
 
-      my $t = new Benchmark::Timer(skip => 1, confidence => 97.5, error => 2);
+      my $t = new Benchmark::Timer(skip => 1, confidence => $CONFIDENCE, error => 2);
 
       # Need enough for the statistics to be valid
       my $count = 1;
