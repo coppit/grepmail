@@ -2,16 +2,7 @@
 
 # grepmail
 
-$VERSION = sprintf "%d.%02d%02d", q/5.30.33/ =~ /(\d+)/g;
-
-# Grepmail searches a normal, gzip'd, or bzip2'd mailbox for a given regular
-# expression and returns those emails that match the query. It also supports
-# piped compressed or ascii input, and searches constrained by date and size. 
-
-# Visit the grepmail project homepage at http://grepmail.sourceforge.net/
-# There you can join the announcements mailing list to be notified of updates,
-# grab the development environment via CVS, participate in chats and mailing
-# lists, report bugs, submit patches, etc.
+$VERSION = sprintf "%d.%02d%02d", q/5.31.0/ =~ /(\d+)/g;
 
 # Do a pod2text on this file to get full documentation, or pod2man to get
 # man pages.
@@ -20,10 +11,7 @@ $VERSION = sprintf "%d.%02d%02d", q/5.30.33/ =~ /(\d+)/g;
 # debugging and patching by others -- see the CHANGES file for a complete
 # list.
 
-# This code is distributed under the GNU General Public License (GPL). See
-# http://www.opensource.org/gpl-license.html and http://www.opensource.org/.
-
-require 5.00396;
+use 5.005;
 
 use vars qw( %opts $commandLine $VERSION %message_ids_seen
              $USE_CACHING $USE_GREP );
@@ -397,7 +385,7 @@ sub Get_Options
     if (eval 'require Date::Manip')
     {
       my ($version_number) = $Date::Manip::VERSION =~ /^(\d+\.\d+)/;
-      Date::Manip::Date_Init("TodayIsMidnight=1") if $version_number >= 5.43;
+      Date::Manip::Date_Init("TodayIsMidnight=1") if ($version_number >= 5.43 && $version_number < 6);
     }
   }
 
@@ -574,14 +562,15 @@ sub Get_Files(@)
       # Gets all plain files in directory and descendents. Puts them in @files
       $File::Find::name = '';
 
+      my $wanted = sub { push @files,$File::Find::name if -f $_ };
+
       if ($opts{'L'})
       {
-        find( { wanted => sub {push @files,"$File::Find::name" if -f $_},
-          follow => 1 }, $arg);
+        find({ wanted => $wanted, follow => 1, follow_skip => 2 }, $arg);
       }
       else
       {
-        find(sub {push @files,"$File::Find::name" if -f $_}, $arg);
+        find({ wanted => $wanted }, $arg);
       }
     }
     else
@@ -990,7 +979,7 @@ sub Do_Complex_Pattern_Matching
 
   $modified_pattern =~ s/\$email_header\b/\$\$email_header/g;
   $modified_pattern =~ s/\$email_body\b/\$\$email_body/g;
-  $modified_pattern =~ s#(=~\s*)/([^/]*)/#$1/$2/om#g;
+  $modified_pattern =~ s#(=~\s*)/(.*?(?<!\\))/#$1/$2/om#g;
 
   my $matchesEmail;
 
@@ -1658,9 +1647,16 @@ sub Print_Email
     if ($opts{'B'})
     {
       print Get_Header_Field($email_header,'From ',$endline);
-      print Get_Header_Field($email_header,'Date:',$endline);
-      print Get_Header_Field($email_header,'From:',$endline);
-      print Get_Header_Field($email_header,'Subject:',$endline);
+
+      my $date_header = Get_Header_Field($email_header,'Date:',$endline);
+      print $date_header if defined $date_header;
+
+      my $from_header = Get_Header_Field($email_header,'From:',$endline);
+      print $from_header if defined $from_header;
+
+      my $subject_header = Get_Header_Field($email_header,'Subject:',$endline);
+      print $subject_header if defined $subject_header;
+
       print "X-Mailfolder: ".Get_Filename($fileName)."$endline$endline" if $opts{'m'};
     }
     else
@@ -2175,9 +2171,9 @@ usage:
 At least one of -s, -d, -u, -e, and -E must be specified, and can appear in
 any relative order following the other flags. The -e flag is optional if
 pattern appears immediately before -s or -d. Files can be plain ASCII or ASCII
-files compressed with gzip, or bzip2. -E allows for complex pattern matches
-involving logical operators. If no file is provided, normal or compressed
-ASCII input is taken from STDIN.
+files compressed with gzip, bzip2, lzip, or xz. -E allows for complex pattern
+matches involving logical operators. If no file is provided, normal or
+compressed ASCII input is taken from STDIN.
 
 -a Use received date instead of sent date for -d matching
 -b Search must match body
@@ -2287,8 +2283,10 @@ initialize the cache without printing any output.
 =item B<mailbox>
 
 Mailboxes must be traditional, UNIX C</bin/mail> mailbox format.  The
-mailboxes may be compressed by gzip, or bzip2, in which case gunzip, or bzip2
-must be installed on the system.
+mailboxes may be compressed by gzip, bzip2, lzip or xz, in which case the
+associated compression tool must be installed on the system, as well as a
+recent version of the Mail::Mbox::MessageParser Perl module that supports the
+format.
 
 If no mailbox is specified, takes input from stdin, which can be compressed or
 not. grepmail's behavior is undefined when ASCII and binary data is piped
@@ -2546,12 +2544,12 @@ Get all email that you mailed yesterday
 Get all email that you mailed before the first thursday in June 1998 that
 pertains to research (requires Date::Manip):
 
-  grepmail research -d "before 1st thursday in June 1992" sent-mail
+  grepmail research -d "before 1st thursday in June 1998" sent-mail
 
 Get all email that you mailed before the first of June 1998 that
 pertains to research:
 
-  grepmail research -d "before 6/1/92" sent-mail
+  grepmail research -d "before 6/1/98" sent-mail
 
 Get all email you received since 8/20/98 that wasn't about research or your
 job, ignoring case:
@@ -2649,9 +2647,15 @@ pattern.
 
 =back
 
+=head1 LICENSE
+
+This code is distributed under the GNU General Public License (GPL). See the
+file LICENSE in the distribution, http://www.opensource.org/gpl-license.html,
+and http://www.opensource.org/.
+
 =head1 AUTHOR
 
-David Coppit, <david@coppit.org>, http://coppit.org/
+David Coppit E<lt>david@coppit.orgE<gt>
 
 =head1 SEE ALSO
 
