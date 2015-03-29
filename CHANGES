@@ -1,3 +1,7 @@
+Version 5.3101: Sat Mar 28 2015
+- Add explicit include for Module::AutoInstall. Thanks to Paul Howarth
+  <paul@city-fan.org> for the report.
+
 Version 5.3100: Tue Mar 24 2015
 - Move code to github
 - Fixed a bug where complex -E search patterns containing '\/' would fail to
@@ -11,12 +15,12 @@ Version 5.3100: Tue Mar 24 2015
 - Fix t/invalid_date.t to work even when Date::Manip is not installed.
 - Fix t/nonexistent_mailbox.t -- broken STDIN does not cause $SIG{PIPE}
 - Dropped tzip support
-- Added lzip support. http://sourceforge.net/p/grepmail/patches/8/
-  Thanks to the anonymous contributor.
+- Added lzip support. http://sourceforge.net/p/grepmail/patches/8/ Thanks to
+  the anonymous contributor.
 - Added xz support.
 - Fix incompatibility with newer versions of Date::Manip.
-  https://rt.cpan.org/Ticket/Display.html?id=54621
-  Thanks to paul@city-fan.org for the report and patch.
+  https://rt.cpan.org/Ticket/Display.html?id=54621. Thanks to Paul Howarth
+  <paul@city-fan.org> for the report and patch.
 
 Version 5.3034: Sun Aug 16 2009
 - Fixed man page year typo. Closes: Debian bug #428973 (Thanks to Joes Hess
@@ -40,8 +44,8 @@ Version 5.3033: Thu Mar 01 2007
 - Added -L flag to follow symbolic links. (Thanks to Peter Teuben
   <teuben@astro.umd.edu> for prompting the idea.)
 - Fixed grepmail so that it works with Mail::Mbox::MessageParser 1.5000
-  (Thanks to Paul <paul@city-fan.org> for the bug report, and Alexey Tourbin
-  for the fix.)
+  (Thanks to Paul Howarth <paul@city-fan.org> for the bug report, and Alexey
+  Tourbin for the fix.)
 - Fixed testspeed.pl to properly call report() instead of get_report() on new
   versions of Benchmark::Timer
 
