@@ -5,6 +5,9 @@ Version 5.3101: Sat Mar 28 2015
 - Improve the recursive.t test.
   https://code.google.com/p/grepmail/issues/detail?id=2 Thanks to Paul Howarth
   <paul@city-fan.org> for the bug report.
+- Add explicit "provides" to META.yml so that CPAN will allow me to upload
+  this distribution. Version 5.3100 was rejected. Thanks to David Golden
+  <xdg@xdg.me> for helping me to figure out the problem.
 
 Version 5.3100: Tue Mar 24 2015
 - Move code to github

@@ -2,7 +2,7 @@
 
 # grepmail
 
-$VERSION = sprintf "%d.%02d%02d", q/5.31.0/ =~ /(\d+)/g;
+$VERSION = sprintf "%d.%02d%02d", q/5.31.1/ =~ /(\d+)/g;
 
 # Do a pod2text on this file to get full documentation, or pod2man to get
 # man pages.
