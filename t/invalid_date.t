@@ -13,7 +13,7 @@ my $path_to_perl = $Config{perlpath};
 my $today = "";
 
 my ($day, $month, $year) = (localtime)[3,4,5];
-my $today = ($year+1900) . "/" . ($month+1) . "/$day";
+$today = ($year+1900) . "/" . ($month+1) . "/$day";
 
 my %tests = (
 qq#grepmail -d "before $today" t/mailboxes/invalid_date.txt#
