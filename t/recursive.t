@@ -20,7 +20,7 @@ my %tests = (
 'grepmail -Lq Handy t/temp/directory_with_links'
   => ['recursive2','none'],
 'grepmail -Rq Handy t/temp/directory_with_links'
-  => ['recursive2','none'],
+  => ['recursive','none'],
 );
 
 my %expected_errors = (
@@ -37,16 +37,15 @@ mkdir 't/temp', 0700;
   @ARGV = ('t/mailboxes/directory/*txt*', 't/temp/directory');
   cp();
   mkdir 't/temp/directory_with_links', 0700;
-  @ARGV = ('t/mailboxes/directory/*txt*', 't/temp/directory_with_links');
-  cp();
 
   # Ignore the failed links. We'll let SetSkip deal with the test cases for
   # systems that don't support it.
   eval {
     symlink(cwd() . "/t/temp/directory",
       't/temp/directory_with_links/symlink');
-    link(cwd() . "/t/temp/directory",
-      't/temp/directory_with_links/link');
+    mkdir 't/temp/directory_with_links/subdir', 0700;
+    link(cwd() . "/t/temp/directory/mailarc-2.txt",
+      't/temp/directory_with_links/subdir/link.txt');
   };
   @ARGV = @old_argv;
 }

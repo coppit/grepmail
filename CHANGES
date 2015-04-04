@@ -1,6 +1,10 @@
 Version 5.3101: Sat Mar 28 2015
 - Add explicit include for Module::AutoInstall. Thanks to Paul Howarth
   <paul@city-fan.org> for the report.
+  https://code.google.com/p/grepmail/issues/detail?id=1
+- Improve the recursive.t test.
+  https://code.google.com/p/grepmail/issues/detail?id=2 Thanks to Paul Howarth
+  <paul@city-fan.org> for the bug report.
 
 Version 5.3100: Tue Mar 24 2015
 - Move code to github
