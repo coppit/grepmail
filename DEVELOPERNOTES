@@ -16,13 +16,8 @@ Checklist for a release:
 - Update MANIFEST and MANIFEST.SKIP if necessary.
   $ make distcheck
 - Test your distribution:
-  $ make realclean
-  $ perl Makefile.PL
-  $ make
-  $ make test
-- Test the speed of the new code:
-  - make testspeed
-- After the tests have passed, make the distribution file:
+  $ make disttest
+- Make the distribution file:
   $ make dist
 - Install the distribution file elsewhere to test it.
 - Upload to CPAN:
