@@ -1,38 +1,42 @@
+- After Module::Install support CPAN::Meta 2.0, specify gpl_2 as the license.
+  Suggested by Paul Howarth <paul@city-fan.org>
+- After Module::Install support CPAN::Meta 2.0, add info for repository URL
+  and bug tracker. Suggested by Paul Howarth <paul@city-fan.org>
 - Support for searches on email threads. (Thanks to Zack Brown
-	<zbrown@tumblerings.org> for the excellent feature idea and a prototype
-	implementation.)
+  <zbrown@tumblerings.org> for the excellent feature idea and a prototype
+  implementation.)
 - implement unimplemented code
 - update anonymize_mailbox to anonymize more of the header, and handle
-	attachments.
+  attachments.
 - Add mbx format support (email request)
 - Improve unique to avoid X-MimeOLE, X-MozillaStatus, and
-	Content-Type/boundary differences. (Maybe just hash on the received
-	headers?) Skye Otten <skizye@fastmail.fm>
+  Content-Type/boundary differences. (Maybe just hash on the received
+  headers?) Skye Otten <skizye@fastmail.fm>
 - Interpret transfer encodings to search the actual content of emails (SF
-	102207)
+  102207)
 - IMAP URLs (SF 894486)
 - grepmailrc
-	- override system paths to decompressor programs
-	- set flags
+  - override system paths to decompressor programs
+  - set flags
 - Decode different transfer encodings before checking the pattern
-	- Then support charset-independent patterns and mailboxes
-		https://sourceforge.net/tracker/?func=detail&atid=102207&aid=1058206&group_id=2207
+  - Then support charset-independent patterns and mailboxes
+    https://sourceforge.net/tracker/?func=detail&atid=102207&aid=1058206&group_id=2207
 - Newest 25 messages. (Beth Scaer <bscaer@yahoo.com>)
 - grepmail -D --help doesn't display debug info.
 - -D should print module versions
 - Support ^M as a line terminator. Requested by Giovanni Bechis
-	(https://sourceforge.net/users/gbechis).
-	https://sourceforge.net/tracker/?func=detail&aid=1789911&group_id=2207&atid=352207
+  (https://sourceforge.net/users/gbechis).
+  https://sourceforge.net/tracker/?func=detail&aid=1789911&group_id=2207&atid=352207
 - Emit an X-UID header with an IMAP URL. Requested by Bart Schaefer
-	(https://sourceforge.net/users/barts).
-	https://sourceforge.net/tracker/index.php?func=detail&aid=894486&group_id=2207&atid=352207
+  (https://sourceforge.net/users/barts).
+  https://sourceforge.net/tracker/index.php?func=detail&aid=894486&group_id=2207&atid=352207
 
 ------------------------------------------------------------------------------
 
 From Egmont Koblinger (https://sourceforge.net/users/egmont):
 
 - grepmail should operate at a higher level of semantics, interpreting the
-	mbox format to extract the real text of the email for searching.
+  mbox format to extract the real text of the email for searching.
 
 Details, including sample code is here:
 https://sourceforge.net/tracker/?func=detail&aid=1058206&group_id=2207&atid=352207
@@ -83,16 +87,16 @@ So this is what IMHO grepmail should use:
 
 - convert the pattern it founds on the command line from my locale to utf-8,
 - for each message found in the mailbox, separately, first decode it from its
-	transfer encoding (quoted-printable, base64...) and then iconv it from its
-	charset to utf-8, specially taking care of the complicated encodings used in
-	the header fields such as Subjec,
+  transfer encoding (quoted-printable, base64...) and then iconv it from its
+  charset to utf-8, specially taking care of the complicated encodings used in
+  the header fields such as Subjec,
 - and after all these it should perform the greping, and for matching messages
-	it should print their original (unconverted) raw mailbox version.
+  it should print their original (unconverted) raw mailbox version.
 
 ------------------------------------------------------------------------------
 
 - Revise -E functionality. (Thanks to Vadim <vadim@genego.com> for the
-	feedback and suggestions)
+  feedback and suggestions)
 
 Dear David,
 
@@ -148,7 +152,7 @@ Vadim.
 ------------------------------------------------------------------------------
 
 - Add UTF mime support. (Thanks to Peter Jakobi <jakobi@acm.org> for the
-	feature suggestion and patch.)
+  feature suggestion and patch.)
 
 See email and grepmail.jakobi*
 
