@@ -1,7 +1,7 @@
 /blib/
 inc/
 /Makefile
-/META.yml
+/META.*
 /MYMETA.*
 /pm_to_blib
 /grepmail-*.tar.gz
