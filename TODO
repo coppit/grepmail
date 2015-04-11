@@ -9,6 +9,7 @@
 - update anonymize_mailbox to anonymize more of the header, and handle
   attachments.
 - Add mbx format support (email request)
+  https://sourceforge.net/p/grepmail/feature-requests/10/
 - Improve unique to avoid X-MimeOLE, X-MozillaStatus, and
   Content-Type/boundary differences. (Maybe just hash on the received
   headers?) Skye Otten <skizye@fastmail.fm>
@@ -20,7 +21,7 @@
   - set flags
 - Decode different transfer encodings before checking the pattern
   - Then support charset-independent patterns and mailboxes
-    https://sourceforge.net/tracker/?func=detail&atid=102207&aid=1058206&group_id=2207
+    https://sourceforge.net/p/grepmail/bugs/34/
 - Newest 25 messages. (Beth Scaer <bscaer@yahoo.com>)
 - grepmail -D --help doesn't display debug info.
 - -D should print module versions
