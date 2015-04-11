@@ -18,7 +18,7 @@ use Mail::Mbox::MessageParser;
 
 use vars qw( $TEMPDIR %PROGRAMS $single_quote $command_separator $set_env );
 
-$TEMPDIR = File::Temp::tempdir( CLEANUP => 1 );
+$TEMPDIR = File::Temp::tempdir();
 
 if ($^O eq 'MSWin32')
 {
