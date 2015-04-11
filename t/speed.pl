@@ -25,7 +25,7 @@ BEGIN
 }
 
 my $MAILBOX_SIZE = 10_000_000;
-my $TEMP_MAILBOX = 't/temp/bigmailbox.txt';
+my $TEMP_MAILBOX = catfile($TEMPDIR, 'bigmailbox.txt');
 
 my $SKIP = 5;
 my $MINIMUM = 10;
@@ -48,8 +48,6 @@ my %TESTS = (
 #'BODY & HEADER' => "grepmail -bh library \$TEMP_MAILBOX",
 #'PIPE' => "cat \$TEMP_MAILBOX | grepmail library",
 );
-
-mkdir 't/temp';
 
 my $filename = CreateInputFiles();
 
@@ -192,8 +190,8 @@ sub CollectData
   # To prevent a "used only once" warning
   my $foo = *NULL;
 
-  copy('grepmail', 't/temp/grepmail');
-  copy('grepmail.old', 't/temp/grepmail.old');
+  copy('grepmail', catfile($TEMPDIR, 'grepmail'));
+  copy('grepmail.old', catfile($TEMPDIR, 'grepmail.old'));
 
   my %settings =
   (
@@ -205,10 +203,10 @@ sub CollectData
 
   foreach my $old_or_new (qw(New Old))
   {
-    my $grepmail = 't/temp/grepmail';
+    my $grepmail = catfile($TEMPDIR, 'grepmail');
     $grepmail .= '.old' if $old_or_new eq 'Old';
 
-    Test::ConfigureGrepmail::Set_Cache_File($grepmail, 't/temp/cache');
+    Test::ConfigureGrepmail::Set_Cache_File($grepmail, catfile($TEMPDIR, 'cache'));
 
     foreach my $impl (@IMPLEMENTATIONS_TO_TEST)
     {
@@ -231,7 +229,7 @@ sub CollectData
       {
         print ".";
 
-        unlink 't/temp/cache' if $impl eq 'Cache Init';
+        unlink catfile($TEMPDIR, 'cache') if $impl eq 'Cache Init';
 
         $t->start($label);
         my $pid = open3(gensym, ">&NULL", ">&STDERR", $new_test);

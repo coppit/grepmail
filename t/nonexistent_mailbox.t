@@ -32,8 +32,6 @@ my %localization = (
     },
 );
 
-mkdir 't/temp', 0700;
-
 plan tests => scalar (keys %tests) * 2;
 
 my %skip = SetSkip(\%tests);
@@ -74,16 +72,16 @@ sub TestIt
     local $" = ' -I';
     if (@extra_inc)
     {
-      $test =~ s#\bgrepmail\s#$path_to_perl -I@extra_inc blib/script/grepmail -C t/temp/cache #g;
+      $test =~ s#\bgrepmail\s#$path_to_perl -I@extra_inc blib/script/grepmail -C $TEMPDIR/cache #g;
     }
     else
     {
-      $test =~ s#\bgrepmail\s#$path_to_perl blib/script/grepmail -C t/temp/cache #g;
+      $test =~ s#\bgrepmail\s#$path_to_perl blib/script/grepmail -C $TEMPDIR/cache #g;
     }
   }
 
-  my $test_stdout = catfile('t','temp',"${testname}_$stdout_file.stdout");
-  my $test_stderr = catfile('t','temp',"${testname}_$stderr_file.stderr");
+  my $test_stdout = catfile($TEMPDIR,"${testname}_$stdout_file.stdout");
+  my $test_stderr = catfile($TEMPDIR,"${testname}_$stderr_file.stderr");
 
   print "$test 1>$test_stdout 2>$test_stderr\n";
   system "$test 1>$test_stdout 2>$test_stderr";
@@ -101,8 +99,8 @@ sub TestIt
     return;
   }
 
-  my $modified_stdout = "t/temp/$stdout_file";
-  my $modified_stderr = "t/temp/$stderr_file";
+  my $modified_stdout = "$TEMPDIR/$stdout_file";
+  my $modified_stderr = "$TEMPDIR/$stderr_file";
 
   my $real_stdout = catfile('t','results',$stdout_file);
   my $real_stderr = catfile('t','results',$stderr_file);

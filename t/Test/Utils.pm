@@ -5,17 +5,20 @@ use Exporter;
 use Test::More;
 use FileHandle;
 use File::Spec::Functions qw( :ALL );
+use File::Temp;
 
 use vars qw( @EXPORT @ISA );
 use Mail::Mbox::MessageParser;
 
 @ISA = qw( Exporter );
-@EXPORT = qw( Do_Diff Module_Installed %PROGRAMS
+@EXPORT = qw( Do_Diff Module_Installed %PROGRAMS $TEMPDIR
   Broken_Pipe No_such_file_or_directory $single_quote $command_separator
   $set_env
 );
 
-use vars qw( %PROGRAMS $single_quote $command_separator $set_env );
+use vars qw( $TEMPDIR %PROGRAMS $single_quote $command_separator $set_env );
+
+$TEMPDIR = File::Temp::tempdir( CLEANUP => 1 );
 
 if ($^O eq 'MSWin32')
 {
@@ -108,9 +111,7 @@ sub No_such_file_or_directory
 # doing this?
 sub Broken_Pipe
 {
-  mkdir catdir('t','temp'), 0700;
-
-  my $script_path = catfile('t','temp','broken_pipe.pl');
+  my $script_path = catfile($TEMPDIR,'broken_pipe.pl');
   my $dev_null = devnull();
 
   open F, ">$script_path";

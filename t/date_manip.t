@@ -28,8 +28,6 @@ my %expected_errors = (
   => 1,
 );
 
-mkdir 't/temp', 0700;
-
 plan tests => scalar (keys %tests) * 2 + 1;
 
 my %skip = SetSkip(\%tests);
@@ -101,16 +99,16 @@ sub TestIt
     local $" = ' -I';
     if (@extra_inc)
     {
-      $test =~ s#\bgrepmail\s#$path_to_perl -I@extra_inc blib/script/grepmail -C t/temp/cache #g;
+      $test =~ s#\bgrepmail\s#$path_to_perl -I@extra_inc blib/script/grepmail -C $TEMPDIR/cache #g;
     }
     else
     {
-      $test =~ s#\bgrepmail\s#$path_to_perl blib/script/grepmail -C t/temp/cache #g;
+      $test =~ s#\bgrepmail\s#$path_to_perl blib/script/grepmail -C $TEMPDIR/cache #g;
     }
   }
 
-  my $test_stdout = catfile('t','temp',"${testname}_$stdout_file.stdout");
-  my $test_stderr = catfile('t','temp',"${testname}_$stderr_file.stderr");
+  my $test_stdout = catfile($TEMPDIR,"${testname}_$stdout_file.stdout");
+  my $test_stderr = catfile($TEMPDIR,"${testname}_$stderr_file.stderr");
 
   system "$test 1>$test_stdout 2>$test_stderr";
 

@@ -7,45 +7,40 @@ use lib 't';
 use Test::Utils;
 use File::Spec::Functions qw( :ALL );
 use ExtUtils::Command;
-use Cwd;
 use Config;
 
 my $path_to_perl = $Config{perlpath};
 
 my %tests = (
-'grepmail -Rq Handy t/temp/directory'
+"grepmail -Rq Handy $TEMPDIR/directory"
   => ['recursive','none'],
-"grepmail -Rq -E $single_quote\$email =~ /Handy/$single_quote t/temp/directory"
+"grepmail -Rq -E $single_quote\$email =~ /Handy/$single_quote $TEMPDIR/directory"
   => ['recursive','none'],
-'grepmail -Lq Handy t/temp/directory_with_links'
+"grepmail -Lq Handy $TEMPDIR/directory_with_links"
   => ['recursive2','none'],
-'grepmail -Rq Handy t/temp/directory_with_links'
+"grepmail -Rq Handy $TEMPDIR/directory_with_links"
   => ['recursive','none'],
 );
 
 my %expected_errors = (
 );
 
-mkdir 't/temp', 0700;
-
 # Copy over the files so that there are no version control directories in our
 # search directory. I could use File::Copy, but it doesn't support globbing
 # and multiple-file copying. :(
 {
   my @old_argv = @ARGV;
-  mkdir 't/temp/directory', 0700;
-  @ARGV = ('t/mailboxes/directory/*txt*', 't/temp/directory');
+  mkdir "$TEMPDIR/directory", 0700;
+  @ARGV = ('t/mailboxes/directory/*txt*', "$TEMPDIR/directory");
   cp();
-  mkdir 't/temp/directory_with_links', 0700;
+  mkdir "$TEMPDIR/directory_with_links", 0700;
 
   # Ignore the failed links. We'll let SetSkip deal with the test cases for
   # systems that don't support it.
   eval {
-    symlink(cwd() . "/t/temp/directory",
-      't/temp/directory_with_links/symlink');
-    mkdir 't/temp/directory_with_links/subdir', 0700;
-    link(cwd() . "/t/temp/directory/mailarc-2.txt",
-      't/temp/directory_with_links/subdir/link.txt');
+    symlink("$TEMPDIR/directory", "$TEMPDIR/directory_with_links/symlink");
+    mkdir "$TEMPDIR/directory_with_links/subdir", 0700;
+    link("$TEMPDIR/directory/mailarc-2.txt", "$TEMPDIR/directory_with_links/subdir/link.txt");
   };
   @ARGV = @old_argv;
 }
@@ -89,16 +84,16 @@ sub TestIt
     local $" = ' -I';
     if (@extra_inc)
     {
-      $test =~ s#\bgrepmail\s#$path_to_perl -I@extra_inc blib/script/grepmail -C t/temp/cache #g;
+      $test =~ s#\bgrepmail\s#$path_to_perl -I@extra_inc blib/script/grepmail -C $TEMPDIR/cache #g;
     }
     else
     {
-      $test =~ s#\bgrepmail\s#$path_to_perl blib/script/grepmail -C t/temp/cache #g;
+      $test =~ s#\bgrepmail\s#$path_to_perl blib/script/grepmail -C $TEMPDIR/cache #g;
     }
   }
 
-  my $test_stdout = catfile('t','temp',"${testname}_$stdout_file.stdout");
-  my $test_stderr = catfile('t','temp',"${testname}_$stderr_file.stderr");
+  my $test_stdout = catfile($TEMPDIR,"${testname}_$stdout_file.stdout");
+  my $test_stderr = catfile($TEMPDIR,"${testname}_$stderr_file.stderr");
 
   system "$test 1>$test_stdout 2>$test_stderr";
 
@@ -132,7 +127,7 @@ sub SetSkip
   my %skip;
 
   unless ( eval { symlink("",""); 1 } && eval { link("",""); 1} ) {
-    $skip{'grepmail -Rq Handy t/temp/directory_with_links'} =
+    $skip{"grepmail -Rq Handy $TEMPDIR/directory_with_links"} =
       'Links or symbolic links are not supported on this platform';
   }
 

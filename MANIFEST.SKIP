@@ -29,7 +29,6 @@
 ^old/
 ^experiments/
 \.tar\.gz$
-t/temp/
 ^MYMETA.(json|yml)
 
 # grepmail extra files
