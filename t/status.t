@@ -83,12 +83,13 @@ sub TestIt
     return;
   }
 
-
   my $real_stdout = catfile('t','results',$stdout_file);
   my $real_stderr = catfile('t','results',$stderr_file);
 
-  Do_Diff($test_stdout,$real_stdout);
+  # Compare STDERR first on the assumption that if STDOUT is different, STDERR
+  # is too and contains something useful.
   Do_Diff($test_stderr,$real_stderr);
+  Do_Diff($test_stdout,$real_stdout);
 }
 
 # ---------------------------------------------------------------------------

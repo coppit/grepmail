@@ -123,8 +123,10 @@ sub TestIt
     copy($real_stderr, $modified_stderr);
   }
 
-  Do_Diff($test_stdout,$modified_stdout);
+  # Compare STDERR first on the assumption that if STDOUT is different, STDERR
+  # is too and contains something useful.
   Do_Diff($test_stderr,$modified_stderr);
+  Do_Diff($test_stdout,$modified_stdout);
 
   unlink $modified_stdout;
   unlink $modified_stderr;
