@@ -15,6 +15,8 @@ BEGIN { makemaker_args( NORECURS => 1 ) }
 name('grepmail');
 all_from('grepmail');
 
+githubmeta;
+
 provides(
   'grepmail' => {
     file => 'grepmail',
