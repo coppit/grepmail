@@ -21,7 +21,7 @@ sub Add_Test_Target
   *main::MY::postamble = sub {
     return &Module::AutoInstall::postamble . <<EOF;
 $target :: pure_all
-  PERL_DL_NONLAZY=1 \$(PERLRUN) "-I\$(INST_LIB)" "-I\$(INST_ARCHLIB)" $test
+\tPERL_DL_NONLAZY=1 \$(PERLRUN) "-I\$(INST_LIB)" "-I\$(INST_ARCHLIB)" $test
 EOF
   };
 }
