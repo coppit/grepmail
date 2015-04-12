@@ -145,6 +145,7 @@ inc/Module/Install.pm
 inc/Module/Install/AutoLicense.pm
 inc/Module/Install/AutomatedTester.pm
 inc/Module/Install/Base.pm
+inc/Module/Install/Bugtracker.pm
 inc/Module/Install/Can.pm
 inc/Module/Install/CheckOptional.pm
 inc/Module/Install/CustomInstallationPath.pm
