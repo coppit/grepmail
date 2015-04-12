@@ -61,6 +61,9 @@ include(
   'Module::AutoInstall' => 0,
 );
 
+license 'gpl2';
+auto_license(holder => 'David Coppit');
+
 WriteAll();
 
 Update_Test_Version('grepmail','t/results/help');
