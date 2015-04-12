@@ -119,8 +119,7 @@ If "make test" fails, run
   make test TEST_VERBOSE=1
 
 and see which test(s) are failing. Please email, to the address below, the
-output files for the test, which are located in t/temp and noted in the test
-output when the test fails. Also email the output of running the particular
+output files for the test. Also email the output of running the particular
 subtest with the -D flag. e.g.:
 
   ./blib/script/grepmail -D --help > test_name.debug
@@ -138,7 +137,7 @@ Just "perldoc grepmail". After installation on Unix systems, you can also do
 "man grepmail".
 
 
-HOMEPAGE
+RESOURCES
 
 The CPAN Page:
 http://search.cpan.org/dist/grepmail/
@@ -146,24 +145,14 @@ http://search.cpan.org/dist/grepmail/
 The GitHub page:
 https://github.com/coppit/grepmail/
 
+Bug and feature tracking:
+http://rt.cpan.org/Public/Dist/Display.html?Name=grepmail
 
-TODO/WISHLIST
-
-- Michael D. Schleif <mds@helices.org> suggested grepmail have support for
-  compressed mail directories. Adding support for this is not easy, and I'm
-  not sure many people would benefit from the feature. Let me know if you too
-  want this support, and I may implement it.
-
-
-REPORTING BUGS
-
-https://github.com/coppit/grepmail/issues
-
-Please attach the output of running grepmail with the -D switch. If the bug is
-related to processing of a particular mailbox, try to trim the mailbox to the
-smallest set of emails that still exhibit the problem.  Then use the
-"anonymize_mailbox" program that comes with grepmail to remove any sensitive
-information, and attach the mailbox to the bug report.
+When reporting a bug, please attach the output of running grepmail with the -D
+switch. If the bug is related to processing of a particular mailbox, try to
+trim the mailbox to the smallest set of emails that still exhibit the problem.
+Then use the "anonymize_mailbox" program that comes with grepmail to remove
+any sensitive information, and attach the mailbox to the bug report.
 
 
 COPYRIGHT

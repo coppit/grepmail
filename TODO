@@ -31,6 +31,8 @@
 - Emit an X-UID header with an IMAP URL. Requested by Bart Schaefer
   (https://sourceforge.net/users/barts).
   https://sourceforge.net/tracker/index.php?func=detail&aid=894486&group_id=2207&atid=352207
+- Michael D. Schleif <mds@helices.org> suggested grepmail have support for
+  compressed mail directories.
 
 ------------------------------------------------------------------------------
 
