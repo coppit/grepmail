@@ -3,6 +3,7 @@ Version 5.3102:
   stock version that came with old OSes like RHEL 5.
   http://www.cpantesters.org/cpan/report/61043eda-dd0e-11e4-abc4-b553e14af301
 - Enable verbose testing for CPAN-testers
+- Consolidate issue tracking at rt.cpan.org
 
 Version 5.3101: Sat Apr 4 2015
 - Add explicit include for Module::AutoInstall. Thanks to Paul Howarth

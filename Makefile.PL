@@ -16,6 +16,7 @@ BEGIN { makemaker_args( NORECURS => 1 ) }
 name('grepmail');
 all_from('grepmail');
 
+auto_set_bugtracker;
 githubmeta;
 
 provides(
