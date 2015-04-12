@@ -6,6 +6,7 @@ use strict;
 use lib 'lib';
 
 use inc::Module::Install;
+use File::Slurp;
 
 # To prevent MakeMaker from processing our old directory
 BEGIN { makemaker_args( NORECURS => 1 ) }
@@ -55,15 +56,22 @@ testspeed :: pure_all
 EOF
 }
 
-# Module::Install doesn't figure out that Module::Install::CheckOptional needs
-# this. Include it manually.
 include(
+  # Module::Install doesn't figure out that Module::Install::CheckOptional needs
+  # this. Include it manually.
   'Module::AutoInstall' => 0,
+  'File::Slurp' => 0,
 );
 
 license 'gpl2';
 auto_license(holder => 'David Coppit');
 
 WriteAll();
+
+if (auto_tester) {
+  my $makefile = read_file('Makefile');
+  $makefile =~ s/TEST_VERBOSE\s*=\s*0/TEST_VERBOSE=1/ or die "Couldn't enable verbose mode in Makefile";
+  write_file('Makefile', $makefile);
+}
 
 Update_Test_Version('grepmail','t/results/help');
