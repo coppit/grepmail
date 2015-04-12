@@ -1,6 +1,7 @@
 /blib/
 inc/
 /Makefile
+/LICENSE
 /META.*
 /MYMETA.*
 /pm_to_blib
