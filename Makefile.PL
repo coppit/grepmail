@@ -49,13 +49,7 @@ check_optional('Date::Manip' => 0, "Date::Manip allows you to use complex date p
 
 check_optional('Benchmark::Timer' => 0, "Benchmark::Timer is required for speed tests\n");
 
-sub MY::postamble {
-  return &Module::AutoInstall::postamble . <<'EOF';
-testspeed :: pure_all
-	PERL_DL_NONLAZY=1 $(PERLRUN) "-I$(INST_LIB)" \
-	  "-I$(INST_ARCHLIB)" t/speed.pl
-EOF
-}
+Add_Test_Target('testspeed', 't/speed.pl');
 
 include(
   # Module::Install doesn't figure out that Module::Install::CheckOptional needs

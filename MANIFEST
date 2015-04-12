@@ -153,6 +153,7 @@ inc/Module/Install/GithubMeta.pm
 inc/Module/Install/Include.pm
 inc/Module/Install/Makefile.pm
 inc/Module/Install/Metadata.pm
+inc/Module/Install/PRIVATE/Add_Test_Target.pm
 inc/Module/Install/PRIVATE/Update_Test_Version.pm
 inc/Module/Install/Scripts.pm
 inc/Module/Install/Win32.pm
