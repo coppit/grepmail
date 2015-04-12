@@ -15,6 +15,7 @@ use Test::ConfigureGrepmail;
 use File::Copy;
 use File::Spec;
 use Config;
+use File::Slurp;
 
 my $path_to_perl = $Config{perlpath};
 
@@ -105,10 +106,7 @@ sub CreateInputFiles
   {
     print "Making input file ($MAILBOX_SIZE bytes).\n";
 
-    open FILE, 't/mailboxes/mailarc-1.txt';
-    local $/ = undef;
-    my $data = <FILE>;
-    close FILE;
+    my $data = read_file('t/mailboxes/mailarc-1.txt');
 
     open FILE, ">$filename";
     binmode FILE;

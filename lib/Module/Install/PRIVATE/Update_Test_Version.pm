@@ -1,6 +1,7 @@
 package Module::Install::PRIVATE::Update_Test_Version;
 
 use strict;
+use File::Slurp;
 
 use vars qw( @ISA $VERSION );
 
@@ -30,26 +31,13 @@ sub Update_Test_Version
 
       my $version = eval $1;
 
-      open TEST_CASE, $test_case_file
-        or die "Couldn't open test case: $!";
-
-      local $/ = undef;
-      my $test_case_code = <TEST_CASE>;
+      my $test_case_code = read_file($test_case_file);
 
       $test_case_code =~ s/^grepmail .*$/grepmail $version/m;
 
-      close TEST_CASE;
-
       unlink $test_case_file;
 
-      open TEST_CASE, ">$test_case_file"
-        or die "Couldn't open test case for updating: $!";
-
-      binmode TEST_CASE;
-
-      print TEST_CASE $test_case_code;
-
-      close TEST_CASE;
+      write_file("$test_case_file", { binmode => ':raw' }, $test_case_code);
 
       last;
     }

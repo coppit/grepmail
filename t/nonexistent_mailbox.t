@@ -8,6 +8,7 @@ use Test::Utils;
 use File::Spec::Functions qw( :ALL );
 use File::Copy;
 use Config;
+use File::Slurp;
 
 my $path_to_perl = $Config{perlpath};
 
@@ -151,18 +152,12 @@ sub LocalizeTestOutput
   my $original_file = shift;
   my $new_file = shift;
 
-  open REAL, $original_file or die $!;
-  local $/ = undef;
-  my $original = <REAL>;
-  close REAL;
+  my $original = read_file($original_file);
 
   my $new = $original;
   $new =~ s/\Q$search_replace->{'search'}\E/$search_replace->{'replace'}/gx;
 
-  open REAL, ">$new_file";
-  binmode REAL;
-  print REAL $new;
-  close REAL;
+  write_file($new_file, {binmode => ':raw'}, $new);
 }
 
 # ---------------------------------------------------------------------------

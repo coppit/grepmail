@@ -6,6 +6,7 @@ use Test::More;
 use FileHandle;
 use File::Spec::Functions qw( :ALL );
 use File::Temp;
+use File::Slurp;
 
 use vars qw( @EXPORT @ISA );
 use Mail::Mbox::MessageParser;
@@ -51,19 +52,8 @@ sub Do_Diff
 
   local $Test::Builder::Level = 2;
 
-  my (@data1,@data2);
-
-  {
-    open IN, $filename;
-    @data1 = <IN>;
-    close IN;
-  }
-
-  {
-    open IN, $output_filename;
-    @data2 = <IN>;
-    close IN;
-  }
+  my @data1 = read_file($filename);
+  my @data2 = read_file($output_filename);
 
   is_deeply(\@data1,\@data2,"$filename compared to $output_filename");
 }
@@ -114,8 +104,7 @@ sub Broken_Pipe
   my $script_path = catfile($TEMPDIR,'broken_pipe.pl');
   my $dev_null = devnull();
 
-  open F, ">$script_path";
-  print F<<EOF;
+  write_file($script_path, <<EOF);
 unless (open B, '-|')
 {
   open(F, "|$^X -pe 'print' 2>$dev_null");
@@ -124,7 +113,6 @@ unless (open B, '-|')
   exit;
 }
 EOF
-  close F;
 
   my $result = `$^X $script_path 2>&1 1>$dev_null`;
 

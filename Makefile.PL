@@ -69,9 +69,9 @@ auto_license(holder => 'David Coppit');
 WriteAll();
 
 if (auto_tester) {
-  my $makefile = read_file('Makefile');
-  $makefile =~ s/TEST_VERBOSE\s*=\s*0/TEST_VERBOSE=1/ or die "Couldn't enable verbose mode in Makefile";
-  write_file('Makefile', $makefile);
+  my $code = read_file('Makefile');
+  $code =~ s/TEST_VERBOSE\s*=\s*0/TEST_VERBOSE=1/ or die "Couldn't enable verbose mode in Makefile";
+  write_file('Makefile', $code);
 }
 
 Update_Test_Version('grepmail','t/results/help');

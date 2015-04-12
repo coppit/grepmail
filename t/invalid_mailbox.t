@@ -8,6 +8,7 @@ use Test::Utils;
 use File::Spec::Functions qw( :ALL );
 use File::Copy;
 use Config;
+use File::Slurp;
 
 my $path_to_perl = $Config{perlpath};
 
@@ -152,9 +153,7 @@ sub Custom_Do_Diff
     system "$diffstring >> $output_filename.diff ".
       "2>$output_filename.diff.error";
 
-    open DIFF_ERR, "$output_filename.diff.error";
-    my $diff_err = join '', <DIFF_ERR>;
-    close DIFF_ERR;
+    my $diff_err = read_file("$output_filename.diff.error");
 
     unlink "$output_filename.diff.error";
 
@@ -198,9 +197,7 @@ sub Custom_Do_Diff
     system "$diffstring >> $output_filename.diff ".
       "2>$output_filename.diff.error";
 
-    open DIFF_ERR, "$output_filename.diff.error";
-    my $diff_err = join '', <DIFF_ERR>;
-    close DIFF_ERR;
+    my $diff_err = read_file("$output_filename.diff.error");
 
     unlink "$output_filename.diff.error";
 
@@ -268,10 +265,7 @@ sub LocalizeTestOutput
   my $new_file = shift;
   my $flip = shift;
 
-  open REAL, $original_file or die $!;
-  local $/ = undef;
-  my $original = <REAL>;
-  close REAL;
+  my $original = read_file($original_file);
 
   my $new = $original;
 
@@ -282,10 +276,7 @@ sub LocalizeTestOutput
   $search_replace->{'search'} =~ s/\n/\r\n/g;
   $new =~ s/\Q$search_replace->{'search'}\E/$search_replace->{'replace'}/gx;
 
-  open REAL, ">$new_file";
-  binmode REAL;
-  print REAL $new;
-  close REAL;
+  write_file($new_file, {binmode => ':raw'}, $new);
 }
 
 # ---------------------------------------------------------------------------

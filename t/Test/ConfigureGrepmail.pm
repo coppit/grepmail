@@ -1,6 +1,7 @@
 package Test::ConfigureGrepmail;
 
 use strict;
+use File::Slurp;
 
 sub Set_Caching_And_Grep
 {
@@ -8,12 +9,12 @@ sub Set_Caching_And_Grep
   my $enable_caching = shift;
   my $enable_grep = shift;
 
-  my $code = _Read_Code($filename);
+  my $code = read_file($filename);
 
   $code =~ s/^\$USE_CACHING = (\d+);/\$USE_CACHING = $enable_caching;/m;
   $code =~ s/^\$USE_GREP = (\d+);/\$USE_GREP = $enable_grep;/m;
 
-  _Write_Code($filename, $code);
+  write_file($filename, $code);
 }
 
 # --------------------------------------------------------------------------
@@ -23,7 +24,7 @@ sub Set_Cache_File
   my $filename = shift;
   my $cache_file = shift;
 
-  my $code = _Read_Code($filename);
+  my $code = read_file($filename);
 
   if ($code =~ /(Mail::Mbox::MessageParser::SETUP_CACHE\( {.*?} *\))/s)
   {
@@ -35,36 +36,7 @@ sub Set_Cache_File
     $code =~ s/\Q$original_cache_setup\E/$new_cache_setup/;
   }
 
-  _Write_Code($filename, $code);
-}
-
-# --------------------------------------------------------------------------
-
-sub _Read_Code
-{
-  my $filename = shift;
-
-  local $/ = undef;
-
-  open SOURCE, $filename
-    or die "Couldn't open grepmail file \"$filename\": $!";
-  my $code = <SOURCE>;
-  close SOURCE;
-
-  return $code;
-}
-
-# --------------------------------------------------------------------------
-
-sub _Write_Code
-{
-  my $filename = shift;
-  my $code = shift;
-
-  open SOURCE, ">$filename"
-    or die "Couldn't open grepmail file \"$filename\": $!";
-  print SOURCE $code;
-  close SOURCE;
+  write_file($filename, $code);
 }
 
 1;
