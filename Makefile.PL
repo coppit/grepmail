@@ -31,6 +31,10 @@ install_script('grepmail');
 requires(
   'Date::Parse' => 0,
   'Mail::Mbox::MessageParser' => '1.4001',
+  # I don't really require such a new version, but some old OSes have a
+  # version 1.11 that doesn't work right. Updating to the "real" 1.11 does
+  # work right. Repro'd on a RHEL 5 Update 11 VM in AWS, running perl 5.8.8.
+  'Time::Local' => '1.2300',
 );
 
 test_requires(
