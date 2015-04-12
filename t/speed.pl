@@ -8,12 +8,14 @@ use strict;
 use warnings 'all';
 
 use lib 't';
+use Test::Utils;
 use Benchmark;
 use Benchmark::Timer;
 use FileHandle;
 use Test::ConfigureGrepmail;
 use File::Copy;
 use File::Spec;
+use File::Spec::Functions;
 use Config;
 use File::Slurp;
 
@@ -26,7 +28,7 @@ BEGIN
 }
 
 my $MAILBOX_SIZE = 10_000_000;
-my $TEMP_MAILBOX = catfile($TEMPDIR, 'bigmailbox.txt');
+my $TEMP_MAILBOX = File::Spec::Functions::catfile($TEMPDIR, 'bigmailbox.txt');
 
 my $SKIP = 5;
 my $MINIMUM = 10;
