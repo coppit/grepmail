@@ -1,4 +1,4 @@
-Version 5.3102:
+Version 5.3102: Sun Apr 12 2015
 - Force the user to upgrade their Time::Local, to work around bugs in the
   stock version that came with old OSes like RHEL 5.
   http://www.cpantesters.org/cpan/report/61043eda-dd0e-11e4-abc4-b553e14af301
