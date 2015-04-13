@@ -26,6 +26,10 @@ provides(
   }
 );
 
+# Module::Install doesn't figure out that Module::Install::CheckOptional needs this. Include it manually.
+include( 'Module::AutoInstall' => 0 );
+include( 'File::Slurp' => 0 );
+
 check_custom_installation();
 
 install_script('grepmail');
@@ -50,13 +54,6 @@ check_optional('Date::Manip' => 0, "Date::Manip allows you to use complex date p
 check_optional('Benchmark::Timer' => 0, "Benchmark::Timer is required for speed tests\n");
 
 Add_Test_Target('testspeed', 't/speed.pl');
-
-include(
-  # Module::Install doesn't figure out that Module::Install::CheckOptional needs
-  # this. Include it manually.
-  'Module::AutoInstall' => 0,
-  'File::Slurp' => 0,
-);
 
 license 'gpl2';
 auto_license(holder => 'David Coppit');
