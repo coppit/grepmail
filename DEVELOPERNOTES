@@ -16,6 +16,8 @@ Checklist for a release:
   $ make distcheck
 - Test your distribution:
   $ make disttest
+- Test the speed
+  $ make testspeed
 - Make the distribution file:
   $ make dist
 - Install the distribution file elsewhere to test it.
