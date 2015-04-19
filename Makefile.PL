@@ -3,7 +3,7 @@
 use strict;
 
 # For PRIVATE Module::Install extensions
-use lib 'lib';
+use lib 'private-lib';
 
 use inc::Module::Install;
 use File::Slurp;

@@ -1,5 +1,8 @@
 Version 5.3103:
 - Clarify licensing terms
+- Don't install private Module::Install extension. Thanks to Paul Howarth
+  <paul@city-fan.org> for the bug report in another module.
+  https://rt.cpan.org/Ticket/Display.html?id=103482
 
 Version 5.3102: Sun Apr 12 2015
 - Force the user to upgrade their Time::Local, to work around bugs in the

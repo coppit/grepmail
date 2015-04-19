@@ -1,7 +1,6 @@
 package Module::Install::PRIVATE::Add_Test_Target;
 
 use strict;
-use File::Slurp;
 
 use vars qw( @ISA $VERSION );
 
@@ -14,9 +13,7 @@ $VERSION = sprintf "%d.%02d%02d", q/0.10.0/ =~ /(\d+)/g;
 
 sub Add_Test_Target
 {
-  my $self = shift;
-  my $target = shift;
-  my $test = shift;
+  my ($self, $target, $test) = @_;
 
   *main::MY::postamble = sub {
     return &Module::AutoInstall::postamble . <<EOF;
