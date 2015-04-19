@@ -6,7 +6,6 @@ use strict;
 use lib 'private-lib';
 
 use inc::Module::Install;
-use File::Slurp;
 
 # To prevent MakeMaker from processing our old directory
 BEGIN { makemaker_args( NORECURS => 1 ) }
@@ -26,8 +25,6 @@ provides(
   }
 );
 
-# Module::Install doesn't figure out that Module::Install::CheckOptional needs this. Include it manually.
-include( 'Module::AutoInstall' => 0 );
 include( 'File::Slurp' => 0 );
 
 check_custom_installation();
@@ -45,6 +42,7 @@ requires(
 
 test_requires(
   'Test::More' => 0,
+  'File::Slurp' => 0,
 );
 
 check_optional('Digest::MD5' => 0, "Digest::MD5 reduces memory consumption for the -u (unique) option\n");
@@ -58,12 +56,8 @@ Add_Test_Target('testspeed', 't/speed.pl');
 license 'gpl2';
 auto_license(holder => 'David Coppit');
 
-WriteAll();
+enable_verbose_cpan_testing();
 
-if (auto_tester) {
-  my $code = read_file('Makefile');
-  $code =~ s/TEST_VERBOSE\s*=\s*0/TEST_VERBOSE=1/ or die "Couldn't enable verbose mode in Makefile";
-  write_file('Makefile', $code);
-}
+WriteAll();
 
 Update_Test_Version('grepmail','t/results/help');

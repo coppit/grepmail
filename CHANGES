@@ -3,6 +3,8 @@ Version 5.3103:
 - Don't install private Module::Install extension. Thanks to Paul Howarth
   <paul@city-fan.org> for the bug report in another module.
   https://rt.cpan.org/Ticket/Display.html?id=103482
+- Move verbose testing to a private module, and implement it in a way that
+  doesn't require editing the Makefile after it is generated.
 
 Version 5.3102: Sun Apr 12 2015
 - Force the user to upgrade their Time::Local, to work around bugs in the
