@@ -5,6 +5,9 @@ Version 5.3103:
   https://rt.cpan.org/Ticket/Display.html?id=103482
 - Move verbose testing to a private module, and implement it in a way that
   doesn't require editing the Makefile after it is generated.
+- Require File::Slurp instead of including it, to avoid potential problems
+  like this:
+  http://www.cpantesters.org/cpan/report/86a0145a-e52b-11e4-a1d1-8536eb4f9f07
 
 Version 5.3102: Sun Apr 12 2015
 - Force the user to upgrade their Time::Local, to work around bugs in the

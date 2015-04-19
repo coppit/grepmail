@@ -137,7 +137,6 @@ inc/File/HomeDir/MacOS9.pm
 inc/File/HomeDir/Test.pm
 inc/File/HomeDir/Unix.pm
 inc/File/HomeDir/Windows.pm
-inc/File/Slurp.pm
 inc/File/Temp.pm
 inc/File/Which.pm
 inc/Module/AutoInstall.pm

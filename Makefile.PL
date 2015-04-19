@@ -25,11 +25,13 @@ provides(
   }
 );
 
-include( 'File::Slurp' => 0 );
-
 check_custom_installation();
 
 install_script('grepmail');
+
+configure_requires(
+  'File::Slurp' => 0,
+);
 
 requires(
   'Date::Parse' => 0,
