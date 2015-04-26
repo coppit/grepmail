@@ -103,7 +103,6 @@ t/results/match_word_let
 t/results/no_data
 t/results/none
 t/results/no_such_file
-t/results/not_a_mailbox_pipe
 t/results/not_body_handy
 t/results/not_handy
 t/results/not_header_body_handy

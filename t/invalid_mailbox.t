@@ -9,25 +9,16 @@ use File::Spec::Functions qw( :ALL );
 use File::Copy;
 use File::Slurp;
 
+my $CAT = perl_with_inc() . qq{ -MTest::Utils -e catbin};
+
 my %tests = (
-'cat t/mailboxes/non-mailbox.txt.gz | grepmail pattern'
-  => ['none','not_a_mailbox_pipe'],
-"cat t/mailboxes/non-mailbox.txt.gz | grepmail -E $single_quote\$email =~ /pattern/$single_quote"
-  => ['none','not_a_mailbox_pipe'],
+"$CAT t/mailboxes/non-mailbox.txt.gz | grepmail pattern"
+  => 'none',
+"$CAT t/mailboxes/non-mailbox.txt.gz | grepmail -E $single_quote\$email =~ /pattern/$single_quote"
+  => 'none',
 );
 
 my %expected_errors = (
-);
-
-my %localization = (
-  'cat t/mailboxes/non-mailbox.txt.gz | grepmail pattern' =>
-    { 'stderr' => { 'search' => "[Broken Pipe]\n",
-                    'replace' => Broken_Pipe() },
-    },
-  "cat t/mailboxes/non-mailbox.txt.gz | grepmail -E $single_quote\$email =~ /pattern/$single_quote" =>
-    { 'stderr' => { 'search' => "[Broken Pipe]\n",
-                    'replace' => Broken_Pipe() },
-    },
 );
 
 plan tests => scalar (keys %tests) * 2;
@@ -42,7 +33,7 @@ foreach my $test (sort keys %tests)
   {
     skip("$skip{$test}",2) if exists $skip{$test};
 
-    TestIt($test, $tests{$test}, $expected_errors{$test}, $localization{$test});
+    TestIt($test, $tests{$test}, $expected_errors{$test});
   }
 }
 
@@ -51,9 +42,8 @@ foreach my $test (sort keys %tests)
 sub TestIt
 {
   my $test = shift;
-  my ($stdout_file,$stderr_file) = @{ shift @_ };
+  my $stdout_file = shift;
   my $error_expected = shift;
-  my $localization = shift;
 
   my $testname = [splitdir($0)]->[-1];
   $testname =~ s#\.t##;
@@ -63,7 +53,7 @@ sub TestIt
   $test =~ s#\bgrepmail\s#$perl blib/script/grepmail -C $TEMPDIR/cache #g;
 
   my $test_stdout = catfile($TEMPDIR,"${testname}_$stdout_file.stdout");
-  my $test_stderr = catfile($TEMPDIR,"${testname}_$stderr_file.stderr");
+  my $test_stderr = catfile($TEMPDIR,"${testname}.stderr");
 
   system "$test 1>$test_stdout 2>$test_stderr";
 
@@ -80,140 +70,24 @@ sub TestIt
     return;
   }
 
-  my $modified_stdout = "$TEMPDIR/$stdout_file";
-  my $modified_stderr_1 = "$TEMPDIR/${stderr_file}_1";
-  my $modified_stderr_2 = "$TEMPDIR/${stderr_file}_2";
-
   my $real_stdout = catfile('t','results',$stdout_file);
-  my $real_stderr = catfile('t','results',$stderr_file);
-
-  if (defined $localization->{'stdout'})
-  {
-    LocalizeTestOutput($localization->{'stdout'}, $real_stdout, $modified_stdout,0);
-  }
-  else
-  {
-    copy($real_stdout, $modified_stdout);
-  }
-
-  if (defined $localization->{'stderr'})
-  {
-    LocalizeTestOutput($localization->{'stderr'}, $real_stderr, $modified_stderr_1,0);
-    LocalizeTestOutput($localization->{'stderr'}, $real_stderr, $modified_stderr_2,1);
-  }
-  else
-  {
-    copy($real_stderr, $modified_stderr_1);
-    copy($real_stderr, $modified_stderr_2);
-  }
 
   # Compare STDERR first on the assumption that if STDOUT is different, STDERR
   # is too and contains something useful.
-  Custom_Do_Diff($modified_stderr_1,$modified_stderr_2,$test_stderr);
-  Do_Diff($test_stdout,$modified_stdout);
-
-  unlink $modified_stdout;
-  unlink $modified_stderr_1;
-  unlink $modified_stderr_2;
+  Inspect_Stderr($test_stderr);
+  Do_Diff($test_stdout,$real_stdout);
 }
 
 # ---------------------------------------------------------------------------
 
-sub Custom_Do_Diff
+sub Inspect_Stderr
 {
-  my $filename_1 = shift;
-  my $filename_2 = shift;
-  my $output_filename = shift;
+  my $filename = shift;
 
-  {
-    my $diffstring = "diff $output_filename $filename_1";
+  my $stderr = read_file($filename);
 
-    system "echo $diffstring > $output_filename.diff ".
-      "2>$output_filename.diff.error";
-
-    system "$diffstring >> $output_filename.diff ".
-      "2>$output_filename.diff.error";
-
-    my $diff_err = read_file("$output_filename.diff.error");
-
-    unlink "$output_filename.diff.error";
-
-    if ($? == 2)
-    {
-      ok(0,"Couldn't do diff on results.");
-      return;
-    }
-
-    if ($diff_err ne '')
-    {
-      ok(0,$diff_err);
-      return;
-    }
-
-    local $/ = "\n";
-
-    my @diffs = `cat $output_filename.diff`;
-    shift @diffs;
-    my $numdiffs = ($#diffs + 1) / 2;
-
-    if ($numdiffs == 0)
-    {
-      ok(1,"Output $output_filename looks good.");
-      unlink "$output_filename.diff";
-      return;
-    }
-
-    if ($numdiffs != 0)
-    {
-      print "First try resulted in $numdiffs differences. Trying other order.\n";
-    }
-  }
-
-  {
-    my $diffstring = "diff $output_filename $filename_2";
-
-    system "echo $diffstring > $output_filename.diff ".
-      "2>$output_filename.diff.error";
-
-    system "$diffstring >> $output_filename.diff ".
-      "2>$output_filename.diff.error";
-
-    my $diff_err = read_file("$output_filename.diff.error");
-
-    unlink "$output_filename.diff.error";
-
-    if ($? == 2)
-    {
-      ok(0,"Couldn't do diff on results.");
-      return;
-    }
-
-    if ($diff_err ne '')
-    {
-      ok(0,$diff_err);
-      return;
-    }
-
-    local $/ = "\n";
-
-    my @diffs = `cat $output_filename.diff`;
-    shift @diffs;
-    my $numdiffs = ($#diffs + 1) / 2;
-
-    if ($numdiffs == 0)
-    {
-      ok(1,"Output $output_filename looks good.");
-      unlink "$output_filename.diff";
-      return;
-    }
-
-    if ($numdiffs != 0)
-    {
-      ok(0,"Failed, with $numdiffs differences.\n" .
-        "  See $output_filename and $output_filename.diff.");
-      return;
-    }
-  }
+  like($stderr, qr/Standard input is not a mailbox/, '"Standard input is not a mailbox" message') or
+    diag("See $filename");
 }
 
 # ---------------------------------------------------------------------------
@@ -228,37 +102,11 @@ sub SetSkip
 
   unless (defined $Mail::Mbox::MessageParser::Config{'programs'}{'gzip'})
   {
-    $skip{'cat t/mailboxes/non-mailbox.txt.gz | grepmail pattern'}
+    $skip{"$CAT t/mailboxes/non-mailbox.txt.gz | grepmail pattern"}
       = 'gzip support not enabled in Mail::Mbox::MessageParser';
-    $skip{"cat t/mailboxes/non-mailbox.txt.gz | grepmail -E $single_quote\$email =~ /pattern/$single_quote"}
+    $skip{"$CAT t/mailboxes/non-mailbox.txt.gz | grepmail -E $single_quote\$email =~ /pattern/$single_quote"}
       = 'gzip support not enabled in Mail::Mbox::MessageParser';
   }
 
   return %skip;
 }
-
-# ---------------------------------------------------------------------------
-
-sub LocalizeTestOutput
-{
-  my $search_replace = shift;
-  my $original_file = shift;
-  my $new_file = shift;
-  my $flip = shift;
-
-  my $original = read_file($original_file);
-
-  my $new = $original;
-
-  $new =~ s/(\[Broken Pipe\]\r?\n)(.*)/$2$1/s if $flip;
-
-  $new =~ s/\Q$search_replace->{'search'}\E/$search_replace->{'replace'}/gx;
-
-  $search_replace->{'search'} =~ s/\n/\r\n/g;
-  $new =~ s/\Q$search_replace->{'search'}\E/$search_replace->{'replace'}/gx;
-
-  write_file($new_file, {binmode => ':raw'}, $new);
-}
-
-# ---------------------------------------------------------------------------
-

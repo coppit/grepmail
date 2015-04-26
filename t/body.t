@@ -16,9 +16,9 @@ my %tests = (
   => ['body_handy','none'],
 'grepmail -b mime t/mailboxes/mailarc-1-dos.txt'
   => ['body_mime_dos','none'],
-'grepmail -b \'my$\' t/mailboxes/mailarc-1.txt'
+'grepmail -b "my$" t/mailboxes/mailarc-1.txt'
   => ['body_my','none'],
-'grepmail -b \'my$\' t/mailboxes/mailarc-1-dos.txt'
+'grepmail -b "my$" t/mailboxes/mailarc-1-dos.txt'
   => ['body_my_dos','none'],
 );
 

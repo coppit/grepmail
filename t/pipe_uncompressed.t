@@ -7,10 +7,12 @@ use lib 't';
 use Test::Utils;
 use File::Spec::Functions qw( :ALL );
 
+my $CAT = perl_with_inc() . qq{ -MTest::Utils -e catbin};
+
 my %tests = (
-'cat t/mailboxes/mailarc-1.txt | grepmail -v Handy'
+qq{$CAT t/mailboxes/mailarc-1.txt | grepmail -v Handy}
   => ['not_handy','none'],
-"cat t/mailboxes/mailarc-1.txt | grepmail -v -E $single_quote\$email =~ /Handy/$single_quote"
+qq{$CAT t/mailboxes/mailarc-1.txt | grepmail -v -E $single_quote\$email =~ /Handy/$single_quote}
   => ['not_handy','none'],
 );
 

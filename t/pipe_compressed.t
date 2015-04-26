@@ -7,22 +7,24 @@ use lib 't';
 use Test::Utils;
 use File::Spec::Functions qw( :ALL );
 
+my $CAT = perl_with_inc() . qq{ -MTest::Utils -e catbin};
+
 my %tests = (
-'cat t/mailboxes/mailarc-1.txt.gz | grepmail Handy'
+"$CAT t/mailboxes/mailarc-1.txt.gz | grepmail Handy"
   => ['all_handy','none'],
-'cat t/mailboxes/mailarc-1.txt.bz2 | grepmail Handy'
+"$CAT t/mailboxes/mailarc-1.txt.bz2 | grepmail Handy"
   => ['all_handy','none'],
-'cat t/mailboxes/mailarc-1.txt.lz | grepmail Handy'
+"$CAT t/mailboxes/mailarc-1.txt.lz | grepmail Handy"
   => ['all_handy','none'],
-'cat t/mailboxes/mailarc-1.txt.xz | grepmail Handy'
+"$CAT t/mailboxes/mailarc-1.txt.xz | grepmail Handy"
   => ['all_handy','none'],
-"cat t/mailboxes/mailarc-1.txt.gz | grepmail -v -E $single_quote\$email =~ /Handy/$single_quote"
+"$CAT t/mailboxes/mailarc-1.txt.gz | grepmail -v -E $single_quote\$email =~ /Handy/$single_quote"
   => ['not_handy','none'],
-"cat t/mailboxes/mailarc-1.txt.bz2 | grepmail -v -E $single_quote\$email =~ /Handy/$single_quote"
+"$CAT t/mailboxes/mailarc-1.txt.bz2 | grepmail -v -E $single_quote\$email =~ /Handy/$single_quote"
   => ['not_handy','none'],
-"cat t/mailboxes/mailarc-1.txt.lz | grepmail -v -E $single_quote\$email =~ /Handy/$single_quote"
+"$CAT t/mailboxes/mailarc-1.txt.lz | grepmail -v -E $single_quote\$email =~ /Handy/$single_quote"
   => ['not_handy','none'],
-"cat t/mailboxes/mailarc-1.txt.xz | grepmail -v -E $single_quote\$email =~ /Handy/$single_quote"
+"$CAT t/mailboxes/mailarc-1.txt.xz | grepmail -v -E $single_quote\$email =~ /Handy/$single_quote"
   => ['not_handy','none'],
 );
 
@@ -97,33 +99,33 @@ sub SetSkip
 
   unless (defined $Mail::Mbox::MessageParser::Config{'programs'}{'gzip'})
   {
-    $skip{'cat t/mailboxes/mailarc-1.txt.gz | grepmail Handy'}
+    $skip{"$CAT t/mailboxes/mailarc-1.txt.gz | grepmail Handy"}
       = 'gzip support not enabled in Mail::Mbox::MessageParser';
-    $skip{"cat t/mailboxes/mailarc-1.txt.gz | grepmail -v -E $single_quote\$email =~ /Handy/$single_quote"}
+    $skip{"$CAT t/mailboxes/mailarc-1.txt.gz | grepmail -v -E $single_quote\$email =~ /Handy/$single_quote"}
       = 'gzip support not enabled in Mail::Mbox::MessageParser';
   }
 
   unless (defined $Mail::Mbox::MessageParser::Config{'programs'}{'bzip2'})
   {
-    $skip{'cat t/mailboxes/mailarc-1.txt.bz2 | grepmail Handy'}
+    $skip{"$CAT t/mailboxes/mailarc-1.txt.bz2 | grepmail Handy"}
       = 'bzip2 support not enabled in Mail::Mbox::MessageParser';
-    $skip{"cat t/mailboxes/mailarc-1.txt.bz2 | grepmail -v -E $single_quote\$email =~ /Handy/$single_quote"}
+    $skip{"$CAT t/mailboxes/mailarc-1.txt.bz2 | grepmail -v -E $single_quote\$email =~ /Handy/$single_quote"}
       = 'bzip2 support not enabled in Mail::Mbox::MessageParser';
   }
 
   unless (defined $Mail::Mbox::MessageParser::Config{'programs'}{'lzip'})
   {
-    $skip{'cat t/mailboxes/mailarc-1.txt.lz | grepmail Handy'}
+    $skip{"$CAT t/mailboxes/mailarc-1.txt.lz | grepmail Handy"}
       = 'lzip support not enabled in Mail::Mbox::MessageParser';
-    $skip{"cat t/mailboxes/mailarc-1.txt.lz | grepmail -v -E $single_quote\$email =~ /Handy/$single_quote"}
+    $skip{"$CAT t/mailboxes/mailarc-1.txt.lz | grepmail -v -E $single_quote\$email =~ /Handy/$single_quote"}
       = 'lzip support not enabled in Mail::Mbox::MessageParser';
   }
 
   unless (defined $Mail::Mbox::MessageParser::Config{'programs'}{'xz'})
   {
-    $skip{'cat t/mailboxes/mailarc-1.txt.xz | grepmail Handy'}
+    $skip{"$CAT t/mailboxes/mailarc-1.txt.xz | grepmail Handy"}
       = 'xz support not enabled in Mail::Mbox::MessageParser';
-    $skip{"cat t/mailboxes/mailarc-1.txt.xz | grepmail -v -E $single_quote\$email =~ /Handy/$single_quote"}
+    $skip{"$CAT t/mailboxes/mailarc-1.txt.xz | grepmail -v -E $single_quote\$email =~ /Handy/$single_quote"}
       = 'xz support not enabled in Mail::Mbox::MessageParser';
   }
 

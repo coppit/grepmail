@@ -109,6 +109,8 @@ sub SetSkip
   my %skip;
 
   unless ( eval { symlink("",""); 1 } && eval { link("",""); 1} ) {
+    $skip{"grepmail -Lq Handy $TEMPDIR/directory_with_links"} =
+      'Links or symbolic links are not supported on this platform';
     $skip{"grepmail -Rq Handy $TEMPDIR/directory_with_links"} =
       'Links or symbolic links are not supported on this platform';
   }

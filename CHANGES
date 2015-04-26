@@ -1,4 +1,4 @@
-Version 5.3103:
+Version 5.3103: Apr 26 2015
 - Clarify licensing terms
 - Don't install private Module::Install extension. Thanks to Paul Howarth
   <paul@city-fan.org> for the bug report in another module.
@@ -8,6 +8,9 @@ Version 5.3103:
 - Require File::Slurp instead of including it, to avoid potential problems
   like this:
   http://www.cpantesters.org/cpan/report/86a0145a-e52b-11e4-a1d1-8536eb4f9f07
+- Miscellaneous fixes for Windows compatibility. This includes weaking the
+  invalid mailbox test so that it only looks for output from grepmail, and not
+  any "broken pipe" message from the OS.
 
 Version 5.3102: Sun Apr 12 2015
 - Force the user to upgrade their Time::Local, to work around bugs in the

@@ -14,8 +14,8 @@ use Mail::Mbox::MessageParser;
 
 @ISA = qw( Exporter );
 @EXPORT = qw( Do_Diff Module_Installed %PROGRAMS $TEMPDIR
-  Broken_Pipe No_such_file_or_directory $single_quote $command_separator
-  $set_env perl_with_inc
+  No_such_file_or_directory $single_quote $command_separator
+  $set_env perl_with_inc catbin
 );
 
 use vars qw( $TEMPDIR %PROGRAMS $single_quote $command_separator $set_env );
@@ -97,33 +97,6 @@ sub No_such_file_or_directory
 
 # ---------------------------------------------------------------------------
 
-# I think this works, but I haven't been able to test it because I can't find
-# a system which will report a broken pipe. Also, is there a pure Perl way of
-# doing this?
-sub Broken_Pipe
-{
-  my $script_path = catfile($TEMPDIR,'broken_pipe.pl');
-  my $dev_null = devnull();
-
-  write_file($script_path, <<EOF);
-unless (open B, '-|')
-{
-  open(F, "|$^X -pe 'print' 2>$dev_null");
-  print F 'x';
-  close F;
-  exit;
-}
-EOF
-
-  my $result = `$^X $script_path 2>&1 1>$dev_null`;
-
-  $result = '' unless defined $result;
-
-  return $result;
-}
-
-# ---------------------------------------------------------------------------
-
 sub perl_with_inc
 {
   my $path_to_perl = $Config{perlpath};
@@ -143,6 +116,22 @@ sub perl_with_inc
   else
   {
     return qq{"$path_to_perl"};
+  }
+}
+
+# ---------------------------------------------------------------------------
+
+# Unfortunately ExtUtils::Command::cat() doesn't do binmode
+sub catbin
+{
+  local $/ = \4096;
+  binmode STDOUT;
+
+  foreach my $arg (@ARGV) {
+    open IN, $arg or die "Can't open $arg: $!";
+    binmode IN;
+
+    print while <IN>;
   }
 }
 
