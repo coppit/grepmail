@@ -7,6 +7,7 @@ use FileHandle;
 use File::Spec::Functions qw( :ALL );
 use File::Temp;
 use File::Slurp;
+use Config;
 
 use vars qw( @EXPORT @ISA );
 use Mail::Mbox::MessageParser;
@@ -14,7 +15,7 @@ use Mail::Mbox::MessageParser;
 @ISA = qw( Exporter );
 @EXPORT = qw( Do_Diff Module_Installed %PROGRAMS $TEMPDIR
   Broken_Pipe No_such_file_or_directory $single_quote $command_separator
-  $set_env
+  $set_env perl_with_inc
 );
 
 use vars qw( $TEMPDIR %PROGRAMS $single_quote $command_separator $set_env );
@@ -122,5 +123,27 @@ EOF
 }
 
 # ---------------------------------------------------------------------------
+
+sub perl_with_inc
+{
+  my $path_to_perl = $Config{perlpath};
+
+  my @standard_inc = split /###/, `"$path_to_perl" -e '\$" = "###";print "\@INC"'`;
+  my @extra_inc;
+  foreach my $inc (@INC)
+  {
+    push @extra_inc, "$single_quote$inc$single_quote" unless grep { /^$inc$/ } @standard_inc;
+  }
+
+  if (@extra_inc)
+  {
+    local $" = ' -I';
+    return qq{"$path_to_perl" -I@extra_inc};
+  }
+  else
+  {
+    return qq{"$path_to_perl"};
+  }
+}
 
 1;

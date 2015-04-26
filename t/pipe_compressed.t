@@ -6,26 +6,23 @@ use Test::More;
 use lib 't';
 use Test::Utils;
 use File::Spec::Functions qw( :ALL );
-use Config;
-
-my $path_to_perl = $Config{perlpath};
 
 my %tests = (
-'cat t/mailboxes/mailarc-1.txt.gz' . ' | grepmail Handy'
+'cat t/mailboxes/mailarc-1.txt.gz | grepmail Handy'
   => ['all_handy','none'],
-'cat t/mailboxes/mailarc-1.txt.bz2' . ' | grepmail Handy'
+'cat t/mailboxes/mailarc-1.txt.bz2 | grepmail Handy'
   => ['all_handy','none'],
-'cat t/mailboxes/mailarc-1.txt.lz' . ' | grepmail Handy'
+'cat t/mailboxes/mailarc-1.txt.lz | grepmail Handy'
   => ['all_handy','none'],
-'cat t/mailboxes/mailarc-1.txt.xz' . ' | grepmail Handy'
+'cat t/mailboxes/mailarc-1.txt.xz | grepmail Handy'
   => ['all_handy','none'],
-'cat t/mailboxes/mailarc-1.txt.gz' . " | grepmail -v -E $single_quote\$email =~ /Handy/$single_quote"
+"cat t/mailboxes/mailarc-1.txt.gz | grepmail -v -E $single_quote\$email =~ /Handy/$single_quote"
   => ['not_handy','none'],
-'cat t/mailboxes/mailarc-1.txt.bz2' . " | grepmail -v -E $single_quote\$email =~ /Handy/$single_quote"
+"cat t/mailboxes/mailarc-1.txt.bz2 | grepmail -v -E $single_quote\$email =~ /Handy/$single_quote"
   => ['not_handy','none'],
-'cat t/mailboxes/mailarc-1.txt.lz' . " | grepmail -v -E $single_quote\$email =~ /Handy/$single_quote"
+"cat t/mailboxes/mailarc-1.txt.lz | grepmail -v -E $single_quote\$email =~ /Handy/$single_quote"
   => ['not_handy','none'],
-'cat t/mailboxes/mailarc-1.txt.xz' . " | grepmail -v -E $single_quote\$email =~ /Handy/$single_quote"
+"cat t/mailboxes/mailarc-1.txt.xz | grepmail -v -E $single_quote\$email =~ /Handy/$single_quote"
   => ['not_handy','none'],
 );
 
@@ -59,25 +56,9 @@ sub TestIt
   my $testname = [splitdir($0)]->[-1];
   $testname =~ s#\.t##;
 
-  {
-    my @standard_inc = split /###/, `$path_to_perl -e '\$" = "###";print "\@INC"'`;
-    my @extra_inc;
-    foreach my $inc (@INC)
-    {
-      push @extra_inc, "$single_quote$inc$single_quote"
-        unless grep { /^$inc$/ } @standard_inc;
-    }
+  my $perl = perl_with_inc();
 
-    local $" = ' -I';
-    if (@extra_inc)
-    {
-      $test =~ s#\bgrepmail\s#$path_to_perl -I@extra_inc blib/script/grepmail -C $TEMPDIR/cache #g;
-    }
-    else
-    {
-      $test =~ s#\bgrepmail\s#$path_to_perl blib/script/grepmail -C $TEMPDIR/cache #g;
-    }
-  }
+  $test =~ s#\bgrepmail\s#$perl blib/script/grepmail -C $TEMPDIR/cache #g;
 
   my $test_stdout = catfile($TEMPDIR,"${testname}_$stdout_file.stdout");
   my $test_stderr = catfile($TEMPDIR,"${testname}_$stderr_file.stderr");
@@ -116,38 +97,35 @@ sub SetSkip
 
   unless (defined $Mail::Mbox::MessageParser::Config{'programs'}{'gzip'})
   {
-    $skip{'cat t/mailboxes/mailarc-1.txt.gz' . ' | grepmail Handy'}
+    $skip{'cat t/mailboxes/mailarc-1.txt.gz | grepmail Handy'}
       = 'gzip support not enabled in Mail::Mbox::MessageParser';
-    $skip{'cat t/mailboxes/mailarc-1.txt.gz' . " | grepmail -v -E $single_quote\$email =~ /Handy/$single_quote"}
+    $skip{"cat t/mailboxes/mailarc-1.txt.gz | grepmail -v -E $single_quote\$email =~ /Handy/$single_quote"}
       = 'gzip support not enabled in Mail::Mbox::MessageParser';
   }
 
   unless (defined $Mail::Mbox::MessageParser::Config{'programs'}{'bzip2'})
   {
-    $skip{'cat t/mailboxes/mailarc-1.txt.bz2' . ' | grepmail Handy'}
+    $skip{'cat t/mailboxes/mailarc-1.txt.bz2 | grepmail Handy'}
       = 'bzip2 support not enabled in Mail::Mbox::MessageParser';
-    $skip{'cat t/mailboxes/mailarc-1.txt.bz2' . " | grepmail -v -E $single_quote\$email =~ /Handy/$single_quote"}
+    $skip{"cat t/mailboxes/mailarc-1.txt.bz2 | grepmail -v -E $single_quote\$email =~ /Handy/$single_quote"}
       = 'bzip2 support not enabled in Mail::Mbox::MessageParser';
   }
 
   unless (defined $Mail::Mbox::MessageParser::Config{'programs'}{'lzip'})
   {
-    $skip{'cat t/mailboxes/mailarc-1.txt.lz' . ' | grepmail Handy'}
+    $skip{'cat t/mailboxes/mailarc-1.txt.lz | grepmail Handy'}
       = 'lzip support not enabled in Mail::Mbox::MessageParser';
-    $skip{'cat t/mailboxes/mailarc-1.txt.lz' . " | grepmail -v -E $single_quote\$email =~ /Handy/$single_quote"}
+    $skip{"cat t/mailboxes/mailarc-1.txt.lz | grepmail -v -E $single_quote\$email =~ /Handy/$single_quote"}
       = 'lzip support not enabled in Mail::Mbox::MessageParser';
   }
 
   unless (defined $Mail::Mbox::MessageParser::Config{'programs'}{'xz'})
   {
-    $skip{'cat t/mailboxes/mailarc-1.txt.xz' . ' | grepmail Handy'}
+    $skip{'cat t/mailboxes/mailarc-1.txt.xz | grepmail Handy'}
       = 'xz support not enabled in Mail::Mbox::MessageParser';
-    $skip{'cat t/mailboxes/mailarc-1.txt.xz' . " | grepmail -v -E $single_quote\$email =~ /Handy/$single_quote"}
+    $skip{"cat t/mailboxes/mailarc-1.txt.xz | grepmail -v -E $single_quote\$email =~ /Handy/$single_quote"}
       = 'xz support not enabled in Mail::Mbox::MessageParser';
   }
 
   return %skip;
 }
-
-# ---------------------------------------------------------------------------
-
