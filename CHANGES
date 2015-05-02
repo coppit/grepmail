@@ -1,3 +1,6 @@
+Version 5.3104:
+- Prevent CPAN from indexing private-lib
+
 Version 5.3103: Apr 26 2015
 - Clarify licensing terms
 - Don't install private Module::Install extension. Thanks to Paul Howarth
