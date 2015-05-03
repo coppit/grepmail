@@ -64,4 +64,8 @@ enable_verbose_cpan_testing();
 
 WriteAll();
 
+use_standard_tests;
+
+fix_standard_tests('grepmail');
+
 Update_Test_Version('grepmail','t/results/help');

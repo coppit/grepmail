@@ -2,8 +2,6 @@
 
 # grepmail
 
-$VERSION = sprintf "%d.%02d%02d", q/5.31.3/ =~ /(\d+)/g;
-
 # Do a pod2text on this file to get full documentation, or pod2man to get
 # man pages.
 
@@ -22,6 +20,8 @@ use strict;
 use Mail::Mbox::MessageParser;
 use FileHandle;
 use Carp;
+
+$VERSION = sprintf "%d.%02d%02d", q/5.31.4/ =~ /(\d+)/g;
 
 # Set to 1 to enable caching capability
 $USE_CACHING = 1;
@@ -150,16 +150,16 @@ my ($sizeRestriction, $size1, $size2);
   {
     # Need to quote arguments with spaces
     my @args = @ARGV;
-    grep { $_ = "'$_'" if index($_, ' ') != -1; $_ } @args;
+    grep { index($_, ' ') == -1 ? $_ : "'$_'" } @args;
 
     $commandLine = "$0 @args";
   }
 
   Print_Debug_Information($commandLine);
 
-  sub Process_Date($);
-  sub Process_Size($);
-  sub Get_Files(@);
+  sub Process_Date;
+  sub Process_Size;
+  sub Get_Files;
 
   # Make the pattern insensitive if we need to
   $pattern = "(?i)$pattern" if ($opts{'i'}) && $pattern ne $NO_PATTERN;
@@ -316,14 +316,14 @@ sub Get_Options
     }
     else
     {
-      open PATTERN_FILE, $opts{'f'}
+      open my $pattern_file, $opts{'f'}
         or Report_And_Exit("Can't open pattern file $opts{'f'}");
 
       $pattern = '(';
 
       my $first = 1;
 
-      while (my $line = <PATTERN_FILE>)
+      while (my $line = <$pattern_file>)
       {
         if ($first)
         {
@@ -338,7 +338,7 @@ sub Get_Options
         $pattern .= $line;
       }
 
-      close PATTERN_FILE;
+      close $pattern_file;
 
       $pattern .= ')';
     }
@@ -362,7 +362,7 @@ sub Get_Options
 
   if (defined $opts{'d'})
   {
-    if (eval 'require Date::Parse;')
+    if (eval {require Date::Parse})
     {
       import Date::Parse;
     }
@@ -372,7 +372,7 @@ sub Get_Options
         "Get it from CPAN.\n");
     }
 
-    if (eval 'require Time::Local;')
+    if (eval {require Time::Local})
     {
       import Time::Local;
     }
@@ -382,7 +382,7 @@ sub Get_Options
         "Get it from CPAN.\n");
     }
 
-    if (eval 'require Date::Manip')
+    if (eval {require Date::Manip})
     {
       my ($version_number) = $Date::Manip::VERSION =~ /^(\d+\.\d+)/;
       Date::Manip::Date_Init("TodayIsMidnight=1") if ($version_number >= 5.43 && $version_number < 6);
@@ -529,7 +529,7 @@ sub Validate_Pattern
 
 # Get a list of files, taking recursion into account if necessary.
 
-sub Get_Files(@)
+sub Get_Files
 {
   my @files_and_directories = @_;
 
@@ -551,7 +551,7 @@ sub Get_Files(@)
       dprint "Following symbolic link $arg looking for files..."
         if -l $arg;
 
-      unless (eval "require File::Find;")
+      unless (eval {require File::Find})
       {
         Report_And_Exit("You specified -R or -L, but do not have File::Find. " .
           "Get it from CPAN.\n");
@@ -987,18 +987,18 @@ sub Do_Complex_Pattern_Matching
   {
     my $header_pattern = $modified_pattern;
     $header_pattern =~ s/\$email\b/\$\$email_header/g;
-    eval " \$matchesEmail = $header_pattern ? 1 : 0 ";
+    eval " \$matchesEmail = $header_pattern ? 1 : 0 "; ## no critic (ProhibitStringyEval)
 
     unless ($matchesEmail)
     {
       my $body_pattern = $modified_pattern;
       $body_pattern =~ s/\$email\b/\$\$email_body/g;
-      eval " \$matchesEmail = $body_pattern ? 1 : 0 ";
+      eval " \$matchesEmail = $body_pattern ? 1 : 0 "; ## no critic (ProhibitStringyEval)
     }
   }
   else
   {
-    eval " \$matchesEmail = $modified_pattern ? 1 : 0 ";
+    eval " \$matchesEmail = $modified_pattern ? 1 : 0 "; ## no critic (ProhibitStringyEval)
   }
 
   #----------------------------------------------------------------
@@ -1096,9 +1096,8 @@ sub Process_Mail_File
   my $number_files = shift @_;
   my $pattern = shift @_;
 
-  my $setup_result = Mail::Mbox::MessageParser::SETUP_CACHE(
-    { 'file_name' => $opts{'C'} } )
-    if $USE_CACHING;
+  my $setup_result = '';
+  $setup_result = Mail::Mbox::MessageParser::SETUP_CACHE( { 'file_name' => $opts{'C'} } ) if $USE_CACHING;
 
   $USE_CACHING = 0 if $USE_CACHING && $setup_result ne 'ok';
 
@@ -1243,7 +1242,7 @@ sub Not_A_Duplicate
     {
       $tried_to_load_digest_md5 = 1;
 
-      if (eval "require Digest::MD5")
+      if (eval {require Digest::MD5})
       {
         dprint "Digest::MD5 VERSION: $Digest::MD5::VERSION";
         # To prevent warning about variable being used only once
@@ -1326,7 +1325,7 @@ sub Get_Header_Field
     return wantarray ? ($1) : $1;
   }
 
-  return undef;
+  return undef; ## no critic (ProhibitExplicitReturnUndef)
 }
 
 #-------------------------------------------------------------------------------
@@ -1768,7 +1767,7 @@ sub Parse_Date
     return $parsedDate if defined $parsedDate;
   }
 
-  return undef;
+  return undef; ## no critic (ProhibitExplicitReturnUndef)
 }
 
 #-------------------------------------------------------------------------------
@@ -1776,7 +1775,7 @@ sub Parse_Date
 # Figure out what kind of date restriction they want, and what the dates in
 # question are. An empty date string results in the type of date restriction
 # being $NODATE.
-sub Process_Date($)
+sub Process_Date
 {
   my $datestring = shift;
 
@@ -2035,7 +2034,7 @@ sub Date_Manip_strptime
 
 # Figure out what kind of size restriction they want, and what the sizes in
 # question are.
-sub Process_Size($)
+sub Process_Size
 {
   my $sizestring = shift;
 
@@ -2092,7 +2091,7 @@ sub Process_Size($)
 
 #-------------------------------------------------------------------------------
 
-sub Is_In_Date($$$$)
+sub Is_In_Date
 {
   my $emailDate = shift @_;
   my $dateRestriction = shift @_;

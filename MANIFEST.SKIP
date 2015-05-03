@@ -22,14 +22,17 @@
 ^\.#
 \..*\.swp$
 
+# These are auto-generated
+t/000_standard__
+
 # Other stuff
 ^todo$
 ^DEVELOPERNOTES$
 ^announce.sample$
 ^old/
-^experiments/
 \.tar\.gz$
 ^MYMETA.(json|yml)
+^experiments/
 
 # grepmail extra files
 ^misc/

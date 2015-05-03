@@ -1,4 +1,7 @@
-Version 5.3104:
+Version 5.3105:
+- Add standard tests
+
+Version 5.3104: Sat May 2 2015
 - Prevent CPAN from indexing private-lib
 
 Version 5.3103: Apr 26 2015

@@ -16,7 +16,7 @@ Checklist for a release:
 - Clean and test:
   make realclean
   perl Makefile.PL
-  make test
+  make test TEST_AUTHOR=1
   make distcheck # Update MANIFEST and MANIFEST.SKIP if necessary.
   make disttest
 - Make the dist:
