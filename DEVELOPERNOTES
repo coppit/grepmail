@@ -1,25 +1,26 @@
 This file is not distributed with the program. It outlines some notes for
 developers readying a set of files for distribution.
 
-Check for any open issues:
-- https://rt.cpan.org/Public/Dist/Display.html?Name=grepmail
-
 git checkout:
 $ git clone https://github.com/coppit/grepmail.git
+
+Check for any open issues and recent test failures:
+- http://rt.cpan.org/Public/Dist/Display.html?Name=grepmail
+- http://www.cpantesters.org/distro/G/grepmail.html
 
 Checklist for a release:
 - Be sure to add new test cases for new features
 - Make sure version number increases.
 - Add version changes to CHANGES
 - Add new module dependencies to Makefile.PL, and update README
-- Update MANIFEST and MANIFEST.SKIP if necessary.
-  $ make distcheck
-- Test your distribution:
-  $ make disttest
-- Test the speed
-  $ make testspeed
-- Make the distribution file:
-  $ make dist
+- Clean and test:
+  make realclean
+  perl Makefile.PL
+  make test
+  make distcheck # Update MANIFEST and MANIFEST.SKIP if necessary.
+  make disttest
+- Make the dist:
+  make dist
 - Install the distribution file elsewhere to test it.
 - Upload to CPAN:
     http://pause.perl.org/pause/authenquery
