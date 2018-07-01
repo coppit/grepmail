@@ -1,0 +1,136 @@
+From brian-c@technologist.com  Mon Jul  6 11:54:19 1998
+Received: from aleve.media.mit.edu by hub.media.mit.edu; (5.65v3.2/1.1/06Jun95-8.2MPM)
+	id AA03667; Mon,  6 Jul 1998 11:54:19 -0400
+Received: from web04.globecomm.net (web04.globecomm.net [207.51.48.104])
+	by aleve.media.mit.edu (8.8.7/ML970927) with ESMTP id TAA30534
+	for <handyboard@media.mit.edu>; Mon, 6 Jul 1998 19:24:28 -0400 (EDT)
+From: brian-c@technologist.com
+Received: (from root@localhost) by web04.globecomm.net (8.8.8/8.8.0) id TAA03097; Mon, 6 Jul 1998 11:24:27 -0400 (EDT)
+Date: Mon, 6 Jul 1998 11:24:27 -0400 (EDT)
+Message-Id: <199807062324.TAA03097@web04.globecomm.net>
+Content-Type: multipart/mixed; boundary="0-0-0-0-0-0-0-0-____====$%&" 
+Mime-Version: 1.0
+To: Terri A Mortvedt <terrim@iastate.edu>, handyboard@media.mit.edu
+Subject: Re: Steppers
+
+--0-0-0-0-0-0-0-0-____====$%&
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
+X-MIME-Autoconverted: from 8bit to quoted-printable by aleve.media.mit.edu id TAA30534
+
+Dear Terri,
+
+If the motors turn sparatically, that means the coils
+are probably not hooked up in the correct order. Try
+swapping them around and see if anything improves.
+
+The motors you are using are the bipolar type. There=20
+is a decent way of hooking up unipolar steppers to
+the HB at http://www.cctc.demon.co.uk/stepper.htm
+A basic difference between bipolar and unipolar is
+that unipolar motors have additional wires are=20
+connected to the power supply. Bipolars also have more
+torque.
+
+Using fd(); and bk(); commands to power steppers is
+probably a lot to handle. I recommend trying the=20
+method found on that link. There's even sample coding.
+You will have to modify some variables for the turn
+functions because your turning radius varies according
+to your distance between motors.
+
+I modified the step(); function to produce a gradual=20
+increase in speed, and a gradual decrease in speed once
+the specified steps are almost complete.=20
+
+I will attach my motors.c file as is.
+
+
+
+_________________________________________________
+=AF=AF=AF=AF=AF=AF=AF=AF=AF=AF=AF=AF=AF=AF=AF=AF=AF=AF=AF=AF=AF=AF=AF=AF=AF=
+=AF=AF=AF=AF=AF=AF=AF=AF=AF=AF=AF=AF=AF=AF=AF=AF=AF=AF=AF=AF=AF=AF=AF=AF
+Brian Carvalho              [ brian-c@ieee.org ]
+DeVRY Institute
+New Jersey
+_________________________________________________
+=AF=AF=AF=AF=AF=AF=AF=AF=AF=AF=AF=AF=AF=AF=AF=AF=AF=AF=AF=AF=AF=AF=AF=AF=AF=
+=AF=AF=AF=AF=AF=AF=AF=AF=AF=AF=AF=AF=AF=AF=AF=AF=AF=AF=AF=AF=AF=AF=AF=AF
+---------------------------------------------------
+Get free personalized email at http://www.iname.com
+
+--0-0-0-0-0-0-0-0-____====$%&
+Content-Type: application/octet-stream
+Content-disposition: inline; filename=Motors.c 
+Content-Transfer-Encoding: base64
+
+
+
+LyogTW90b3JzLmMgKi8NCg0KLyoqKiBERUNMQVJBVElPTlMgKioqLw0KDQppbnQgRk9SV0FSRFMg
+PSAwOyAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAvKiB2YXJpYWJsZXMgZm9yIGRpcmVj
+dGlvbiAqLw0KaW50IEJBQ0tXQVJEUyA9IDE7DQogDQppbnQgSEFMRlRVUk4gPSA3MDsgICAgICAg
+ICAgICAgICAgICAgICAgICAgICAgIC8qIHZhcmlhYmxlcyBmb3IgdHVybmluZyAqLw0KaW50IFFV
+QVJURVJUVVJOID0gSEFMRlRVUk4gLyAyOw0KIA0KaW50IFJJR0hUID0gMjsgICAgICAgICAgICAg
+ICAgICAgICAgICAgICAgICAgICAgLyogdmFsdWVzIGZvciB0dXJucyAqLw0KaW50IExFRlQgPSA4
+Ow0KDQppbnQgcmlnaHRfbW90b3JfcG9pbnRlciA9IDA7ICAgICAgICAgICAgICAgICAgICAvKiBt
+b3RvciBjb250cm9sIHZhbHVlcyAqLw0KaW50IGxlZnRfbW90b3JfcG9pbnRlciA9IDA7DQogDQog
+DQppbnQgY3ljbGVfbGVuZ3RoID0gNDsgICAgICAgICAgICAgICAgICAgICAgICAgICAvKiBoYWxm
+IHN0ZXBwaW5nIHZhbHVlcyAqLw0KaW50IGxlZnRfc3RlcF90YWJsZVs0XSA9IHs0OCw0OSw1MSw1
+MH07DQppbnQgcmlnaHRfc3RlcF90YWJsZVs0XSA9IHsxOTIsMTk2LDIwNCwyMDB9Ow0KDQpsb25n
+IFNMT1cgPSAyNUw7ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgLyogbWlsbGlzZWNv
+bmQgcGF1c2VzICovDQpsb25nIEZBU1QgPSA4TDsNCg0KLyoqKiBGVU5DVElPTlMgKioqLw0KDQoN
+CnZvaWQgc2V0ZmFzdChsb25nIEYpDQp7DQoJCQlGQVNUID0gRjsNCn0NCg0Kdm9pZCBzZXRzbG93
+KGxvbmcgUykNCnsNCgkJCVNMT1cgPSBTOw0KfQ0KDQoNCnZvaWQgc3RlcHBlcnNfb3V0KHZvaWQp
+DQp7DQoJCQlpbnQgY29udHJvbF9ieXRlID0gMDsNCgkJCWNvbnRyb2xfYnl0ZSArPSBsZWZ0X3N0
+ZXBfdGFibGVbbGVmdF9tb3Rvcl9wb2ludGVyXTsNCgkJCWNvbnRyb2xfYnl0ZSArPSByaWdodF9z
+dGVwX3RhYmxlW3JpZ2h0X21vdG9yX3BvaW50ZXJdOw0KCQkJcG9rZSgweDBlLGNvbnRyb2xfYnl0
+ZSk7DQp9DQoNCnZvaWQgcmlnaHRfc3RlcChpbnQgZGlyZWN0aW9uKSAgICAgICAgICAgICAgICAg
+IC8qIHJpZ2h0IG1vdG9yIGNvbnRyb2wgKi8NCnsNCgkJCWlmIChkaXJlY3Rpb24gPT0gRk9SV0FS
+RFMpDQoJCQkJCSAgcmlnaHRfbW90b3JfcG9pbnRlciArPTE7DQoJCQllbHNlDQoJCQkJCSAgcmln
+aHRfbW90b3JfcG9pbnRlciArPSAoY3ljbGVfbGVuZ3RoIC0gMSk7DQoNCgkJCXJpZ2h0X21vdG9y
+X3BvaW50ZXIgJj0gKGN5Y2xlX2xlbmd0aCAtIDEpOw0KDQp9DQoNCnZvaWQgbGVmdF9zdGVwKGlu
+dCBkaXJlY3Rpb24pICAgICAgICAgICAgICAgICAgIC8qIGxlZnQgbW90b3IgY29udHJvbCovDQp7
+DQoJCQlpZiAoZGlyZWN0aW9uID09IEZPUldBUkRTKQ0KCQkJCQkgIGxlZnRfbW90b3JfcG9pbnRl
+ciArPSAxOw0KCQkJZWxzZQ0KCQkJCQkgIGxlZnRfbW90b3JfcG9pbnRlciArPSAoY3ljbGVfbGVu
+Z3RoIC0gMSk7DQoNCgkJCWxlZnRfbW90b3JfcG9pbnRlciAmPSAoY3ljbGVfbGVuZ3RoIC0gMSk7
+DQoNCn0NCg0Kdm9pZCBhYm91dF9mYWNlKGludCBkaXIpICAgICAgICAgICAgICAgIC8qIDE4MCBk
+ZWdyZWUgdHVybiBvbiBhIGRpbWUgKi8NCnsNCglpbnQgaTsNCg0KCWlmIChkaXIgPT0gUklHSFQp
+DQoJCWZvciAoaT0wO2k8PUhBTEZUVVJOO2krKykNCgkJew0KCQkJbGVmdF9zdGVwKEZPUldBUkRT
+KTsNCgkJCXJpZ2h0X3N0ZXAoQkFDS1dBUkRTKTsNCgkJCXN0ZXBwZXJzX291dCgpOw0KCQkJbXNs
+ZWVwKFNMT1cpOw0KCQkJYW8oKTsNCgkJIH0NCg0KCSBlbHNlDQoJCSBmb3IgKGk9MDtpPD1IQUxG
+VFVSTjtpKyspDQoJCSB7DQoJCQlsZWZ0X3N0ZXAoQkFDS1dBUkRTKTsNCgkJCXJpZ2h0X3N0ZXAo
+Rk9SV0FSRFMpOw0KCQkJc3RlcHBlcnNfb3V0KCk7DQoJCQltc2xlZXAoU0xPVyk7DQoJCQlhbygp
+Ow0KCQkgIH0NCn0NCg0Kdm9pZCByaWdodF90dXJuKCkgICAgICAgICAgICAgICAgICAgICAgIC8q
+IDkwIGRlZ3JlZSByaWdodCB0dXJuIG9uIGEgZGltZSAqLw0Kew0KCQkJaW50IGk7DQoNCgkJCWZv
+ciAoaT0wO2k8PVFVQVJURVJUVVJOO2krKykNCgkJCXsNCgkJCQkJICBsZWZ0X3N0ZXAoRk9SV0FS
+RFMpOw0KCQkJCQkgIHJpZ2h0X3N0ZXAoQkFDS1dBUkRTKTsNCgkJCQkJICBzdGVwcGVyc19vdXQo
+KTsNCgkJCQkJICBtc2xlZXAoU0xPVyk7DQoJCQkJCSAgYW8oKTsNCgkJCX0NCg0KfQ0KDQp2b2lk
+IGxlZnRfdHVybigpICAgICAgICAgICAgICAgICAgICAgICAgLyogOTAgZGVncmVlIGxlZnQgdHVy
+biBvbiBhIGRpbWUgKi8NCnsNCgkJCWludCBpOw0KDQoJCQlmb3IgKGk9MDtpPD1RVUFSVEVSVFVS
+TjtpKyspDQoJCQl7DQoJCQkJCSAgbGVmdF9zdGVwKEJBQ0tXQVJEUyk7DQoJCQkJCSAgcmlnaHRf
+c3RlcChGT1JXQVJEUyk7DQoJCQkJCSAgc3RlcHBlcnNfb3V0KCk7DQoJCQkJCSAgbXNsZWVwKFNM
+T1cpOw0KCQkJCQkgIGFvKCk7DQoJCQl9DQp9DQoNCnZvaWQgcmlnaHRfd2hlZWwoKSAgICAgICAg
+ICAgICAgICAgICAgICAvKiBncmFkdWFsIHJpZ2h0IHR1cm4gKi8NCnsNCgkJCWludCBpOw0KDQoJ
+CQlmb3IgKGk9MDtpPD1IQUxGVFVSTjtpKyspDQoJCQl7DQoJCQkJCSAgbGVmdF9zdGVwKEZPUldB
+UkRTKTsNCgkJCQkJICBzdGVwcGVyc19vdXQoKTsNCgkJCQkJICBtc2xlZXAoU0xPVyk7DQoJCQl9
+DQp9DQoNCnZvaWQgbGVmdF93aGVlbCgpICAgICAgICAgICAgICAgICAgICAgICAvKiBncmFkdWFs
+IGxlZnQgdHVybiAqLw0Kew0KCQkJaW50IGk7DQoNCgkJCWZvciAoaT0wO2k8PUhBTEZUVVJOO2kr
+KykNCgkJCXsNCgkJCQkJICByaWdodF9zdGVwKEZPUldBUkRTKTsNCgkJCQkJICBzdGVwcGVyc19v
+dXQoKTsNCgkJCQkJICBtc2xlZXAoU0xPVyk7DQoJCQl9DQp9DQoNCg0Kdm9pZCBzdGVwIChpbnQg
+ZGlyLCBpbnQgbnVtc3RlcHMsIGludCBkZWxheSkNCnsNCiAgICAgICAgaW50IHN0ZXAsc3RwOw0K
+ICAgICAgICBpbnQgYmVnaW49bnVtc3RlcHMvMTA7DQoJaW50IGNvbnRpbnVlOw0KICAgICAgICBs
+b25nIGdyYWQ9KGxvbmcpYmVnaW47DQoNCglzeXN0ZW1fcHdtX29mZigpOw0KDQoJZm9yIChzdGVw
+PTA7c3RlcDxiZWdpbjtzdGVwKyspDQoJew0KCQltc2xlZXAoZ3JhZCk7DQoJCWxlZnRfc3RlcChk
+aXIpOw0KCQlyaWdodF9zdGVwKGRpcik7DQoJCXN0ZXBwZXJzX291dCgpOw0KCQljb250aW51ZT1z
+dGVwOw0KICAgICAgICAgICAgICAgIGdyYWQ9Z3JhZC0xTDsNCg0KCX0NCiAgICAgICAgd2hpbGUo
+Y29udGludWU8YmVnaW4qOSkNCgl7DQoJCW1zbGVlcCgobG9uZylkZWxheSk7DQoJCWxlZnRfc3Rl
+cChkaXIpOw0KCQlyaWdodF9zdGVwKGRpcik7DQoJCXN0ZXBwZXJzX291dCgpOw0KCQljb250aW51
+ZSsrOw0KICAgICAgICAgICAgICAgIHN0cD1jb250aW51ZTsNCgkgfQ0KDQogICAgICAgICB3aGls
+ZShzdHA8bnVtc3RlcHMpDQogICAgICAgICB7DQogICAgICAgICAgICAgIGRlbGF5PWRlbGF5KzE7
+DQogICAgICAgICAgICAgIG1zbGVlcCgobG9uZylkZWxheSk7DQogICAgICAgICAgICAgIGxlZnRf
+c3RlcChkaXIpOw0KICAgICAgICAgICAgICByaWdodF9zdGVwKGRpcik7DQogICAgICAgICAgICAg
+IHN0ZXBwZXJzX291dCgpOw0KICAgICAgICAgICAgICBzdHArKzsNCiAgICAgICAgIH0NCglhbygp
+Ow0KDQp9ICAgICAgICAgICAgICAgICAgICAgICAgICAgICANCg0K
+
+
+--0-0-0-0-0-0-0-0-____====$%&--

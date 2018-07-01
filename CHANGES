@@ -1,3 +1,7 @@
+Version 5.3106:
+- Search headers of attachments, such as filename. Thanks Jim Diamond
+  <Jim.Diamond@acadiau.ca> for the suggestion.
+
 Version 5.3105:
 - Add standard tests
 

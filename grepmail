@@ -752,21 +752,29 @@ sub Do_Simple_Pattern_Matching
     # Get each of the binary attachment beginnings and endings.
     while ($$email_body =~ m/\n((?:--)?\Q$boundary\E(?:--)?$endline(?:(.*?)$endline$endline)?)/sg)
     {
-      my $position = pos($$email_body) - length($1);
       my $header = $2;
 
-      # Remember that the beginning of the next attachment is the
-      # end of the previous.
-      $attachment_positions[-1]{'end'} = $position
+      # The beginning of this attachment is the end of the previous.
+      $attachment_positions[$#attachment_positions]{'end'} = pos($$email_body) - length($1)
         if @attachment_positions;
+
+      $attachment_positions[$#attachment_positions+1]{'beginning'} = pos($$email_body);
 
       # If it's the beginning of a binary attachment, store the position
       if (defined $header && $header =~ /^Content-Type:\s+(?!text)/i)
       {
-        $attachment_positions[$#attachment_positions+1]{'beginning'} =
-          $position;
+        $attachment_positions[-1]{'type'} = 'binary';
+      }
+      else
+      {
+        $attachment_positions[-1]{'type'} = 'text';
       }
     }
+
+    # The last boundary terminates the attachments.
+    pop @attachment_positions;
+
+    @attachment_positions = grep { $_->{'type'} eq 'binary' } @attachment_positions;
 
     pos($$email_body) = 0;
 
