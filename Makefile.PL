@@ -43,6 +43,7 @@ requires(
 );
 
 test_requires(
+  'Test::Compile' => 0,
   'Test::More' => 0,
   'File::Slurp' => 0,
 );
