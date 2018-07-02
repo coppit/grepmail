@@ -160,6 +160,7 @@ my ($sizeRestriction, $size1, $size2);
   sub Process_Date;
   sub Process_Size;
   sub Get_Files;
+  sub Validate_Files_Are_Not_Output;
 
   # Make the pattern insensitive if we need to
   $pattern = "(?i)$pattern" if ($opts{'i'}) && $pattern ne $NO_PATTERN;
@@ -202,6 +203,7 @@ my ($sizeRestriction, $size1, $size2);
   # If the user provided input files...
   if (@files)
   {
+    Validate_Files_Are_Not_Output(@files);
     Handle_Input_Files(@files,$pattern);
   }
   # Using STDIN
@@ -580,6 +582,38 @@ sub Get_Files
   }
 
   return @files;
+}
+
+#-------------------------------------------------------------------------------
+
+sub Same_Inode {
+  my $fh1 = shift;
+  my $fh2 = shift;
+
+  return 0 unless defined $fh1 && defined $fh2;
+
+  my ($device1, $inode1) = (stat($fh1))[0,1];
+  my ($device2, $inode2) = (stat($fh2))[0,1];
+
+  return $device1 == $device2 && $inode1 == $inode2;
+}
+
+#-------------------------------------------------------------------------------
+
+sub Validate_Files_Are_Not_Output {
+  my @files = @_;
+
+  foreach my $file (@files) {
+    my $fh = new FileHandle($file);
+
+    if (Same_Inode($fh, *STDOUT)) {
+      Report_And_Exit("Input file $file is also standard output");
+
+    }
+    if (Same_Inode($fh, *STDERR)) {
+      Report_And_Exit("Input file $file is also standard error");
+    }
+  }
 }
 
 #-------------------------------------------------------------------------------

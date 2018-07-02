@@ -2,6 +2,8 @@ Version 5.3105:
 - Add standard tests
 - Search headers of attachments, such as filename. Thanks Jim Diamond
   <Jim.Diamond@acadiau.ca> for the suggestion.
+- Detect when someone accidentally makes STDOUT or STDERR also an input file.
+  Thanks to Ta SA <superaorta@gmail.com> for the feature suggestion.
 
 Version 5.3104: Sat May 2 2015
 - Prevent CPAN from indexing private-lib
