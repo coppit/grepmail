@@ -5,6 +5,7 @@ use strict;
 # For PRIVATE Module::Install extensions
 use lib 'private-lib';
 
+use lib '.';
 use inc::Module::Install;
 
 # To prevent MakeMaker from processing our old directory

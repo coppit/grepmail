@@ -4,6 +4,8 @@ Version 5.3105:
   <Jim.Diamond@acadiau.ca> for the suggestion.
 - Detect when someone accidentally makes STDOUT or STDERR also an input file.
   Thanks to Ta SA <superaorta@gmail.com> for the feature suggestion.
+- Fix compatibility issue with newer versions of perl, which remove "." from
+  @INC.
 
 Version 5.3104: Sat May 2 2015
 - Prevent CPAN from indexing private-lib
