@@ -1,4 +1,4 @@
-#!/usr/bin/perl -w
+#!/usr/bin/perl
 
 # grepmail
 
@@ -17,6 +17,7 @@ use vars qw( %opts $commandLine $VERSION %message_ids_seen
 use Getopt::Std;
 
 use strict;
+use warnings;
 use Mail::Mbox::MessageParser;
 use FileHandle;
 use Carp;
