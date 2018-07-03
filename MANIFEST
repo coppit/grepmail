@@ -35,6 +35,7 @@ t/list.t
 t/match_compressed.t
 t/match_headers.t
 t/match_words.t
+t/mime_attachments.t
 t/nonexistent_mailbox.t
 t/not_match_compressed.t
 t/not_match_uncompressed.t
@@ -99,6 +100,7 @@ t/results/invalid_date_1
 t/results/list_handy
 t/results/list_handy_dos
 t/results/match_word_let
+t/results/mime_attachments
 t/results/no_data
 t/results/none
 t/results/no_such_file
