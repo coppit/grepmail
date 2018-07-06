@@ -1,3 +1,6 @@
+Version 5.3106:
+- Check in standard tests, including one that skips the compile check on Windows
+
 Version 5.3105:
 - Add standard tests
 - Search headers of attachments, such as filename. Thanks Jim Diamond
