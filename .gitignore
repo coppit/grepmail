@@ -9,3 +9,4 @@ inc/
 /experiments/
 /old/
 **/*.swp
+t/000_standard__*

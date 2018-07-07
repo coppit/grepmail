@@ -1,3 +1,6 @@
+Version 5.3107:
+- Trying once again to fix the compile test on windows
+
 Version 5.3106:
 - Check in standard tests, including one that skips the compile check on Windows
 - Attempt to be more compatible with CPAN testing, which apparently doesn't
