@@ -26,11 +26,13 @@ Checklist for a release:
     http://pause.perl.org/pause/authenquery
   or
     cpan-upload grepmail-X.XX.tar.gz
+- Make sure there are no uncommitted changes:
+  git status
 - Tag the release for easy retrieval later
-  $ git tag -a v5.3035 -m 'Version 5.3035'
+  git tag -a v5.3035 -m 'Version 5.3035'
 - Push changes to github:
-  $ git push
+  git push
 - Make a backup in old
-  $ rm -rf old; rsync -r --cvs-exclude --exclude=.git * old
+  rm -rf old; rsync -r --cvs-exclude --exclude=.git * old
 - Copy the grepmail file for speed tests:
-  $ cp grepmail grepmail.old
+  cp grepmail grepmail.old
