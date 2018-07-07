@@ -102,13 +102,23 @@ sub TestIt
 
 # ---------------------------------------------------------------------------
 
+sub SymlinksAndLinksWork
+{
+  return (-e 'directory_with_links/symlink/mailarc-1.txt') && 
+      (-s 'directory_with_links/symlink/mailarc-1.txt' == 64865) && 
+      (-e 'directory_with_links/subdir/link.txt') &&
+      (-s 'directory_with_links/subdir/link.txt' == 64865);
+}
+
+# ---------------------------------------------------------------------------
+
 sub SetSkip
 {
   my %tests = %{ shift @_ };
 
   my %skip;
 
-  unless ( eval { symlink("",""); 1 } && eval { link("",""); 1} ) {
+  unless ( SymlinksAndLinksWork() ) {
     $skip{"grepmail -Lq Handy $TEMPDIR/directory_with_links"} =
       'Links or symbolic links are not supported on this platform';
     $skip{"grepmail -Rq Handy $TEMPDIR/directory_with_links"} =

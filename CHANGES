@@ -1,5 +1,7 @@
 Version 5.3106:
 - Check in standard tests, including one that skips the compile check on Windows
+- Attempt to be more compatible with CPAN testing, which apparently doesn't
+  support symlinks
 
 Version 5.3105:
 - Add standard tests
