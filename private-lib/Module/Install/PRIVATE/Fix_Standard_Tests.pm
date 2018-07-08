@@ -2,7 +2,7 @@ package Module::Install::PRIVATE::Fix_Standard_Tests;
 
 use strict;
 use warnings;
-use File::Slurp;
+use File::Slurper qw(read_text write_text);
 
 use vars qw( @ISA $VERSION );
 
@@ -18,20 +18,20 @@ sub fix_standard_tests {
 
   # Update compile test
   {
-    my $test = read_file('t/000_standard__compile.t');
+    my $test = read_text('t/000_standard__compile.t', undef, 1);
 
     $test =~ s#all_pm_files_ok\(\)#all_pl_files_ok('blib/script/$script_name')# or die "Couldn't update compile test";
 
-    write_file('t/000_standard__compile.t', $test);
+    write_text('t/000_standard__compile.t', $test, undef, 1);
   }
 
   # Update critic test
   {
-    my $test = read_file('t/000_standard__perl_critic.t');
+    my $test = read_text('t/000_standard__perl_critic.t', undef, 1);
 
     $test =~ s#all_critic_ok\("lib"\)#all_critic_ok("blib")# or die "Couldn't update critic test";
 
-    write_file('t/000_standard__perl_critic.t', $test);
+    write_text('t/000_standard__perl_critic.t', $test, undef, 1);
   }
 }
 

@@ -31,7 +31,7 @@ check_custom_installation();
 install_script('grepmail');
 
 configure_requires(
-  'File::Slurp' => 0,
+  'File::Slurper' => 0,
   # Module::Install::Bugtracker needs this
   'URI::Escape' => 0,
 );
@@ -48,7 +48,7 @@ requires(
 test_requires(
   'Test::Compile' => 0,
   'Test::More' => 0,
-  'File::Slurp' => 0,
+  'File::Slurper' => 0,
 );
 
 check_optional('Digest::MD5' => 0, "Digest::MD5 reduces memory consumption for the -u (unique) option\n");
@@ -59,7 +59,7 @@ check_optional('Benchmark::Timer' => 0, "Benchmark::Timer is required for speed 
 
 Add_Test_Target('testspeed', 't/speed.pl');
 
-license 'gpl2';
+license 'gpl';
 auto_license(holder => 'David Coppit');
 
 no_index 'directory' => 'private-lib';

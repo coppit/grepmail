@@ -17,7 +17,7 @@ use File::Copy;
 use File::Spec;
 use File::Spec::Functions;
 use Config;
-use File::Slurp;
+use File::Slurper qw(read_text);
 
 my $path_to_perl = $Config{perlpath};
 
@@ -108,7 +108,7 @@ sub CreateInputFiles
   {
     print "Making input file ($MAILBOX_SIZE bytes).\n";
 
-    my $data = read_file('t/mailboxes/mailarc-1.txt');
+    my $data = read_text('t/mailboxes/mailarc-1.txt', undef, 1);
 
     open FILE, ">$filename";
     binmode FILE;

@@ -7,7 +7,7 @@ use lib 't';
 use Test::Utils;
 use File::Spec::Functions qw( :ALL );
 use File::Copy;
-use File::Slurp;
+use File::Slurper qw(read_text write_text);
 
 my %tests = (
 'grepmail pattern no_such_file'
@@ -133,12 +133,12 @@ sub LocalizeTestOutput
   my $original_file = shift;
   my $new_file = shift;
 
-  my $original = read_file($original_file);
+  my $original = read_text($original_file, undef, 1);
 
   my $new = $original;
   $new =~ s/\Q$search_replace->{'search'}\E/$search_replace->{'replace'}/gx;
 
-  write_file($new_file, {binmode => ':raw'}, $new);
+  write_text($new_file, $new, undef, 1);
 }
 
 # ---------------------------------------------------------------------------

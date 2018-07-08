@@ -22,7 +22,7 @@ use Mail::Mbox::MessageParser;
 use FileHandle;
 use Carp;
 
-$VERSION = sprintf "%d.%02d%02d", q/5.31.7/ =~ /(\d+)/g;
+$VERSION = sprintf "%d.%02d%02d", q/5.31.9/ =~ /(\d+)/g;
 
 # Set to 1 to enable caching capability
 $USE_CACHING = 1;
@@ -603,6 +603,9 @@ sub Same_Inode {
 
 sub Validate_Files_Are_Not_Output {
   my @files = @_;
+
+  # Doesn't work properly on Windows for some reason
+  return if $^O eq 'MSWin32';
 
   foreach my $file (@files) {
     my $fh = new FileHandle($file);

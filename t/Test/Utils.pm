@@ -6,7 +6,7 @@ use Test::More;
 use FileHandle;
 use File::Spec::Functions qw( :ALL );
 use File::Temp;
-use File::Slurp;
+use File::Slurper qw(read_text);
 use Config;
 
 use vars qw( @EXPORT @ISA );
@@ -53,8 +53,8 @@ sub Do_Diff
 
   local $Test::Builder::Level = 2;
 
-  my @data1 = read_file($filename);
-  my @data2 = read_file($output_filename);
+  my @data1 = read_text($filename, undef, 1);
+  my @data2 = read_text($output_filename, undef, 1);
 
   is_deeply(\@data1,\@data2,"$filename compared to $output_filename");
 }

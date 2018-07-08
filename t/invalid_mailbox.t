@@ -7,7 +7,7 @@ use lib 't';
 use Test::Utils;
 use File::Spec::Functions qw( :ALL );
 use File::Copy;
-use File::Slurp;
+use File::Slurper qw(read_text);
 
 my $CAT = perl_with_inc() . qq{ -MTest::Utils -e catbin};
 
@@ -84,7 +84,7 @@ sub Inspect_Stderr
 {
   my $filename = shift;
 
-  my $stderr = read_file($filename);
+  my $stderr = read_text($filename, undef, 1);
 
   like($stderr, qr/Standard input is not a mailbox/, '"Standard input is not a mailbox" message') or
     diag("See $filename");
