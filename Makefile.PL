@@ -59,7 +59,7 @@ check_optional('Benchmark::Timer' => 0, "Benchmark::Timer is required for speed 
 
 Add_Test_Target('testspeed', 't/speed.pl');
 
-license 'gpl';
+license 'gpl2';
 auto_license(holder => 'David Coppit');
 
 no_index 'directory' => 'private-lib';

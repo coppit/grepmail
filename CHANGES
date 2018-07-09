@@ -1,5 +1,6 @@
 Version 5.3110:
 - Fix test case for binary data
+- Updating META.yml
 
 Version 5.3109:
 - Switch to File::Slurper
