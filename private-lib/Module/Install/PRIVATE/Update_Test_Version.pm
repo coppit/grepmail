@@ -1,7 +1,6 @@
 package Module::Install::PRIVATE::Update_Test_Version;
 
 use strict;
-use File::Slurper qw(read_text write_text);
 
 use vars qw( @ISA $VERSION );
 
@@ -17,6 +16,11 @@ sub Update_Test_Version
   my $self = shift;
   my $file_with_version = shift;
   my $test_case_file = shift;
+
+  $self->include_deps('File::Slurper', 0);
+
+  require File::Slurper;
+  File::Slurper->import('read_text', 'write_text');
 
   open SOURCE, $file_with_version
     or die "Couldn't open grepmail file: $!";

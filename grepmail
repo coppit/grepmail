@@ -22,7 +22,7 @@ use Mail::Mbox::MessageParser;
 use FileHandle;
 use Carp;
 
-$VERSION = sprintf "%d.%02d%02d", q/5.31.10/ =~ /(\d+)/g;
+$VERSION = sprintf "%d.%02d%02d", q/5.31.11/ =~ /(\d+)/g;
 
 # Set to 1 to enable caching capability
 $USE_CACHING = 1;

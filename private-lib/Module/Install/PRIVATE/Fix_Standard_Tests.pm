@@ -2,7 +2,6 @@ package Module::Install::PRIVATE::Fix_Standard_Tests;
 
 use strict;
 use warnings;
-use File::Slurper qw(read_text write_text);
 
 use vars qw( @ISA $VERSION );
 
@@ -15,6 +14,11 @@ $VERSION = sprintf "%d.%02d%02d", q/0.1.0/ =~ /(\d+)/g;
 
 sub fix_standard_tests {
   my ($self, $script_name, @args) = @_;
+
+  $self->include_deps('File::Slurper', 0);
+
+  require File::Slurper;
+  File::Slurper->import('read_text', 'write_text');
 
   # Update compile test
   {

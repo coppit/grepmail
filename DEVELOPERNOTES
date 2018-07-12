@@ -16,7 +16,7 @@ Checklist for a release:
 - Make sure there are no uncommitted changes:
   git status
 - Clean and test:
-  make realclean; rm -rf inc META.yml # To force rebuild the META.yml
+  make realclean
   perl Makefile.PL
   make test TEST_AUTHOR=1
   make distcheck # Update MANIFEST and MANIFEST.SKIP if necessary.

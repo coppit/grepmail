@@ -26,12 +26,14 @@ provides(
   }
 );
 
+# Perl 5.6 doesn't work with URI::Escape. We get an error about Exporter not exporting "import"
+perl_version '5.008';
+
 check_custom_installation();
 
 install_script('grepmail');
 
 configure_requires(
-  'File::Slurper' => 0,
   # Module::Install::Bugtracker needs this
   'URI::Escape' => 0,
 );
@@ -47,8 +49,8 @@ requires(
 
 test_requires(
   'Test::Compile' => 0,
-  'Test::More' => 0,
   'File::Slurper' => 0,
+  'Test::More' => 0,
 );
 
 check_optional('Digest::MD5' => 0, "Digest::MD5 reduces memory consumption for the -u (unique) option\n");
@@ -60,13 +62,18 @@ check_optional('Benchmark::Timer' => 0, "Benchmark::Timer is required for speed 
 Add_Test_Target('testspeed', 't/speed.pl');
 
 license 'gpl2';
+
+use_standard_tests;
+
 auto_license(holder => 'David Coppit');
 
 no_index 'directory' => 'private-lib';
 
 enable_verbose_cpan_testing();
 
-WriteAll();
+realclean_files('inc');
+
+WriteAll;
 
 # ---- Workaround for broken module ----
 # https://rt.cpan.org/Ticket/Display.html?id=125772
@@ -94,8 +101,5 @@ WriteAll();
   }
 }
 
-use_standard_tests;
-
 fix_standard_tests('grepmail');
-
 Update_Test_Version('grepmail','t/results/help');

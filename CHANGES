@@ -1,3 +1,8 @@
+Version 5.3111:
+- Fix Makefile.PL warning
+- Fix deleting of inc during release process
+- Better fix for AutomatedTester warning
+
 Version 5.3110:
 - Fix test case for binary data
 - Updating META.yml

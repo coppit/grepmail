@@ -129,6 +129,7 @@ t/results/unique_handy
 # Module::Install extensions
 inc/File/HomeDir.pm
 inc/File/Which.pm
+inc/File/Slurper.pm
 inc/Module/AutoInstall.pm
 inc/Module/Install.pm
 inc/Module/Install/AutoLicense.pm
@@ -151,6 +152,7 @@ inc/Module/Install/PRIVATE/Add_Test_Target.pm
 inc/Module/Install/PRIVATE/Enable_Verbose_CPAN_Testing.pm
 inc/Module/Install/PRIVATE/Fix_Standard_Tests.pm
 inc/Module/Install/PRIVATE/Update_Test_Version.pm
+inc/URI/Escape.pm
 
 # Private Module::Install extensions
 private-lib/Module/Install/PRIVATE/Add_Test_Target.pm
